@@ -35,7 +35,7 @@ void view_contact(void)//查看联系人
 		printf("\n姓名:%s  ",con[contact_number]->name);
 		printf("性别:%s  ",con[contact_number]->sex);
 		printf("电子号码:%s  ",con[contact_number]->number);
-		printf("电子邮箱:%s\n",con[contact_number]->email);
+		printf("电子邮箱:%s",con[contact_number]->email);
 		if(con[contact_number]->next==NULL)
 		{
 			break;
@@ -45,6 +45,7 @@ void view_contact(void)//查看联系人
 			con[contact_number]=con[contact_number]->next;//指向下一个联系人
 		}
 	}
+	printf("\n");
 	while(getchar()!='\n');//清除缓存
 }
 
@@ -122,6 +123,103 @@ void remove_contact(int contact_number)//删除联系人
 	printf("删除成功\n");
 }
 
+void revise_contact(const int contact_number)//修改信息
+{	
+	if(contact_number==100)
+        {
+                printf("\n查无此人\n");
+                return;
+        }
+	int pick=0;
+	start:
+	printf("\n1.修改名字\n");
+	printf("2.修改性别\n");
+	printf("3.修改电话号码\n");
+	printf("4.修改电子邮箱\n");
+	printf("5.返回主页\n");
+	printf("请输入:");
+	while((scanf("%d",&pick))!=1)
+	{
+		while(getchar()!='\n');//清除缓存
+		printf("请输入合法的数字:");
+		scanf("%d",&pick);
+	}
+	switch(pick)
+	{
+		case 1:
+			{
+				printf("请输入姓名:");
+				scanf("%s",con[contact_number]->name);
+				printf("修改成功!\n当前姓名为:%s",con[contact_number]->name);
+				while(getchar()!='\n');//清除缓存
+				goto start;//回到主菜单
+				break;
+			}
+		case 2:
+			{
+				printf("请输入性别:");
+				scanf("%s",con[contact_number]->sex);
+				printf("修改成功!\n当前性别为:%s",con[contact_number]->sex);
+				while(getchar()!='\n');//清除缓存
+				goto start;//回到主菜单
+				break;
+			}
+		case 3:
+			{
+				printf("请输入电话号码:");
+				number_tab:
+        			scanf("%s",con[contact_number]->number);
+				for(int i=0;i<11;i++)
+				{
+					if(strlen(con[contact_number]->number)!=11||con[contact_number]->number[i]<'0'||con[contact_number]->number[i]>'9')
+					{
+						printf("请输入11位数字:");
+						while(getchar()!='\n');//清除缓存
+						goto number_tab;
+					}
+				}
+				printf("修改成功!\n当前电话号码为:%s",con[contact_number]->number);
+				while(getchar()!='\n');//清除缓存
+				goto start;//回到主菜单
+				break;
+			}
+		case 4:
+			{
+				printf("请输入电子邮箱:");
+				email_tab:
+				scanf("%s",con[contact_number]->email);
+				for(int i=0;i<=strlen(con[contact_number]->email);i++)
+				{
+					if(con[contact_number]->email[i]=='@')
+					{
+						break;
+					}
+					else if(i==strlen(con[contact_number]->email))
+					{
+						while(getchar()!='\n');
+						printf("请输入正确格式的邮箱:");
+						goto email_tab;
+					}
+				}
+				printf("修改成功!\n当前电子邮箱为:%s",con[contact_number]->email);
+				while(getchar()!='\n');//清除缓存
+				goto start;//回到主菜单
+				break;
+			}
+		case 5: 
+			{
+				while(getchar()!='\n');//清除缓存
+				return;//结束程序
+			}
+		default :
+			{
+				while(getchar()!='\n');//清除缓存
+				printf("请输入对应的模式\n");
+				goto start;//回到主菜单
+			}
+	}
+}
+
 void see_contact(const int contact_number)//查看单个联系人
 {
 	if(contact_number==100)
@@ -137,9 +235,9 @@ void see_contact(const int contact_number)//查看单个联系人
 
 void add_contact(void)//新增联系人
 {	
-	int contact_number=0;//增加位置变量
+	int contact_number=1;//增加位置变量
 	//判断增加的位置
-	for(contact_number=0;contact_number<=contact_digit;contact_number++)
+	for(contact_number=1;contact_number<=contact_digit;contact_number++)
 	{
 		if(con[contact_number]==NULL)//查找有无空位
 		{
@@ -148,7 +246,6 @@ void add_contact(void)//新增联系人
 		else if(contact_number==contact_digit)//需要新增的话
 		{
 			contact_number++;//设置本次的位置
-			contact_digit++;//增加总数量
 			break;
 		}
 
@@ -225,6 +322,8 @@ void add_contact(void)//新增联系人
                         }
 		}
 	}
+	while(getchar()!='\n');//清除缓存
+	contact_digit++;//增加总数量
 	printf("\n新建成功");
 	see_contact(contact_number);//输出单个信息
 }
@@ -234,6 +333,7 @@ int homepage(void)//主页
 	printf("————通讯录————\n");
 	printf("1.查看联系人\n");
 	printf("2.查找联系人\n");
+	printf("3.修改联系人\n");
 	printf("4.删除联系人\n");
 	printf("5.新建联系人\n");
 	printf("6.退出通讯录\n");
@@ -286,6 +386,14 @@ int main(void)
 					see_contact(contact_number);//输出单个信息
 					break;
 				}
+			case 3:
+				{
+					printf("\n请输入需要修改联系人的姓名:");
+                                        scanf("%s",name);
+                                        contact_number= find_numbering(name);//查找名字所在的结构体
+                                        revise_contact(contact_number);//修改联系人
+                                        break;
+				}	
 			case 4:
 				{
 					printf("\n请输入需要删除联系人的姓名:");
