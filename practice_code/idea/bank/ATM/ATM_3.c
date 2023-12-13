@@ -177,7 +177,7 @@ void account_sigin_program ()
     {
         printf ( "-----注册取款密码(只能输入6位)----\n" );
         printf ( "请输入取款密码:" );
-        scanf ( "%s" , & account_password_1 );
+        scanf ( "%s" , account_password_1 );
         //校验是不是6位
         account_password_1_test_1 = strlen ( account_password_1 );
         if ( account_password_1_test_1 != 6 )
@@ -238,7 +238,7 @@ void account_login_program ()
     account_login_tab: //登录账号标签
     {
         printf ( "请输入账号:" );
-        scanf ( "%s" , & account_number_test );
+        scanf ( "%s" ,account_number_test );
         if ( strcmp ( account_number_test , account_number ) != 0 )
         {
             printf ( "账号不正确请重新输入 \n" );
@@ -491,7 +491,7 @@ void account_mode1_part4_program ()
     account_modify_password_2_tab:
     {
         printf ( "请输入新取款密码:" );
-        scanf ( "%s" , & account_password_1 );
+        scanf ( "%s" , account_password_1 );
         //校验是不是6位
         account_password_1_test_1 = strlen ( account_password_1 );
         if ( account_password_1_test_1 != 6 )
@@ -621,7 +621,7 @@ void administrastion_login_program ()
 {
     printf ( "-----管理员登录页面----\n" );
     printf ( "请输入管理员密码:" );
-    scanf ( "%s" , & administrators_password_test );
+    scanf ( "%s" , administrators_password_test );
     if ( strcmp ( administrators_password , administrators_password_test ) != 0 )
     {
         while ( getchar ( ) != '\n' );//清除缓存
@@ -789,7 +789,7 @@ void administrastion_mode4_program ()
     {
         printf ( "-----修改取款密码(只能输入6位)----\n" );
         printf ( "请输入新的取款密码:" );
-        scanf ( "%s" , & account_password_1 );
+        scanf ( "%s" , account_password_1 );
         //校验是不是6位
         account_password_1_test_1 = strlen ( account_password_1 );
         if ( account_password_1_test_1 != 6 )

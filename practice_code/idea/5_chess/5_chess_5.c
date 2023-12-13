@@ -998,7 +998,7 @@ void AI_chess ( int array , int * x , int * y , char array_chessboard[array][arr
                     //判断缺第三个
                     if ( array_chessboard[ figure_i + 2 ][ figure_j - 2 ] == 'X' &&
                          array_chessboard[ figure_i - 2 ][ figure_j + 2 ] == 'X' && figure_i + 2 < array &&
-                         figure_j - 2 >= 0 && figure_i - 2 >= 0 & figure_j + 2 < array )
+                         figure_j - 2 >= 0 && figure_i - 2 >= 0 && figure_j + 2 < array )
                     {
                         integral_b = 200;
                     }
