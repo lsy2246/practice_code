@@ -1,8 +1,9 @@
 #include<stdio.h>
+#include<stdlib.h>
+#include<errno.h>
 
 struct Contact//每个联系人的结构体
 {
-	int age;//年龄
 	char sex[10];//性别
 	char name[15];//名字
 	char email[30];//email
@@ -15,7 +16,22 @@ enum Operate//选择的枚举函数
 
 void view_mode(void)//查看所有联系人函数
 {
-	printf("view\n");
+	FILE *file=fopen("contact.txt","rb");//打开文件
+	int  test_file=fgetc(file);//测试是否为空
+	if(test_file == EOF)
+	{
+		printf("通讯录不存在联系人\n");
+		fclose(file);//关闭文件
+		return;//结束程序
+	}
+	struct Contact contact;//声明一块结构体临时储存读取到的通讯录
+	while(fread (&contact , sizeof(struct Contact) , 1 , file) == 1)
+	{
+		printf("姓名:%s",contact.name);
+		printf(" 性别:%s",contact.sex);
+		printf(" email:%s\n",contact.email);
+	}
+	fclose(file);//关闭文件
 }
 
 void find_mode(void)//查找联系人函数
