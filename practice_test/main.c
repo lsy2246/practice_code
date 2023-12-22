@@ -15,27 +15,9 @@ enum Operate//选择的枚举函数
 	view=1,find,add,delete,quit//查看,查看个人,新增,删除,退出
 };
 
-int view_null(void)//查看是否有联系人
-{
-	FILE *file=fopen("contact.txt","ab");//打开文件
-	int test_file=fgetc(file);//测试是否为空
-	if(test_file == EOF)
-	{
-		printf("通讯录不存在联系人\n");
-		fclose(file);//关闭文件
-		return 1;//结束程序
-	}
-	fclose(file);//关闭文件
-	return 0;//正常返回
-}
 void view_mode(void)//查看所有联系人函数
 {
-	int pick_null=view_null();//查看通讯录是否为空
-	if(pick_null == 1)//如果没有联系人
-	{
-		return;
-	}
-	FILE *file=fopen("contact.txt","rb");//打开文件
+	FILE *file=fopen("contact.txt","a+b");//打开文件
 	struct Contact contact;//声明一块结构体临时储存读取到的通讯录
 	while(fread (&contact , sizeof(struct Contact) , 1 , file) == 1)
 	{
@@ -48,12 +30,7 @@ void view_mode(void)//查看所有联系人函数
 
 void find_mode(void)//查找联系人函数
 {
-	int pick_null=view_null();//查看通讯录是否为空
-	if(pick_null == 1)//如果没有联系人
-	{
-		return;
-	}
-	FILE *file=fopen("contact.txt","rb");//打开文件
+	FILE *file=fopen("contact.txt","a+b");//打开文件
 	char tmp_name[20]="a";//申请接受用户的名字
 	struct Contact contact;//临时接受的结构体
 	printf("请输入需要查找的联系人:");
@@ -75,17 +52,12 @@ void find_mode(void)//查找联系人函数
 
 void add_mode(void)//新增联系人函数
 {
-	FILE *file=fopen("contact.txt","rb");//以读的方式打开文件
-	if(file == NULL)//如果打开失败
-	{
-		perror("fopen");//输出错误
-		return;//结束程序
-	}
+	FILE *file=fopen("contact.txt","a+b");//以读的方式打开文件
 	struct Contact contact;//声明一个临时结构体来接收用户
 	struct Contact tmp_contact;//声明一个结构体来检查
 	printf("请输入姓名:");
 	scanf("%20s",contact.name);
-	fseek(file, 0, SEEK_SET);//将文件指针移动到开头，并清楚之前读取的内容
+	fseek(file, 0, SEEK_SET);//将文件指针移动到开头，并清除之前读取的内容
 	//查找是否已经存入
 	while(fread(&tmp_contact,sizeof(struct Contact),1,file) == 1)
 	{
@@ -99,9 +71,6 @@ void add_mode(void)//新增联系人函数
 			return;//结束函数
 		}
 	}
-	//如果没有重名
-	fclose(file);//关闭文件
-	file=fopen("contact.txt","ab");//以追加的方式打开文件
 	printf("请输入性别:");
 	scanf("%10s",contact.sex);
 	printf("请输入电子邮箱:");
@@ -122,7 +91,9 @@ void add_mode(void)//新增联系人函数
 
 void delete_mode(void)//删除联系人函数
 {
+	FILE *file=fopen("contact.txt","r+b");
 	
+	struct Contact contact;//声明结构体找到需要删除的位置
 }
 
 int main(void)
