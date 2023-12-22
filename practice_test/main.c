@@ -13,68 +13,121 @@ struct Contact//每个联系人的结构体
 enum Operate//选择的枚举函数
 {
 	view=1,find,add,delete,quit//查看,查看个人,新增,删除,退出
-}oprate;
+};
 
-void view_mode(void)//查看所有联系人函数
+int view_null(void)//查看是否有联系人
 {
-	FILE *file=fopen("contact.txt","rb");//打开文件
-	int  test_file=fgetc(file);//测试是否为空
+	FILE *file=fopen("contact.txt","ab");//打开文件
+	int test_file=fgetc(file);//测试是否为空
 	if(test_file == EOF)
 	{
 		printf("通讯录不存在联系人\n");
 		fclose(file);//关闭文件
-		return;//结束程序
+		return 1;//结束程序
 	}
+	fclose(file);//关闭文件
+	return 0;//正常返回
+}
+void view_mode(void)//查看所有联系人函数
+{
+	int pick_null=view_null();//查看通讯录是否为空
+	if(pick_null == 1)//如果没有联系人
+	{
+		return;
+	}
+	FILE *file=fopen("contact.txt","rb");//打开文件
 	struct Contact contact;//声明一块结构体临时储存读取到的通讯录
 	while(fread (&contact , sizeof(struct Contact) , 1 , file) == 1)
 	{
 		printf("姓名:%s",contact.name);
 		printf(" 性别:%s",contact.sex);
-		printf(" email:%s\n",contact.email);
+		printf(" 电子邮箱:%s\n",contact.email);
 	}
 	fclose(file);//关闭文件
 }
 
 void find_mode(void)//查找联系人函数
 {
-	printf("find\n");
+	int pick_null=view_null();//查看通讯录是否为空
+	if(pick_null == 1)//如果没有联系人
+	{
+		return;
+	}
+	FILE *file=fopen("contact.txt","rb");//打开文件
+	char tmp_name[20]="a";//申请接受用户的名字
+	struct Contact contact;//临时接受的结构体
+	printf("请输入需要查找的联系人:");
+	scanf("%20s",tmp_name);//接受用户需要查找的姓名
+	while(fread(&contact,sizeof(struct Contact),1,file) == 1)
+	{
+		if(strcmp(contact.name,tmp_name) == 0)
+		{
+			printf("姓名:%s",contact.name);
+			printf(" 性别:%s",contact.sex);
+			printf(" 电子邮箱:%s",contact.email);
+			fclose(file);//关闭文件
+			return;//结束函数
+		}
+	}
+
+	printf("查无此人\n");
 }
 
 void add_mode(void)//新增联系人函数
 {
-	FILE *file=fopen("contact.txt","ab");//打开文件
+	FILE *file=fopen("contact.txt","rb");//以读的方式打开文件
 	if(file == NULL)//如果打开失败
 	{
 		perror("fopen");//输出错误
 		return;//结束程序
 	}
 	struct Contact contact;//声明一个临时结构体来接收用户
+	struct Contact tmp_contact;//声明一个结构体来检查
 	printf("请输入姓名:");
 	scanf("%20s",contact.name);
+	fseek(file, 0, SEEK_SET);//将文件指针移动到开头，并清楚之前读取的内容
+	//查找是否已经存入
+	while(fread(&tmp_contact,sizeof(struct Contact),1,file) == 1)
+	{
+		if(strcmp(tmp_contact.name,contact.name) == 0)
+		{
+			printf("联系人已经存在\n");
+			printf("姓名:%s",tmp_contact.name);
+			printf(" 性别:%s",tmp_contact.sex);
+			printf(" 电子邮箱:%s",tmp_contact.email);
+			fclose(file);//关闭文件
+			return;//结束函数
+		}
+	}
+	//如果没有重名
+	fclose(file);//关闭文件
+	file=fopen("contact.txt","ab");//以追加的方式打开文件
 	printf("请输入性别:");
 	scanf("%10s",contact.sex);
 	printf("请输入电子邮箱:");
 	scanf("%30s",contact.email);
-	char *pick_email=NULL;//创造变量判断邮箱是否符号要求
-	pick_email=strstr(contact.email,"@");//判断邮箱是否符合要求
-	while (pick_email == NULL)
+	while (strcmp(contact.email,"@") != 0)
 	{
 		while(getchar()!='\n');//清除缓存
 		printf("请输入正确格式的电子邮箱:");
-		scanf("%30s",contact.email);//重新接收
-		pick_email=strstr(contact.email,"@");//重新判断	
+		scanf("%30s",contact.email);//重新接收	
 	}
 	fwrite(&contact,sizeof(struct Contact),1,file);//写入文件
 	fclose(file);//关闭文件
+	printf("新建成功\n");
+	printf("姓名:%s",contact.name);
+	printf(" 性别:%s",contact.sex);
+	printf(" 电子邮箱:%s",contact.email);
 }
 
 void delete_mode(void)//删除联系人函数
 {
-	printf("delete\n");
+	
 }
 
 int main(void)
-{	
+{
+	int oprate=0;//创建选择
 	start://主页面标签
 	printf("\n———————通讯录——————\n");
 	printf("%d.查看全部联系人\n",view);
