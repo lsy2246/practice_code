@@ -1,11 +1,12 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<errno.h>
+#include<string.h>
 
 struct Contact//每个联系人的结构体
 {
+	char name[20];//名字
 	char sex[10];//性别
-	char name[15];//名字
 	char email[30];//email
 };
 
@@ -41,7 +42,30 @@ void find_mode(void)//查找联系人函数
 
 void add_mode(void)//新增联系人函数
 {
-	printf("add\n");
+	FILE *file=fopen("contact.txt","ab");//打开文件
+	if(file == NULL)//如果打开失败
+	{
+		perror("fopen");//输出错误
+		return;//结束程序
+	}
+	struct Contact contact;//声明一个临时结构体来接收用户
+	printf("请输入姓名:");
+	scanf("%20s",contact.name);
+	printf("请输入性别:");
+	scanf("%10s",contact.sex);
+	printf("请输入电子邮箱:");
+	scanf("%30s",contact.email);
+	char *pick_email=NULL;//创造变量判断邮箱是否符号要求
+	pick_email=strstr(contact.email,"@");//判断邮箱是否符合要求
+	while (pick_email == NULL)
+	{
+		while(getchar()!='\n');//清除缓存
+		printf("请输入正确格式的电子邮箱:");
+		scanf("%30s",contact.email);//重新接收
+		pick_email=strstr(contact.email,"@");//重新判断	
+	}
+	fwrite(&contact,sizeof(struct Contact),1,file);//写入文件
+	fclose(file);//关闭文件
 }
 
 void delete_mode(void)//删除联系人函数
