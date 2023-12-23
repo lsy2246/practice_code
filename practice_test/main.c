@@ -54,7 +54,7 @@ void add_mode(void)//新增联系人函数
 {
 	FILE *file=fopen("contact.txt","a+b");//以读的方式打开文件
 	struct Contact contact;//声明一个临时结构体来接收用户
-	struct Contact tmp_contact;//声明一个结构体来检查
+	struct Contact tmp_contact;//声明一个结构体来检查有无重复
 	printf("请输入姓名:");
 	scanf("%20s",contact.name);
 	fseek(file, 0, SEEK_SET);//将文件指针移动到开头，并清除之前读取的内容
@@ -92,9 +92,31 @@ void add_mode(void)//新增联系人函数
 void delete_mode(void)//删除联系人函数
 {
 	FILE *file=fopen("contact.txt","r+b");
-	
+	char tmp_name[20]="a";//临时接收用户需要删除的姓名	
 	struct Contact contact;//声明结构体找到需要删除的位置
+	printf("请输入需要删除的联系人的姓名:");
+	scanf("%s",tmp_name);//接收需要删除的联系人的姓名
+	while(fread( &contact , sizeof(struct Contact) , 1 ,file ) == 1)
+	{
+		if( strcmp(contact.name,tmp_name) == 0)
+		{
+			while(fread (&contact , sizeof(struct Contact) , 1 ,file ) == 1)//移动到下一个
+			{
+				fseek(file,sizeof(struct Contact) ,SEEK_CUR);//将文件移动回上一个
+				fwrite(&contact ,sizeof(struct Contact) , 1 ,file);//将本次内容写到上一个
+				fseek(file, -(sizeof(struct Contact)) ,SEEK_CUR);//将文件移动回来
+			}
+			fseek(file,sizeof(struct Contact),SEEK_END);//将文件移动到最后一个联系人
+			struct Contact last_contact = {"\0","\0","\0"};//最后一个结构体都定义为空字符
+			fwrite(&last_contact ,sizeof(struct Contact) , 1 ,file);//空字符写入
+			fclose(file);//关闭文件
+			return;
+		}
+	}
+	printf("查无此人");
+	fclose(file);//关闭文件
 }
+
 
 int main(void)
 {
@@ -139,7 +161,7 @@ int main(void)
 		case delete:
 			{
 				while(getchar()!='\n');//清除缓存
-				delete_mode;//进入删除函数
+				delete_mode();//进入删除函数
 				goto start;//回到主页
 				break;//防止进入下一个
 			}
