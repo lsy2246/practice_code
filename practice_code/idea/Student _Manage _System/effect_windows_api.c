@@ -1,6 +1,6 @@
 #include <windows.h>
 
-void HideCursor ()//隐藏光标
+void HideCursor ( void )//隐藏光标
 {
     CONSOLE_CURSOR_INFO curInfo; //定义光标信息的结构体变量
     curInfo . dwSize = 1; //如果没赋值的话，光标隐藏无效
