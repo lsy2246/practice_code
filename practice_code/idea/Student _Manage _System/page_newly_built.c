@@ -9,5 +9,5 @@
 
 void newly_built(void)
 {
-
+    //
 }
