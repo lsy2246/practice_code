@@ -13,6 +13,14 @@ struct Personal_Information//定义个人信息结构体变量
     unsigned int course_number[20];//课程编号
 };
 
+struct Course//课程结构体
+{
+    unsigned int id;
+    char name[20];
+};
+
+
+extern struct Course that_course;//当前课程
 extern struct Personal_Information that_person;//当前的联系人
 extern bool pick_revision;//判断文件有没有修改完成
 extern bool pick_view_mode;//判断查看视图的模式

@@ -21,9 +21,9 @@ static struct Snake
     int tail[2];
 };
 
-struct Snake snake ;
+static struct Snake snake ;
 
-static void printf_main ( void )//主页菜单
+static void main_printf_view ( void )//主页菜单
 {
     HideCursor ( );//隐藏光标
     system ( "cls" );//清屏
@@ -51,7 +51,7 @@ static void printf_main ( void )//主页菜单
     color ( 1 );//设置颜色
     printf ( "[M]" );
     color ( 7 );//设置颜色
-    printf ( "\t    课程管理" );
+    printf ( "\t    管理课程" );
 
     CursorJump ( 13 , 52 );
     color ( 1 );//设置颜色
@@ -73,7 +73,7 @@ static void printf_main ( void )//主页菜单
     }
 }
 
-static void move_snake(void)//移动小蛇
+static void main_move_snake(void)//移动小蛇
 {
     Sleep (80);
     CursorJump ( snake.tail[0] , snake.tail[1] );
@@ -106,7 +106,7 @@ static void move_snake(void)//移动小蛇
         snake.body[1]=46;
         snake.head[0]=6;
         snake.head[1]=47;
-        printf_main();
+        main_printf_view();
     }
     color ( 13 );//设置颜色
     CursorJump ( snake.tail[0] , snake.tail[1] );
@@ -116,8 +116,6 @@ static void move_snake(void)//移动小蛇
     CursorJump ( snake.head[0] , snake.head[1] );
     printf ("■");
 }
-
-
 
 //主函数
 int main ( void )
@@ -129,7 +127,7 @@ int main ( void )
     srand ( ( unsigned ) time ( NULL ) );
     while ( 1 )
     {
-        move_snake();//移动小蛇
+        main_move_snake();//移动小蛇
         //获取用户的输入
         if ( _kbhit ( ) )
         {
@@ -150,7 +148,7 @@ int main ( void )
             case 'M':
             {
                 start_pick = '0';
-                system_start ( );//管理系统主页
+                course_start ( );//管理系统主页
                 snake.head[0]=7;
                 snake.head[1]=45;
                 break;
