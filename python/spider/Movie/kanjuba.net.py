@@ -6,78 +6,44 @@ import shutil
 from lxml import etree
 
 
-def downloadm3u81(domain, filepath, ts, headers):
-    domain = ts.rstrip("\n")
+
+def downloadm3u8(domain, filepath, ts, headers):
+    domain = domain.strip("\n")
+    ts = ts.strip("\n")
     urlend = domain.split('/')[-1]
-    domain = domain.replace(urlend, ts)
-    urlend = domain.split('/')[-1]
-    filename = filepath + urlend
-    with requests.get(domain, headers=headers) as r:
-        if r.status_code == 200:
-            with open(filename, 'wb') as f:
-                f.write(r.content)
-            try:
-                print(f"正在下载{urlend}")
-                open(filename, "r")
-            except:
-                print(f"{urlend}下载失败尝试重新下载")
-                try:
-                    with open(filename, 'wb') as f:
-                        print(f"正在下载{urlend}")
-                        f.write(r.content)
-                except:
-                    print(f"{urlend}下载失败")
-            else:
-                print(f"{urlend}下载完成")
-        else:
-            print(f"{domain}访问失败,错误代码{r.status_code}")
-
-
-def merge_ts_to_mp41(filepath, title):
-    with open(f"{filepath}{title}.m3u8", "r") as file:
-        with open(f"{title}.mp4", "ab") as video:
-            print("正在合成,请耐心等待")
-            for name in file:
-                name = name.split("/")[-1]
-                name = name.strip()  # 去除文件名中的换行符和空白
-                name = filepath + name
-                with open(name, "rb") as ts:
-                    video.write(ts.read())
-
-
-def merge_ts_to_mp42(filepath, title):
-    with open(f"{filepath}{title}.m3u8", "r") as file:
-        with open(f"{title}.mp4", "ab") as video:
-            print("正在合成,请耐心等待")
-            for name in file:
-                name = name.strip()  # 去除文件名中的换行符和空白
-                name = filepath + name
-                print(name)
-
-
-def downloadm3u82(filepath, domain,ts, headers):
-    urlend = domain.split("/")[-1]
+    domain = domain.replace(urlend, ts).strip("\n")
     filename = filepath + ts
-    domain = domain.replace(urlend, ts)
+    print(f"正在下载{ts}")
     with requests.get(domain, headers=headers) as r:
         if r.status_code == 200:
             with open(filename, 'wb') as f:
-                print(f"正在下载{urlend}")
                 f.write(r.content)
             try:
                 open(filename, "r")
             except:
                 print(f"{ts}下载失败尝试重新下载")
+                with requests.get(domain, headers=headers) as r:
+                    if r.status_code == 200:
+                        with open(filename, 'wb') as f:
+                            f.write(r.content)
                 try:
-                    with open(filename, 'wb') as f:
-                        print(f"正在下载{urlend}")
-                        f.write(r.content)
+                    open(filename, "r")
                 except:
                     print(f"{ts}下载失败")
             else:
                 print(f"{ts}下载完成")
         else:
-            print(f"{domain}访问失败,错误代码{r.status_code}")
+            print(f"{r.url}访问失败,错误代码{r.status_code}")
+
+
+def merge_ts_to_mp4(filepath, title, ts):
+    ts = ts.strip("\n")
+    with open(f"{title}.mp4", "ab") as video:
+        filename = filepath + ts
+        with open(f"{filename}", "rb") as tsvido:
+            print(f"正在合成{ts},请耐心等待")
+            video.write(tsvido.read())
+
 
 ##获取m3u8文件
 def getm3u8(domain, headers):
@@ -115,7 +81,6 @@ def getm3u8(domain, headers):
                     m3u8url2 = m3u8url2.split()
                     substitute = domain.split("/")[-1]
 
-
                     domain = domain.replace(substitute, m3u8url2[0])
                     with requests.get(domain, headers=headers) as tss:
                         tss = str(tss.text).split("\n")
@@ -129,7 +94,7 @@ def getm3u8(domain, headers):
                 else:
                     with open(f"{filepath}{title}.m3u8", "a+") as m3u8file:
                         for ts in m3u8url2:
-                            if ts.startswith("#") or ts.startswith(" "):
+                            if ts.startswith("#") or ts.startswith(" ") or ts.startswith("http"):
                                 continue
                             else:
                                 m3u8file.write(f"{ts}\n")
@@ -141,23 +106,29 @@ def getm3u8(domain, headers):
     ##下载m3u8
     print(f'开始下载视频"{title}"')
     with open(f"{filepath}{title}.m3u8", "r") as tsfile:
-        with ThreadPoolExecutor(max_workers=1) as xc:
+        with ThreadPoolExecutor(max_workers=30) as xc:
+            ts = ts.strip("\n")
             for ts in tsfile:
-                if ts.startswith("http"):
-                    xc.submit(downloadm3u81, domain=domain, filepath=filepath, ts=ts, headers=headers)
-                else:
-                    xc.submit(downloadm3u82, filepath=filepath, domain=domain, ts=ts, headers=headers)
+                xc.submit(downloadm3u8, filepath=filepath, domain=domain, ts=ts, headers=headers)
 
     ##合成视频
     print("开始合成视频")
-    merge_ts_to_mp42(filepath, title)
-    shutil.rmtree("tmpMovie")
+    with open(f"{filepath}{title}.m3u8", "r") as tsfile:
+        ts.strip("\n")
+        for ts in tsfile:
+            ts = ts.strip("\n")
+            if ts != "":
+                merge_ts_to_mp4(filepath=filepath, title=title, ts=ts)
+
     print("下载已经全部完成")
-    print(f"文件在当前根目录{title}.mp4")
+    #shutil.rmtree(f"{filepath}") #开启清除临时文件
+    #print("临时文件清理完成")
+    print(f'临时文件在"{filepath}"可删除')
+    print(f"视频在当前根目录{title}.mp4")
 
 
 if __name__ == "__main__":
-    domain = "https://kanjuba.net/play/93312-0-9.html"
+    domain = "https://kanjuba.net/play/112379-0-0.html"
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
