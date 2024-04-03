@@ -83,9 +83,10 @@ class MyFrame(wx.Frame):
         self.show_text.Clear()
 
     def recv_data(self):
-        if self.state:
+        while self.state:
             show_info = self.server_socket.recv(1024).decode('utf-8')
             self.show_text.AppendText('-' * 40 + '\n' + show_info + '\n')
+
 
     def send_data(self, event):
         if self.state:
@@ -98,8 +99,13 @@ class MyFrame(wx.Frame):
 if __name__ == '__main__':
     # 初始化app()
     app = wx.App()
-    # 创建直接的客户端对象
-    frame = MyFrame("lsy").Show()
 
+    name = input("请输入你的姓名:")
+    # 创建直接的客户端对象
+    frame = MyFrame(name)
+    ip = input("请输入ip(默认localhost):")
+    port = int(input("请输入端口(默认8787):"))
+    frame.server_host_port = (ip, port)
+    frame.Show()
     # 循环刷新显示
     app.MainLoop()

@@ -6,6 +6,7 @@ from threading import Thread
 import wx
 import os
 
+
 class Myserver(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, id=8787, title="Server", pos=wx.DefaultPosition, size=(400, 500))
@@ -140,6 +141,9 @@ if __name__ == '__main__':
     app = wx.App()
     # 创建直接的客户端对象
     frame = Myserver()
+    ip = input("请输入ip(默认localhost):")
+    port = int(input("请输入端口(默认8787):"))
+    frame.host_port = (ip, port)
     frame.Show()
 
     # 循环刷新显示
