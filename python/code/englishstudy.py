@@ -200,7 +200,7 @@ def revise_work():
                     print(f"Chinese:{data[1]}\n")
             else:
                 conn.commit()
-                print(f"\n添加成功 values('{English}','{Chinese}'\n)")
+                print(f"\n添加成功 values('{English}','{Chinese}')\n")
         case '2':
             English = input("请输入单词:")
             while not bool(english_pick.fullmatch(English)):
