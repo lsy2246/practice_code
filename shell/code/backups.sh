@@ -10,7 +10,7 @@ password=""
 
 for item in ${mysql_arry[@]};do
 	mkdir -p "$item/$year"	
-	mysql -u $user -p$password ${item} > "${item}_${date_time}.sql"
+	mysqldump -u $user -p$password ${item} > "${item}_${date_time}.sql"
 	zip "./$item/$year/${item}_${date_time}.zip"  "./${item}_${date_time}.sql"
 done
 
