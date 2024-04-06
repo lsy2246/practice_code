@@ -42,17 +42,23 @@ def detection_work_day():
     cursor.execute('SELECT Date FROM Mistake WHERE Date = CURDATE();')
 
     rows = cursor.fetchall()
-    if len(rows) < 20:
-        cursor.execute('SELECT English,Chinese FROM Work')
+    if len(rows) < quantity:
+        cursor.execute('SELECT English,Chinese FROM Work where frequency = 0;')
         work = cursor.fetchall()
-        for _ in range(20 - len(rows)):
+        i = 0
+        works = []
+        while i < (quantity - len(rows)):
             test = random.choice(work)
-            English = test[0]
-            Chinese = test[1]
-            Data = time.strftime("%Y-%m-%d", time.localtime())
-            cursor.execute('insert into Mistake(English, Chinese, Date)\n'
-                           f"values ('{English}','{Chinese}','{Data}')")
-            conn.commit()
+            if test[0] not in works:
+                English = test[0]
+                Chinese = test[1]
+                works.append(English)
+                Data = time.strftime("%Y-%m-%d", time.localtime())
+                cursor.execute('insert into Mistake(English, Chinese, Date)\n'
+                               f"values ('{English}','{Chinese}','{Data}')")
+                cursor.execute(f"update Work set frequency = frequency+1 where English='{English}'")
+                conn.commit()
+                i += 1
 
     cursor.close()
     conn.close()
@@ -63,7 +69,7 @@ def add_error(english):
 
     cursor = conn.cursor()
 
-    cursor.execute(f"update Work set frequency = frequency+1 where English='{english}'")
+    cursor.execute(f"update Work set erred = erred+1 where English='{english}'")
 
     conn.commit()
 
