@@ -170,14 +170,10 @@ def revise_work():
     number_pick = re.compile(r'^[0-9]+$')
     cursor = conn.cursor()
 
-    cursor.execute('select * from Class;')
-
-    Classs = cursor.fetchall()
 
     print("\n1.增加单词")
     print('2.删除单词')
-    print('3.查询类')
-    print('4.查询单词')
+    print('3.查询单词')
     pick = input("请输入:")
     match pick:
         case '1':
@@ -189,21 +185,11 @@ def revise_work():
             while not bool(chines_pick.fullmatch(Chinese)):
                 Chinese = input("请输入意思:")
 
-            Class = input("请输入类")
-            while not bool(number_pick.fullmatch(Class)) and not "0" < Class < f"{len(Classs)}" and not Class == "":
-                if not bool(number_pick.fullmatch(Class)):
-                    print("不是数字")
-                if not "0" < Class < f"{len(Classs)}":
-                    print("没有此类")
             try:
-                if Class == '':
-                    cursor.execute('insert into Work(english, chinese)\n'
-                                   f"values('{English}','{Chinese}')")
-                else:
-                    cursor.execute('insert into Work(english, chinese,ClassID)\n'
-                                   f"values('{English}','{Chinese}',{Class})")
+                cursor.execute('insert into Work(english, chinese)\n'
+                               f"values('{English}','{Chinese}')")
             except:
-                cursor.execute(f"select English ,chinese,ClassID from Work where English='{English}';")
+                cursor.execute(f"select English ,chinese from Work where English='{English}';")
                 data = cursor.fetchall()
                 if len(data) == 0:
                     print("\n未知错误\n")
@@ -211,11 +197,10 @@ def revise_work():
                     print("\n数据已经存在")
                     data = data[0]
                     print(f"English:{data[0]}")
-                    print(f"Chinese:{data[1]}")
-                    print(f"Chinese:{data[2]}\n")
+                    print(f"Chinese:{data[1]}\n")
             else:
                 conn.commit()
-                print(f"\n添加成功 values('{English}','{Chinese}',{Class})\n")
+                print(f"\n添加成功 values('{English}','{Chinese}'\n)")
         case '2':
             English = input("请输入单词:")
             while not bool(english_pick.fullmatch(English)):
@@ -229,23 +214,18 @@ def revise_work():
                 conn.commit()
                 print(f"\n{English}删除成功\n")
         case '3':
-            print("\n")
-            for Class in Classs:
-                print(f"id:{Class[0]}\tclass:{Class[1]}")
-            print("\n")
-        case '4':
             English = input("请输入单词:")
             while not bool(english_pick.fullmatch(English)):
                 English = input("请输入单词:")
-            cursor.execute(f"select English ,chinese,ClassID from Work where English='{English}';")
+            cursor.execute(f"select English ,chinese from Work where English='{English}';")
             data = cursor.fetchall()
             if len(data) == 0:
                 print("\n没有查到此单词\n")
             else:
                 for work in data:
                     print(f"\nEnglish:{work[0]}")
-                    print(f"Chinese:{work[1]}")
-                    print(f"ClassID:{work[2]}\n")
+                    print(f"Chinese:{work[1]}\n")
+
 
 
     cursor.close()
