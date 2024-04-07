@@ -53,9 +53,8 @@ def detection_work_day():
                 English = test[0]
                 Chinese = test[1]
                 works.append(English)
-                Data = time.strftime("%Y-%m-%d", time.localtime())
-                cursor.execute('insert into Mistake(English, Chinese, Date)\n'
-                               f"values ('{English}','{Chinese}','{Data}')")
+                cursor.execute('insert into Mistake(English, Chinese)\n'
+                               f"values ('{English}','{Chinese}')")
                 cursor.execute(f"update Work set frequency = frequency+1 where English='{English}'")
                 conn.commit()
                 i += 1
