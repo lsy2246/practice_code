@@ -1,46 +1,59 @@
-import tkinter as tk
-from tkinter import messagebox
+import string
+import threading
+import time
+import socket
+import random
+import json
+import concurrent.futures
 
-# 创建主窗口
-root = tk.Tk()
-root.withdraw()  # 隐藏主窗口
 
-# 弹出消息框
-messagebox.showinfo("标题", "消息内容")
+class Session_server:
+    def __init__(self, ip_socker, port_socker):
+        self.ip_socker = ip_socker
+        self.port_socker = port_socker
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.server_status = False  # 服务器状态
 
-# 弹出警告框
-messagebox.showwarning("警告", "警告内容")
+        # 创建线程池
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
 
-# 弹出错误框
-messagebox.showerror("错误", "错误内容")
+        # 启动连接服务器的任务
+        self.executor.submit(self.Link_server)
 
-# 弹出询问框
-result = messagebox.askquestion("询问", "是否继续？")
-if result == 'yes':
-    print("用户选择了继续")
-else:
-    print("用户选择了取消")
+    def Link_server(self):
+        while True:
+            Verification_code = ""
+            for _ in range(20):
+                if random.choice([True, False]):
+                    Verification_code += str(random.randint(0, 9))
+                else:
+                    Verification_code += random.choice(string.ascii_letters)
+            data = {"genre": "test", "source": "Link_server", "data": Verification_code,
+                    "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
+            data_json = json.dumps(data)
+            self.server_socket.sendto(data_json.encode("utf-8"), (self.ip_socker, self.port_socker))
+            try:
+                receive_content_json = self.server_socket.recv(1024).decode('utf-8')
+                receive_content = json.loads(receive_content_json)
+                if receive_content["data"] == Verification_code:
+                    self.server_status = True  # 服务器状态
+                    # 启动接收服务器响应的任务
+                    self.executor.submit(self.Receive_server)
+                else:
+                    self.server_status = False
+            except:
+                self.server_status = False
+            time.sleep(60)
 
-# 弹出确认框
-result = messagebox.askokcancel("确认", "是否继续？")
-if result:
-    print("用户选择了继续")
-else:
-    print("用户选择了取消")
+    def Receive_server(self):
+        while self.server_status:
+            receive_content_json = self.server_socket.recv(1024).decode('utf-8')  # 追加接收到的数据
+            receive_content = json.loads(receive_content_json)
+            print(receive_content)
 
-# 弹出是/否框
-result = messagebox.askyesno("是/否", "是否继续？")
-if result:
-    print("用户选择了是")
-else:
-    print("用户选择了否")
-
-# 弹出重试/取消框
-result = messagebox.askretrycancel("重试/取消", "是否继续？")
-if result:
-    print("用户选择了重试")
-else:
-    print("用户选择了取消")
-
-# 显示主窗口
-root.mainloop()
+    def Send_server(self, genre, source, content):
+        if self.server_status:
+            data = {"genre": genre, "source": source, "data": content,
+                    "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
+            data_json = json.dumps(data)
+            self.server_socket.sendto(data_json.encode("utf-8"), (self.ip_socker, self.port_socker))

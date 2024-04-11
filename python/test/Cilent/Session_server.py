@@ -1,47 +1,43 @@
-import string
 import time
 import socket
-from threading import Thread
-import random
 import json
+import threading
 
 
 class Session_server:
-    def __init__(self, ip_socker, port_socker):
-        self.ip_socker = ip_socker
-        self.port_socker = port_socker
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    def __init__(self):
+        self.ip_socker = "127.0.0.1"
+        self.port_socker = 8000
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_status = False  # 服务器状态
 
-    def Link_server(self):
-        Verification_code = ""
-        for _ in range(20):
-            if random.choice([True, False]):
-                Verification_code += str(random.randint(0, 9))
-            else:
-                Verification_code += random.choice(string.ascii_letters)
-        data = {"genre": "test", "source": "Link_server", "data": Verification_code,
-                "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
-        data_json = json.dumps(data)
-        self.server_socket.sendto(data_json.encode("utf-8"), (self.ip_socker, self.port_socker))
-        receive_content_json = self.server_socket.recv(1024).decode('utf-8')
-        receive_content = json.loads(receive_content_json)
-        if receive_content["data"] == Verification_code:
-            self.server_status = True  # 服务器状态
-            Receive_server_Thread = Thread(target=self.Receive_server)
-            Receive_server_Thread.daemon = True
-            Receive_server_Thread.start()
+        self.link_server_Thread = threading.Thread(target=self.link_server)
+        self.link_server_Thread.start()
 
+        self.receive_server_Thread = threading.Thread(target=self.receive_server)
 
-    def Receive_server(self):
+    def link_server(self):
+        while not self.server_status:
+            try:
+                time.sleep(1)
+                self.server_socket.connect((self.ip_socker, self.port_socker))
+                self.server_status = True
+                if not self.link_server_Thread.is_alive():
+                    self.receive_server_Thread.start()
+            except:
+                self.server_status = False
+
+    def receive_server(self):
         while self.server_status:
-            receive_content_json = self.server_socket.recv(1024).decode('utf-8')  # 追加接收到的数据
-            receive_content = json.loads(receive_content_json)
-            print(receive_content)
+            try:
+                receive_content_json = self.server_socket.recv(1024).decode('utf-8')  # 追加接收到的数据
+                receive_content = json.loads(receive_content_json)
+            except:
+                self.server_status = False
 
-    def Send_server(self, genre, source, content):
+    def send_server(self, genre, target, content):
         if self.server_status:
-            data = {"genre": genre, "source": source, "data": content,
+            data = {"genre": genre, "target": target, "data": content,
                     "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
             data_json = json.dumps(data)
-            self.server_socket.sendto(data_json.encode("utf-8"), (self.ip_socker, self.port_socker))
+            self.server_socket.send(data_json.encode("utf-8"))

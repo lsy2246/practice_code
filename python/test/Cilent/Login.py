@@ -1,7 +1,8 @@
 import wx
 import threading
 import time
-from tkinter import messagebox
+
+from .Session_server import *
 
 
 class LoginFrame(wx.Frame):
@@ -78,9 +79,10 @@ class LoginFrame(wx.Frame):
             self.Layout()
 
 
-class LoginPanel(wx.Panel):
+class LoginPanel(wx.Panel, Session_server):
     def __init__(self, parent):
         super().__init__(parent)
+        Session_server.__init__(self)
         # 主盒子
         main_box = wx.BoxSizer(wx.VERTICAL)
 
@@ -119,16 +121,25 @@ class LoginPanel(wx.Panel):
         bottom_box = wx.BoxSizer(wx.VERTICAL)
         # 登录按钮
         login_box = wx.BoxSizer(wx.VERTICAL)  # 使用垂直盒子布局
-        login_label = wx.Button(self, size=(200, 50), label='登录')
+        self.login_label = wx.Button(self, size=(200, 50), label='登录')
         login_box.AddStretchSpacer()  # 添加一个可伸缩的空间，将登录按钮推到垂直中间
-        login_box.Add(login_label, 0, wx.ALIGN_CENTER_HORIZONTAL)  # 将登录按钮添加到垂直盒子中
+        login_box.Add(self.login_label, 0, wx.ALIGN_CENTER_HORIZONTAL)  # 将登录按钮添加到垂直盒子中
         login_box.AddStretchSpacer()  # 再次添加一个可伸缩的空间，将登录按钮推到垂直中间
         bottom_box.Add(login_box, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_CENTER_HORIZONTAL)  # 将垂直盒子添加到底部盒子中，设置垂直和水平居中对齐
         main_box.Add(bottom_box, 1, wx.EXPAND)  # 将底部盒子添加到主盒子中，使其填满剩余空间
 
+        # 按钮绑定
+        self.Bind(wx.EVT_BUTTON, self.send_login_button, self.login_label)
+
         self.SetSizer(main_box)
 
-
+    def send_login_button(self, event):
+        account = self.account_text.GetValue().strip()
+        password = self.password_text.GetValue().strip()
+        content = {'account': account, 'password': password}
+        target = "服务器"
+        genre = "登录"
+        self.send_server(genre=genre, target=target, content=content)
 
 
 class RegisterPanel(wx.Panel):
