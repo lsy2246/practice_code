@@ -1,59 +1,52 @@
-import string
-import threading
-import time
-import socket
-import random
-import json
-import concurrent.futures
+import wx
 
 
-class Session_server:
-    def __init__(self, ip_socker, port_socker):
-        self.ip_socker = ip_socker
-        self.port_socker = port_socker
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.server_status = False  # 服务器状态
+class MultiPanelFrame(wx.Frame):
+    def __init__(self):
+        super().__init__(None, title="Multi Panel Example", size=(400, 300))
 
-        # 创建线程池
-        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+        self.panel1 = wx.Panel(self)
+        self.panel2 = wx.Panel(self)
+        self.panel3 = wx.Panel(self)
 
-        # 启动连接服务器的任务
-        self.executor.submit(self.Link_server)
+        self.panel1.SetBackgroundColour(wx.Colour(255, 0, 0))  # Red
+        self.panel2.SetBackgroundColour(wx.Colour(0, 255, 0))  # Green
+        self.panel3.SetBackgroundColour(wx.Colour(0, 0, 255))  # Blue
 
-    def Link_server(self):
-        while True:
-            Verification_code = ""
-            for _ in range(20):
-                if random.choice([True, False]):
-                    Verification_code += str(random.randint(0, 9))
-                else:
-                    Verification_code += random.choice(string.ascii_letters)
-            data = {"genre": "test", "source": "Link_server", "data": Verification_code,
-                    "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
-            data_json = json.dumps(data)
-            self.server_socket.sendto(data_json.encode("utf-8"), (self.ip_socker, self.port_socker))
-            try:
-                receive_content_json = self.server_socket.recv(1024).decode('utf-8')
-                receive_content = json.loads(receive_content_json)
-                if receive_content["data"] == Verification_code:
-                    self.server_status = True  # 服务器状态
-                    # 启动接收服务器响应的任务
-                    self.executor.submit(self.Receive_server)
-                else:
-                    self.server_status = False
-            except:
-                self.server_status = False
-            time.sleep(60)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(self.panel1, 1, wx.EXPAND)
+        self.sizer.Add(self.panel2, 1, wx.EXPAND)
+        self.sizer.Add(self.panel3, 1, wx.EXPAND)
 
-    def Receive_server(self):
-        while self.server_status:
-            receive_content_json = self.server_socket.recv(1024).decode('utf-8')  # 追加接收到的数据
-            receive_content = json.loads(receive_content_json)
-            print(receive_content)
+        self.panel1.Show()
+        self.panel2.Hide()
+        self.panel3.Hide()
 
-    def Send_server(self, genre, source, content):
-        if self.server_status:
-            data = {"genre": genre, "source": source, "data": content,
-                    "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
-            data_json = json.dumps(data)
-            self.server_socket.sendto(data_json.encode("utf-8"), (self.ip_socker, self.port_socker))
+        self.SetSizer(self.sizer)
+
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key_press)
+
+    def on_key_press(self, event):
+        key = event.GetKeyCode()
+        if key == ord('1'):
+            self.panel1.Show()
+            self.panel2.Hide()
+            self.panel3.Hide()
+            self.Layout()
+        elif key == ord('2'):
+            self.panel1.Hide()
+            self.panel2.Show()
+            self.panel3.Hide()
+            self.Layout()
+        elif key == ord('3'):
+            self.panel1.Hide()
+            self.panel2.Hide()
+            self.panel3.Show()
+            self.Layout()
+
+
+if __name__ == "__main__":
+    app = wx.App()
+    frame = MultiPanelFrame()
+    frame.Show()
+    app.MainLoop()
