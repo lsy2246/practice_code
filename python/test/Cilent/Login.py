@@ -54,7 +54,6 @@ class LoginFrame(wx.Frame):
 
         self.SetSizer(self.sizer)
 
-
     def update_status_bar(self, event):
         if self.server_status:
             self.status_bar.SetStatusText("服务器\t已连接", 0)
@@ -137,7 +136,6 @@ class LoginFrame(wx.Frame):
             LoginPanel_main_box.Add(LoginPanel_bottom_box, 1, wx.EXPAND)  # 将底部盒子添加到主盒子中，使其填满剩余空间
 
             self.SetSizer(LoginPanel_main_box)
-
 
     class RegisterPanel(wx.Panel):
         def __init__(self, parent):

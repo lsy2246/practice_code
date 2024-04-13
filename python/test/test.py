@@ -1,52 +1,26 @@
 import wx
 
+app = wx.App()
 
-class MultiPanelFrame(wx.Frame):
-    def __init__(self):
-        super().__init__(None, title="Multi Panel Example", size=(400, 300))
+# 创建一个Frame
+frame = wx.Frame(None, -1, '多行文本弹窗示例', size=(300, 200))
+frame.Center()
 
-        self.panel1 = wx.Panel(self)
-        self.panel2 = wx.Panel(self)
-        self.panel3 = wx.Panel(self)
+# 创建一个Panel
+panel = wx.Panel(frame, -1)
 
-        self.panel1.SetBackgroundColour(wx.Colour(255, 0, 0))  # Red
-        self.panel2.SetBackgroundColour(wx.Colour(0, 255, 0))  # Green
-        self.panel3.SetBackgroundColour(wx.Colour(0, 0, 255))  # Blue
+# 创建一个按钮
+button = wx.Button(panel, -1, '点击弹窗', pos=(100, 50))
 
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.panel1, 1, wx.EXPAND)
-        self.sizer.Add(self.panel2, 1, wx.EXPAND)
-        self.sizer.Add(self.panel3, 1, wx.EXPAND)
+# 定义按钮的点击事件处理函数
+def on_button_click(event):
+    message = "这是一个多行文本的弹窗。\n第二行文本。\n第三行文本。"
+    dlg = wx.MessageDialog(frame, message, '多行文本提示', wx.OK | wx.ICON_INFORMATION)
+    dlg.ShowModal()
+    dlg.Destroy()
 
-        self.panel1.Show()
-        self.panel2.Hide()
-        self.panel3.Hide()
+# 绑定按钮的点击事件
+button.Bind(wx.EVT_BUTTON, on_button_click)
 
-        self.SetSizer(self.sizer)
-
-        self.Bind(wx.EVT_CHAR_HOOK, self.on_key_press)
-
-    def on_key_press(self, event):
-        key = event.GetKeyCode()
-        if key == ord('1'):
-            self.panel1.Show()
-            self.panel2.Hide()
-            self.panel3.Hide()
-            self.Layout()
-        elif key == ord('2'):
-            self.panel1.Hide()
-            self.panel2.Show()
-            self.panel3.Hide()
-            self.Layout()
-        elif key == ord('3'):
-            self.panel1.Hide()
-            self.panel2.Hide()
-            self.panel3.Show()
-            self.Layout()
-
-
-if __name__ == "__main__":
-    app = wx.App()
-    frame = MultiPanelFrame()
-    frame.Show()
-    app.MainLoop()
+frame.Show()
+app.MainLoop()

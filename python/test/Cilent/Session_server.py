@@ -26,20 +26,25 @@ class Session_server:
                     self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     self.server_socket.connect((self.socker_ip, self.socker_port))
                     self.server_status = True
-                    if not self.link_server_Thread.is_alive():
-                        print("Server")
+                    if not self.receive_server_Thread.is_alive():
                         self.receive_server_Thread.start()
                 except Exception as a:
                     self.server_status = False
-                    print("连接错误:"+str(a))
+                    print("连接错误:" + str(a))
+
+    def login_page_receive(self, receive_content):
+        pass
 
     def receive_server(self):
         while self.server_status:
             try:
-                receive_content_json = self.server_socket.recv(10240).decode('utf-8')  # 追加接收到的数据
+                receive_content_json = self.server_socket.recv(1024).decode('utf-8')
                 receive_content = json.loads(receive_content_json)
+                if receive_content["genre"] in ['注册', '登录']:
+                    self.login_page_receive(receive_content)
+                print(receive_content)
             except Exception as a:
-                print("接收错误:"+str(a))
+                print("接收错误:" + str(a))
                 self.server_status = False
 
     def send_server(self, genre, target, content):
@@ -50,6 +55,5 @@ class Session_server:
                 data_json = json.dumps(data)
                 self.server_socket.send(data_json.encode("utf-8"))
             except Exception as a:
-                print("发送错误:"+str(a))
+                print("发送错误:" + str(a))
                 self.server_status = False
-

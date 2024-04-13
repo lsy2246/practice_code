@@ -1,6 +1,5 @@
 import time
 import socket
-import random
 import json
 import threading
 
@@ -27,31 +26,43 @@ class link_client:
                 pass
 
     def send_client(self, client_socket, genre, target, content):
-        if client_socket in self.client_socket_dict:
-            try:
-                data = {"genre": genre, "target": target, "data": content,
-                        "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
-                data_json = json.dumps(data)
-                client_socket.send(data_json.encode("utf-8"))
-            except Exception as a:
-                print("发送错误:" + str(a))
+        try:
+            data = {"genre": genre, "target": target, "data": content,
+                    "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
+            data_json = json.dumps(data)
+            client_socket.send(data_json.encode("utf-8"))
+        except:
+            client_socket.close()
 
     def pick_data(self, data):
         pass
 
     def recv_client(self, client_socket):
-        while True:
+        state = True
+        while state:
             try:
                 data_json = client_socket.recv(1024).decode('utf-8')
                 data = json.loads(data_json)
-                print(data_json["genre"])
-                if data_json["genre"] == '登录':
+                if data["genre"] == '登录':
                     content = self.pick_data(data)
-                    print(content['state'])
-                    if content['state'] == 0:
-                        self.client_socket_dict[content['user']] = client_socket
-                        print(self.client_socket_dict[content['user']])
+                    if data['data']['account'] not in self.client_socket_dict:
+                        if content == 0:
+                            self.client_socket_dict[data['data']['account']] = client_socket
+                            self.alter_state(data['data']['account'], "在线")
+                        self.send_client(client_socket, data["genre"], '客户端', content)
+                    else:
+                        self.send_client(client_socket, data["genre"], '客户端', -1)
+                elif data["genre"] == '注册':
+                    content = self.pick_data(data)
+                    self.send_client(client_socket, data["genre"], '客户端', content)
                 else:
                     self.pick_data(data)
             except:
-                client_socket.close()
+                try:
+                    client_socket.close()
+                finally:
+                    state = False
+                    self.alter_state(client_socket, "离线")
+
+    def alter_state(self, client_socket, state):
+        pass
