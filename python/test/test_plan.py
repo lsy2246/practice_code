@@ -1,8 +1,9 @@
 import wx
-from Client import Client_main
+from Client.Chat_main import ChatFrame
 
 if __name__ == '__main__':
     app = wx.App()
-    frame = Client_main()
+    frame = ChatFrame()
     frame.Show()
     app.MainLoop()
+

@@ -57,3 +57,4 @@ class Session_server:
             except Exception as a:
                 print("发送错误:" + str(a))
                 self.server_status = False
+

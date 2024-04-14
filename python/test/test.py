@@ -1,26 +1,34 @@
-import wx
+# 服务端
+import socket
+import cv2
+import pickle
+import struct
 
-app = wx.App()
+HOST = '127.0.0.1'  # 服务器IP地址
+PORT = 65432        # 监听端口
 
-# 创建一个Frame
-frame = wx.Frame(None, -1, '多行文本弹窗示例', size=(300, 200))
-frame.Center()
+# 创建Socket
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.bind((HOST, PORT))
+server_socket.listen(5)
 
-# 创建一个Panel
-panel = wx.Panel(frame, -1)
+# 接受客户端连接
+connection, address = server_socket.accept()
+print('Connected by', address)
 
-# 创建一个按钮
-button = wx.Button(panel, -1, '点击弹窗', pos=(100, 50))
+# 使用OpenCV捕获视频
+cap = cv2.VideoCapture(0)
 
-# 定义按钮的点击事件处理函数
-def on_button_click(event):
-    message = "这是一个多行文本的弹窗。\n第二行文本。\n第三行文本。"
-    dlg = wx.MessageDialog(frame, message, '多行文本提示', wx.OK | wx.ICON_INFORMATION)
-    dlg.ShowModal()
-    dlg.Destroy()
+while True:
+    ret, frame = cap.read()
+    # 将视频帧序列化
+    data = pickle.dumps(frame)
+    # 将序列化的数据封装成一个结构体
+    message = struct.pack("Q", len(data)) + data
+    # 发送数据到客户端
+    connection.sendall(message)
 
-# 绑定按钮的点击事件
-button.Bind(wx.EVT_BUTTON, on_button_click)
-
-frame.Show()
-app.MainLoop()
+# 释放资源
+connection.close()
+server_socket.close()
+cap.release()

@@ -31,13 +31,18 @@ class Client_main(LoginFrame, Session_server):
 
     def login_page_receive(self, receive_content):
         if receive_content["genre"] == '登录':
-            if receive_content["data"] == 0:
-                wx.MessageBox('登录成功', '登录', wx.OK | wx.ICON_INFORMATION)
-            elif receive_content["data"] == -1:
-                wx.MessageBox('重复登录', '登录', wx.OK | wx.ICON_INFORMATION)
-            elif receive_content["data"] == 1:
-                wx.MessageBox('密码错误', '登录', wx.OK | wx.ICON_INFORMATION)
-            elif receive_content["data"] == 2:
-                wx.MessageBox('未找到该账号', '登录', wx.OK | wx.ICON_INFORMATION)
+            match receive_content["data"]:
+                case 0:
+                    wx.MessageBox('登录成功', '登录', wx.OK | wx.ICON_INFORMATION)
+                case -1:
+                    wx.MessageBox('重复登录', '登录', wx.OK | wx.ICON_INFORMATION)
+                case 1:
+                    wx.MessageBox('密码错误', '登录', wx.OK | wx.ICON_INFORMATION)
+                case 2:
+                    wx.MessageBox('未找到该账号', '登录', wx.OK | wx.ICON_INFORMATION)
         elif receive_content["genre"] == '注册':
-            wx.MessageBox(f'注册成功\n网名 : {receive_content["data"]['NetName']} \n账号 : {receive_content["data"]['Id']} \n密码 : {receive_content["data"]['Password']}', '注册', wx.OK | wx.ICON_INFORMATION)
+            wx.MessageBox(
+                f'注册成功\n网名 : {receive_content["data"]['NetName']} \n账号 : {receive_content["data"]['Id']} \n密码 : {receive_content["data"]['Password']}',
+                '注册', wx.OK | wx.ICON_INFORMATION)
+
+
