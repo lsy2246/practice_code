@@ -1,3 +1,5 @@
+import json
+import multiprocessing
 import wx
 import threading
 import time
@@ -6,6 +8,11 @@ import time
 class LoginFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, id=1001, title='登录', pos=wx.DefaultPosition, size=(380, 300))
+        self.queue_in = multiprocessing.Queue()
+        self.queue_out = multiprocessing.Queue()
+
+        self.queue_thread = threading.Thread(target=self.queue_recv)
+        self.queue_thread.start()
 
         # 创建菜单栏
         menu_bar = wx.MenuBar()
@@ -42,8 +49,8 @@ class LoginFrame(wx.Frame):
 
         # 创建注册面板
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.login_panel = self.LoginPanel(self)
-        self.register_panel = self.RegisterPanel(self)
+        self.login_panel = LoginPanel(self)
+        self.register_panel = RegisterPanel(self)
         self.sizer.Add(self.login_panel, 1, wx.EXPAND)
         self.sizer.Add(self.register_panel, 1, wx.EXPAND)
 
@@ -51,6 +58,10 @@ class LoginFrame(wx.Frame):
         self.register_panel.Hide()
 
         self.login_panel.Show()
+
+        # 主页按钮绑定
+        self.Bind(wx.EVT_BUTTON, self.send_login_button, self.login_panel.LoginPanel_login_label)
+        self.Bind(wx.EVT_BUTTON, self.send_register_button, self.register_panel.RegisterPanel_login_label)
 
         self.SetSizer(self.sizer)
 
@@ -84,111 +95,170 @@ class LoginFrame(wx.Frame):
             self.register_panel.Hide()
             self.Layout()
 
-    class LoginPanel(wx.Panel):
-        def __init__(self, parent):
-            super().__init__(parent)
-            # 主盒子
-            LoginPanel_main_box = wx.BoxSizer(wx.VERTICAL)
+    def login_page_receive(self, receive_content):
+        if receive_content["genre"] == '登录':
+            match receive_content["data"]:
+                case 0:
+                    # 关闭当前框架
+                    self.Close()
+                case -1:
+                    wx.MessageBox('重复登录', '登录', wx.OK | wx.ICON_INFORMATION)
+                case 1:
+                    wx.MessageBox('密码错误', '登录', wx.OK | wx.ICON_INFORMATION)
+                case 2:
+                    wx.MessageBox('未找到该账号', '登录', wx.OK | wx.ICON_INFORMATION)
+        elif receive_content["genre"] == '注册':
+            wx.MessageBox(
+                f'注册成功\n网名 : {receive_content["data"]['NetName']} \n账号 : {receive_content["data"]['Id']} \n密码 : {receive_content["data"]['Password']}',
+                '注册', wx.OK | wx.ICON_INFORMATION)
 
-            # 顶部盒子,目前只放了软件名
-            LoginPanel_top_box = wx.BoxSizer(wx.VERTICAL)  # 使用垂直盒子
-            LoginPanel_show_title = wx.StaticText(self, label='登录')
-            LoginPanel_show_title.SetFont(wx.Font(30, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            LoginPanel_top_box.Add(LoginPanel_show_title, 1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
-            LoginPanel_main_box.Add(LoginPanel_top_box, 0, wx.EXPAND)
+    def queue_send(self, function, content):
+        data = json.dumps({"function": function, "content": content})
+        self.queue_out.put(data)
 
-            # 中部盒子,放账号和密码
-            LoginPanel_content_box = wx.BoxSizer(wx.VERTICAL)
-            # 账号
-            LoginPanel_account_box = wx.BoxSizer(wx.HORIZONTAL)
-            LoginPanel_account_label = wx.StaticText(self, label=' 账号:')
-            LoginPanel_account_label.SetFont(
-                wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            LoginPanel_account_box.Add(LoginPanel_account_label, 0, wx.ALIGN_CENTER_VERTICAL)
-            self.LoginPanel_account_text = wx.TextCtrl(self, size=(300, 30))
-            self.LoginPanel_account_text.SetHint('请输入账号')
-            LoginPanel_account_box.Add(self.LoginPanel_account_text, 1, wx.ALIGN_CENTER_VERTICAL)
-            LoginPanel_content_box.Add(LoginPanel_account_box)
-            # 添加空白控件来增加间距
-            LoginPanel_content_box.Add(wx.StaticText(self, label=''), 0, wx.ALL, 5)
-            # 密码
-            LoginPanel_password_box = wx.BoxSizer(wx.HORIZONTAL)
-            LoginPanel_password_label = wx.StaticText(self, label=' 密码:')
-            LoginPanel_password_label.SetFont(
-                wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            LoginPanel_password_box.Add(LoginPanel_password_label, 0, wx.ALIGN_CENTER_VERTICAL)
-            self.LoginPanel_password_text = wx.TextCtrl(self, size=(300, 30))
-            self.LoginPanel_password_text.SetHint('请输入密码')
-            LoginPanel_password_box.Add(self.LoginPanel_password_text, 1, wx.ALIGN_CENTER_VERTICAL)
-            LoginPanel_content_box.Add(LoginPanel_password_box)
-            LoginPanel_main_box.Add(LoginPanel_content_box, 0, wx.EXPAND)
+    def queue_recv(self):
+        while True:
+            try:
+                data_json = self.queue_in.get()
+                data = json.loads(data_json)
+                self.queue_pick(data)
+            except Exception as e:
+                print("Error in queue_recv:", e)
 
-            # 底部盒子
-            LoginPanel_bottom_box = wx.BoxSizer(wx.VERTICAL)
-            # 登录按钮
-            LoginPanel_login_box = wx.BoxSizer(wx.VERTICAL)  # 使用垂直盒子布局
-            self.LoginPanel_login_label = wx.Button(self, size=(200, 50), label='登录')
-            LoginPanel_login_box.AddStretchSpacer()  # 添加一个可伸缩的空间，将登录按钮推到垂直中间
-            LoginPanel_login_box.Add(self.LoginPanel_login_label, 0, wx.ALIGN_CENTER_HORIZONTAL)  # 将登录按钮添加到垂直盒子中
-            LoginPanel_login_box.AddStretchSpacer()  # 再次添加一个可伸缩的空间，将登录按钮推到垂直中间
-            LoginPanel_bottom_box.Add(LoginPanel_login_box, 1,
-                                      wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_CENTER_HORIZONTAL)  # 将垂直盒子添加到底部盒子中，设置垂直和水平居中对齐
-            LoginPanel_main_box.Add(LoginPanel_bottom_box, 1, wx.EXPAND)  # 将底部盒子添加到主盒子中，使其填满剩余空间
+    def queue_pick(self, data):
+        match data["function"]:
+            case "server_status":
+                self.server_status = data["content"]
+            case "login_page_receive":
+                self.login_page_receive(data["content"])
 
-            self.SetSizer(LoginPanel_main_box)
+    def send_login_button(self, event):
+        if self.server_status:
+            account = self.login_panel.LoginPanel_account_text.GetValue().strip()
+            password = self.login_panel.LoginPanel_password_text.GetValue().strip()
+            content = {'account': account, 'password': password}
+            target = "服务器"
+            genre = "登录"
+            data = {"genre": genre, "target": target, "content": content}
+            self.queue_send("send_server", data)
 
-    class RegisterPanel(wx.Panel):
-        def __init__(self, parent):
-            super().__init__(parent)
+    def send_register_button(self, event):
+        if self.server_status:
+            account = self.register_panel.RegisterPanel_account_text.GetValue().strip()
+            password = self.register_panel.RegisterPanel_password_text.GetValue().strip()
+            content = {'account': account, 'password': password}
+            target = "服务器"
+            genre = "注册"
+            data = {"genre": genre, "target": target, "content": content}
+            self.queue_send("send_server", data)
 
-            # 主盒子
-            RegisterPanel_main_box = wx.BoxSizer(wx.VERTICAL)
 
-            # 顶部盒子,目前只放了软件名
-            RegisterPanel_top_box = wx.BoxSizer(wx.VERTICAL)  # 使用垂直盒子
-            RegisterPanel_show_title = wx.StaticText(self, label='注册')
-            RegisterPanel_show_title.SetFont(
-                wx.Font(30, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            RegisterPanel_top_box.Add(RegisterPanel_show_title, 1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
-            RegisterPanel_main_box.Add(RegisterPanel_top_box, 0, wx.EXPAND)
+class LoginPanel(wx.Panel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        # 主盒子
+        LoginPanel_main_box = wx.BoxSizer(wx.VERTICAL)
 
-            # 中部盒子,放账号和密码
-            RegisterPanel_content_box = wx.BoxSizer(wx.VERTICAL)
-            # 账号
-            RegisterPanel_account_box = wx.BoxSizer(wx.HORIZONTAL)
-            RegisterPanel_account_label = wx.StaticText(self, label=' 用户名:')
-            RegisterPanel_account_label.SetFont(
-                wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            RegisterPanel_account_box.Add(RegisterPanel_account_label, 0, wx.ALIGN_CENTER_VERTICAL)
-            self.RegisterPanel_account_text = wx.TextCtrl(self, size=(300, 30))
-            self.RegisterPanel_account_text.SetHint('请输入用户名')
-            RegisterPanel_account_box.Add(self.RegisterPanel_account_text, 1, wx.ALIGN_CENTER_VERTICAL)
-            RegisterPanel_content_box.Add(RegisterPanel_account_box)
-            # 添加空白控件来增加间距
-            RegisterPanel_content_box.Add(wx.StaticText(self, label=''), 0, wx.ALL, 5)
-            # 密码
-            RegisterPanel_password_box = wx.BoxSizer(wx.HORIZONTAL)
-            RegisterPanel_password_label = wx.StaticText(self, label=' 密码:  ')
-            RegisterPanel_password_label.SetFont(
-                wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
-            RegisterPanel_password_box.Add(RegisterPanel_password_label, 0, wx.ALIGN_CENTER_VERTICAL)
-            self.RegisterPanel_password_text = wx.TextCtrl(self, size=(300, 30))
-            self.RegisterPanel_password_text.SetHint('请输入密码')
-            RegisterPanel_password_box.Add(self.RegisterPanel_password_text, 1, wx.ALIGN_CENTER_VERTICAL)
-            RegisterPanel_content_box.Add(RegisterPanel_password_box)
-            RegisterPanel_main_box.Add(RegisterPanel_content_box, 0, wx.EXPAND)
+        # 顶部盒子,目前只放了软件名
+        LoginPanel_top_box = wx.BoxSizer(wx.VERTICAL)  # 使用垂直盒子
+        LoginPanel_show_title = wx.StaticText(self, label='登录')
+        LoginPanel_show_title.SetFont(wx.Font(30, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        LoginPanel_top_box.Add(LoginPanel_show_title, 1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+        LoginPanel_main_box.Add(LoginPanel_top_box, 0, wx.EXPAND)
 
-            # 底部盒子
-            RegisterPanel_bottom_box = wx.BoxSizer(wx.VERTICAL)
-            # 登录按钮
-            RegisterPanel_register_box = wx.BoxSizer(wx.VERTICAL)  # 使用垂直盒子布局
-            self.RegisterPanel_login_label = wx.Button(self, size=(200, 50), label='确认')
-            RegisterPanel_register_box.AddStretchSpacer()  # 添加一个可伸缩的空间，将登录按钮推到垂直中间
-            RegisterPanel_register_box.Add(self.RegisterPanel_login_label, 0,
-                                           wx.ALIGN_CENTER_HORIZONTAL)  # 将登录按钮添加到垂直盒子中
-            RegisterPanel_register_box.AddStretchSpacer()  # 再次添加一个可伸缩的空间，将登录按钮推到垂直中间
-            RegisterPanel_bottom_box.Add(RegisterPanel_register_box, 1,
-                                         wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_CENTER_HORIZONTAL)  # 将垂直盒子添加到底部盒子中，设置垂直和水平居中对齐
-            RegisterPanel_main_box.Add(RegisterPanel_bottom_box, 1, wx.EXPAND)  # 将底部盒子添加到主盒子中，使其填满剩余空间
+        # 中部盒子,放账号和密码
+        LoginPanel_content_box = wx.BoxSizer(wx.VERTICAL)
+        # 账号
+        LoginPanel_account_box = wx.BoxSizer(wx.HORIZONTAL)
+        LoginPanel_account_label = wx.StaticText(self, label=' 账号:')
+        LoginPanel_account_label.SetFont(
+            wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        LoginPanel_account_box.Add(LoginPanel_account_label, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.LoginPanel_account_text = wx.TextCtrl(self, size=(300, 30))
+        self.LoginPanel_account_text.SetHint('请输入账号')
+        LoginPanel_account_box.Add(self.LoginPanel_account_text, 1, wx.ALIGN_CENTER_VERTICAL)
+        LoginPanel_content_box.Add(LoginPanel_account_box)
+        # 添加空白控件来增加间距
+        LoginPanel_content_box.Add(wx.StaticText(self, label=''), 0, wx.ALL, 5)
+        # 密码
+        LoginPanel_password_box = wx.BoxSizer(wx.HORIZONTAL)
+        LoginPanel_password_label = wx.StaticText(self, label=' 密码:')
+        LoginPanel_password_label.SetFont(
+            wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        LoginPanel_password_box.Add(LoginPanel_password_label, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.LoginPanel_password_text = wx.TextCtrl(self, size=(300, 30))
+        self.LoginPanel_password_text.SetHint('请输入密码')
+        LoginPanel_password_box.Add(self.LoginPanel_password_text, 1, wx.ALIGN_CENTER_VERTICAL)
+        LoginPanel_content_box.Add(LoginPanel_password_box)
+        LoginPanel_main_box.Add(LoginPanel_content_box, 0, wx.EXPAND)
 
-            self.SetSizer(RegisterPanel_main_box)
+        # 底部盒子
+        LoginPanel_bottom_box = wx.BoxSizer(wx.VERTICAL)
+        # 登录按钮
+        LoginPanel_login_box = wx.BoxSizer(wx.VERTICAL)  # 使用垂直盒子布局
+        self.LoginPanel_login_label = wx.Button(self, size=(200, 50), label='登录')
+        LoginPanel_login_box.AddStretchSpacer()  # 添加一个可伸缩的空间，将登录按钮推到垂直中间
+        LoginPanel_login_box.Add(self.LoginPanel_login_label, 0, wx.ALIGN_CENTER_HORIZONTAL)  # 将登录按钮添加到垂直盒子中
+        LoginPanel_login_box.AddStretchSpacer()  # 再次添加一个可伸缩的空间，将登录按钮推到垂直中间
+        LoginPanel_bottom_box.Add(LoginPanel_login_box, 1,
+                                  wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_CENTER_HORIZONTAL)  # 将垂直盒子添加到底部盒子中，设置垂直和水平居中对齐
+        LoginPanel_main_box.Add(LoginPanel_bottom_box, 1, wx.EXPAND)  # 将底部盒子添加到主盒子中，使其填满剩余空间
+
+        self.SetSizer(LoginPanel_main_box)
+
+
+class RegisterPanel(wx.Panel):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        # 主盒子
+        RegisterPanel_main_box = wx.BoxSizer(wx.VERTICAL)
+
+        # 顶部盒子,目前只放了软件名
+        RegisterPanel_top_box = wx.BoxSizer(wx.VERTICAL)  # 使用垂直盒子
+        RegisterPanel_show_title = wx.StaticText(self, label='注册')
+        RegisterPanel_show_title.SetFont(
+            wx.Font(30, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        RegisterPanel_top_box.Add(RegisterPanel_show_title, 1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+        RegisterPanel_main_box.Add(RegisterPanel_top_box, 0, wx.EXPAND)
+
+        # 中部盒子,放账号和密码
+        RegisterPanel_content_box = wx.BoxSizer(wx.VERTICAL)
+        # 账号
+        RegisterPanel_account_box = wx.BoxSizer(wx.HORIZONTAL)
+        RegisterPanel_account_label = wx.StaticText(self, label=' 用户名:')
+        RegisterPanel_account_label.SetFont(
+            wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        RegisterPanel_account_box.Add(RegisterPanel_account_label, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.RegisterPanel_account_text = wx.TextCtrl(self, size=(300, 30))
+        self.RegisterPanel_account_text.SetHint('请输入用户名')
+        RegisterPanel_account_box.Add(self.RegisterPanel_account_text, 1, wx.ALIGN_CENTER_VERTICAL)
+        RegisterPanel_content_box.Add(RegisterPanel_account_box)
+        # 添加空白控件来增加间距
+        RegisterPanel_content_box.Add(wx.StaticText(self, label=''), 0, wx.ALL, 5)
+        # 密码
+        RegisterPanel_password_box = wx.BoxSizer(wx.HORIZONTAL)
+        RegisterPanel_password_label = wx.StaticText(self, label=' 密码:  ')
+        RegisterPanel_password_label.SetFont(
+            wx.Font(15, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+        RegisterPanel_password_box.Add(RegisterPanel_password_label, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.RegisterPanel_password_text = wx.TextCtrl(self, size=(300, 30))
+        self.RegisterPanel_password_text.SetHint('请输入密码')
+        RegisterPanel_password_box.Add(self.RegisterPanel_password_text, 1, wx.ALIGN_CENTER_VERTICAL)
+        RegisterPanel_content_box.Add(RegisterPanel_password_box)
+        RegisterPanel_main_box.Add(RegisterPanel_content_box, 0, wx.EXPAND)
+
+        # 底部盒子
+        RegisterPanel_bottom_box = wx.BoxSizer(wx.VERTICAL)
+        # 登录按钮
+        RegisterPanel_register_box = wx.BoxSizer(wx.VERTICAL)  # 使用垂直盒子布局
+        self.RegisterPanel_login_label = wx.Button(self, size=(200, 50), label='确认')
+        RegisterPanel_register_box.AddStretchSpacer()  # 添加一个可伸缩的空间，将登录按钮推到垂直中间
+        RegisterPanel_register_box.Add(self.RegisterPanel_login_label, 0,
+                                       wx.ALIGN_CENTER_HORIZONTAL)  # 将登录按钮添加到垂直盒子中
+        RegisterPanel_register_box.AddStretchSpacer()  # 再次添加一个可伸缩的空间，将登录按钮推到垂直中间
+        RegisterPanel_bottom_box.Add(RegisterPanel_register_box, 1,
+                                     wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_CENTER_HORIZONTAL)  # 将垂直盒子添加到底部盒子中，设置垂直和水平居中对齐
+        RegisterPanel_main_box.Add(RegisterPanel_bottom_box, 1, wx.EXPAND)  # 将底部盒子添加到主盒子中，使其填满剩余空间
+
+        self.SetSizer(RegisterPanel_main_box)

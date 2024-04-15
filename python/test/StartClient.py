@@ -1,8 +1,5 @@
 import wx
-from Client import Client_main
+from Client import start_all
 
 if __name__ == '__main__':
-    app = wx.App()
-    frame = Client_main()
-    frame.Show()
-    app.MainLoop()
+    start_all()

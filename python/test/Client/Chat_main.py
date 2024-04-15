@@ -1,11 +1,14 @@
 import wx
+import wx.aui
 import wx.lib.scrolledpanel as scrolled
-import threading
+import time
+import multiprocessing
 
 
 class ChatFrame(wx.Frame):
     def __init__(self):
-        super().__init__(None, size=(1000, 700))
+        super().__init__(None, size=(800, 600), title="客户端")
+
 
         ChatMain_Panel = wx.Panel(self, style=wx.BORDER_SUNKEN)
         ChatMain_box = wx.BoxSizer(wx.HORIZONTAL)
@@ -14,7 +17,7 @@ class ChatFrame(wx.Frame):
         Function_Panel = wx.Panel(ChatMain_Panel, style=wx.BORDER_RAISED)
         Function_box = wx.BoxSizer(wx.VERTICAL)
         Function_Panel.SetSizer(Function_box)
-        Function_Panel.SetBackgroundColour(wx.Colour(242, 242, 242))
+        Function_Panel.SetBackgroundColour(wx.Colour(240, 240, 240))
 
         image_chat = r'./Client/image/chat.png'
         Chat_bitmap = wx.Bitmap(image_chat, wx.BITMAP_TYPE_PNG)
@@ -23,7 +26,7 @@ class ChatFrame(wx.Frame):
         Function_box.Add(Chat_bitmap_static, 1, wx.EXPAND, 0)
         Chat_bitmap_static.Bind(wx.EVT_LEFT_DOWN, self.click_chat_button)
 
-        Function_box.AddSpacer(30)  # 调整这个数字以改变间距大小
+        Function_box.AddSpacer(20)  # 调整这个数字以改变间距大小
 
         image_connect = r'./Client/image/connect.png'
         connect_bitmap = wx.Bitmap(image_connect, wx.BITMAP_TYPE_PNG)
@@ -32,7 +35,7 @@ class ChatFrame(wx.Frame):
         Function_box.Add(connect_bitmap_static, 1, wx.EXPAND, 0)
         connect_bitmap_static.Bind(wx.EVT_LEFT_DOWN, self.click_connect_button)
 
-        Function_box.AddSpacer(28)  # 调整这个数字以改变间距大小
+        Function_box.AddSpacer(20)  # 调整这个数字以改变间距大小
 
         image_find = r'./Client/image/find.png'
         find_bitmap = wx.Bitmap(image_find, wx.BITMAP_TYPE_PNG)
@@ -41,7 +44,7 @@ class ChatFrame(wx.Frame):
         Function_box.Add(find_bitmap_static, 1, wx.EXPAND, 0)
         find_bitmap_static.Bind(wx.EVT_LEFT_DOWN, self.click_find_button)
 
-        Function_box.AddSpacer(340)  # 调整这个数字以改变间距大小
+        Function_box.AddSpacer(280)  # 调整这个数字以改变间距大小
 
         image_site = r'./Client/image/site.png'
         site_bitmap = wx.Bitmap(image_site, wx.BITMAP_TYPE_PNG)
@@ -56,29 +59,65 @@ class ChatFrame(wx.Frame):
 
         operate_box = wx.BoxSizer(wx.VERTICAL)
 
-        chat_page = self.ChatPage(ChatMain_Panel)  # 将 ChatMain_Panel 作为 ChatPage 的 parent
-        operate_box.Add(chat_page, 1, wx.EXPAND, 0)
+        self.chat_page = self.ChatPage(ChatMain_Panel)  # 将 ChatMain_Panel 作为 ChatPage 的 parent
+        operate_box.Add(self.chat_page, 1, wx.EXPAND, 5)
+        self.chat_page.Hide()
 
-        ChatMain_box.Add(operate_box, 0, wx.EXPAND, 0)
+        self.connect_page = self.ConnectPage(ChatMain_Panel)
+        operate_box.Add(self.connect_page, 1, wx.EXPAND, 5)
+        self.connect_page.Hide()
+
+        self.site_page = self.SitePage(ChatMain_Panel)
+        operate_box.Add(self.site_page, 1, wx.EXPAND, 5)
+        self.site_page.Hide()
+
+        self.find_page = self.FindPage(ChatMain_Panel)
+        operate_box.Add(self.find_page, 1, wx.EXPAND, 5)
+        self.find_page.Hide()
+
+        ChatMain_box.Add(operate_box, 1, wx.EXPAND, 5)
+
+        self.chat_page.Show()
 
         ChatMain_Panel.SetSizer(ChatMain_box)
 
     def click_chat_button(self, event):
-        print("点击了聊天")
+        self.chat_page.Hide()
+        self.connect_page.Hide()
+        self.site_page.Hide()
+        self.find_page.Hide()
+        self.chat_page.Show()
+        self.Layout()
 
     def click_connect_button(self, event):
-        print("点击了联系人")
+        self.chat_page.Hide()
+        self.connect_page.Hide()
+        self.site_page.Hide()
+        self.find_page.Hide()
+        self.connect_page.Show()
+        self.Layout()
 
     def click_site_button(self, event):
-        print("点击了设置")
+        self.chat_page.Hide()
+        self.connect_page.Hide()
+        self.site_page.Hide()
+        self.find_page.Hide()
+        self.site_page.Show()
+        self.Layout()
 
     def click_find_button(self, event):
-        print("点击了查找")
+        self.chat_page.Hide()
+        self.connect_page.Hide()
+        self.site_page.Hide()
+        self.find_page.Hide()
+        self.find_page.Show()
+        self.Layout()
 
     class ChatPage(wx.Panel):
         def __init__(self, parent):
             wx.Panel.__init__(self, parent, style=wx.BORDER_SUNKEN)
             ChatPage_main_box = wx.BoxSizer(wx.HORIZONTAL)
+            self.chat_window_id = []
 
             ChatPage_Contact_person_box = wx.BoxSizer(wx.VERTICAL)
             self.ChatPage_Contact_person_panel = scrolled.ScrolledPanel(self, -1, style=wx.SUNKEN_BORDER)
@@ -86,18 +125,89 @@ class ChatFrame(wx.Frame):
             self.ChatPage_Contact_person_panel.SetSizer(wx.BoxSizer(wx.VERTICAL))
             ChatPage_Contact_person_box.Add(self.ChatPage_Contact_person_panel, proportion=1, flag=wx.EXPAND | wx.ALL,
                                             border=5)
-            ChatPage_main_box.Add(ChatPage_Contact_person_box, 0, wx.EXPAND, 0)
+            ChatPage_main_box.Add(ChatPage_Contact_person_box, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
 
-
-            
-
+            self.chat_tab = wx.aui.AuiNotebook(self, style=wx.aui.AUI_NB_CLOSE_ON_ALL_TABS)
+            ChatPage_main_box.Add(self.chat_tab, proportion=3, flag=wx.EXPAND | wx.ALL, border=5)
 
             self.SetSizer(ChatPage_main_box)
 
+        def ChatPage_add_Contact_person(self, Id, Remark, info):
+            ChatPage_add_Contact_person_box = wx.BoxSizer(wx.VERTICAL)
 
-        def ChatPage_add_Contact_person(self,NetName,info):
+            ChatPage_add_Contact_person_top_box = wx.BoxSizer(wx.HORIZONTAL)
+            if len(Remark) > 6:
+                Remark = Remark[:6] + "..."
+            else:
+                Remark += ''.join([" " for i in range(max(0, 9 - len(Remark)))])
+            ChatPage_add_Contact_person_NetName = wx.StaticText(self.ChatPage_Contact_person_panel, -1, Remark)
+            ChatPage_add_Contact_person_top_box.Add(ChatPage_add_Contact_person_NetName, 0, wx.ALIGN_LEFT, 0)
 
+            ChatPage_add_Contact_person_top_box.AddSpacer(20)
 
-            #self.ChatPage_Contact_person_panel.GetSizer().Add(, 0, wx.ALL, 5)
-            self.ChatPage_Contact_person_panel.Layout()  # 重新布局滚动面板
+            ChatPage_add_Contact_person_date = wx.StaticText(self.ChatPage_Contact_person_panel, -1,
+                                                             time.strftime("%Y/%m/%d", time.localtime()))
+            ChatPage_add_Contact_person_top_box.Add(ChatPage_add_Contact_person_date, 0, wx.ALIGN_CENTER_VERTICAL, 0)
+            ChatPage_add_Contact_person_box.Add(ChatPage_add_Contact_person_top_box, 0, wx.EXPAND, 0)
 
+            if len(info) > 10:
+                info = info[:10] + "..."
+            ChatPage_add_Contact_person_info = wx.StaticText(self.ChatPage_Contact_person_panel, -1, info)
+            ChatPage_add_Contact_person_box.Add(ChatPage_add_Contact_person_info, 0, wx.ALIGN_LEFT, 0)
+
+            self.ChatPage_Contact_person_panel.GetSizer().Add(ChatPage_add_Contact_person_box, 0, wx.ALL, 5)
+            self.ChatPage_Contact_person_panel.Layout()
+            self.ChatPage_Contact_person_panel.SetupScrolling()
+
+            ChatPage_add_Contact_person_NetName.Bind(wx.EVT_LEFT_DOWN,
+                                                     lambda event: self.ChatPage_add_Contact_tab(Id, Remark))
+
+        def ChatPage_add_Contact_tab(self, Id, Remark):
+            if Id in self.chat_window_id:
+                return
+            self.chat_window_id.append(Id)
+
+            chat_panel = wx.Panel(self.chat_tab)
+            chat_box = wx.BoxSizer(wx.VERTICAL)
+
+            chat_receive_box = wx.BoxSizer(wx.HORIZONTAL)
+            chat_receive_text = wx.TextCtrl(chat_panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
+            chat_receive_box.Add(chat_receive_text, 1, wx.EXPAND, 0)
+            chat_box.Add(chat_receive_box, 2, wx.EXPAND, 0)
+
+            toolbar = wx.ToolBar(chat_panel)
+            toolbar.SetToolBitmapSize((16, 16))  # Set the size of the toolbar icons
+            toolbar.AddTool(wx.ID_ANY, "Tool", wx.Bitmap(wx.Bitmap(r'./Client/image/picture.png')))
+            toolbar.AddTool(wx.ID_ANY, "Tool", wx.Bitmap(wx.Bitmap(r'./Client/image/file.png')))
+            toolbar.AddTool(wx.ID_ANY, "Tool", wx.Bitmap(wx.Bitmap(r'./Client/image/speech.png')))
+            toolbar.AddTool(wx.ID_ANY, "Tool", wx.Bitmap(wx.Bitmap(r'./Client/image/video.png')))
+            toolbar.Realize()
+            toolbar.SetSize((-1, 30))  # Set the size of the toolbar
+            chat_box.Add(toolbar, 0, wx.EXPAND)
+
+            chat_send_box = wx.BoxSizer(wx.HORIZONTAL)
+            chat_send_text = wx.TextCtrl(chat_panel, style=wx.TE_MULTILINE)
+            chat_send_box.Add(chat_send_text, 1, wx.EXPAND, 0)
+            chat_box.Add(chat_send_box, 1, wx.EXPAND, 0)
+
+            send_button = wx.Button(chat_panel, label='发送')  # Create a send button
+            chat_send_box.Add(send_button, 0, wx.EXPAND | wx.LEFT, 5)  # Add the button to the send box
+
+            chat_panel.SetSizer(chat_box)
+
+            self.chat_tab.AddPage(chat_panel, Remark, select=True)
+
+    class ConnectPage(wx.Panel):
+        def __init__(self, parent):
+            wx.Panel.__init__(self, parent)
+            print("联系人")
+
+    class SitePage(wx.Panel):
+        def __init__(self, parent):
+            wx.Panel.__init__(self, parent)
+            print("设置")
+
+    class FindPage(wx.Panel):
+        def __init__(self, parent):
+            wx.Panel.__init__(self, parent)
+            print("查找")

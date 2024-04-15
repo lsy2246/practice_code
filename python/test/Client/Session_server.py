@@ -1,3 +1,4 @@
+import multiprocessing
 import time
 import socket
 import json
@@ -10,11 +11,40 @@ class Session_server:
         self.socker_port = 8000
         self.server_socket = None
         self.server_status = False  # 服务器状态
+        self.queue_in = multiprocessing.Queue()
+        self.queue_out = multiprocessing.Queue()
+
+        self.queue_thread = threading.Thread(target=self.queue_recv)
+        self.queue_thread.start()
 
         self.link_server_Thread = threading.Thread(target=self.link_server)
         self.link_server_Thread.start()
 
         self.receive_server_Thread = threading.Thread(target=self.receive_server)
+
+    def queue_send(self, function, content):
+        data = json.dumps({"function": function, "content": content})
+        self.queue_out.put(data)
+        print(data)
+
+    def queue_recv(self):
+        while True:
+            try:
+                data_json = self.queue_in.get()
+                data = json.loads(data_json)
+                self.queue_pick(data)
+            except Exception as e:
+                print("Error in queue_recv:", e)
+
+    def queue_pick(self, data):
+        match data["function"]:
+            case "server_status":
+                self.server_status = data["content"]
+            case "send_server":
+                genre = data["content"]["genre"]
+                target = data["content"]["target"]
+                content = data["content"]["content"]
+                self.send_server(genre, target, content)
 
     def link_server(self):
         while True:
@@ -31,9 +61,8 @@ class Session_server:
                 except Exception as a:
                     self.server_status = False
                     print("连接错误:" + str(a))
-
-    def login_page_receive(self, receive_content):
-        pass
+                finally:
+                    self.queue_send("server_status", self.server_status)
 
     def receive_server(self):
         while self.server_status:
@@ -41,11 +70,12 @@ class Session_server:
                 receive_content_json = self.server_socket.recv(1024).decode('utf-8')
                 receive_content = json.loads(receive_content_json)
                 if receive_content["genre"] in ['注册', '登录']:
-                    self.login_page_receive(receive_content)
+                    self.queue_send("login_page_receive", receive_content)
                 print(receive_content)
             except Exception as a:
                 print("接收错误:" + str(a))
                 self.server_status = False
+                self.queue_send("server_status", self.server_status)
 
     def send_server(self, genre, target, content):
         if self.server_status:
@@ -57,4 +87,4 @@ class Session_server:
             except Exception as a:
                 print("发送错误:" + str(a))
                 self.server_status = False
-
+                self.queue_send("server_status", self.server_status)
