@@ -1,50 +1,26 @@
 import multiprocessing
+import os
 import time
 import socket
 import json
 import threading
+from Client.Process_session.Process_Client import ProcessClient
 
 
-class Session_server:
+class Session_server(ProcessClient):
     def __init__(self):
+        ProcessClient.__init__(self)
         self.socker_ip = "127.0.0.1"
         self.socker_port = 8000
         self.server_socket = None
         self.server_status = False  # 服务器状态
-        self.queue_in = multiprocessing.Queue()
-        self.queue_out = multiprocessing.Queue()
-
-        self.queue_thread = threading.Thread(target=self.queue_recv)
-        self.queue_thread.start()
-
         self.link_server_Thread = threading.Thread(target=self.link_server)
         self.link_server_Thread.start()
-
         self.receive_server_Thread = threading.Thread(target=self.receive_server)
 
-    def queue_send(self, function, content):
-        data = json.dumps({"function": function, "content": content})
-        self.queue_out.put(data)
-        print(data)
-
-    def queue_recv(self):
-        while True:
-            try:
-                data_json = self.queue_in.get()
-                data = json.loads(data_json)
-                self.queue_pick(data)
-            except Exception as e:
-                print("Error in queue_recv:", e)
-
-    def queue_pick(self, data):
-        match data["function"]:
-            case "server_status":
-                self.server_status = data["content"]
-            case "send_server":
-                genre = data["content"]["genre"]
-                target = data["content"]["target"]
-                content = data["content"]["content"]
-                self.send_server(genre, target, content)
+        current_file_path = __file__
+        current_file_name = os.path.basename(current_file_path).split('.')[0]
+        self.Process_client_send("Server", "Name", current_file_name)
 
     def link_server(self):
         while True:
@@ -62,7 +38,8 @@ class Session_server:
                     self.server_status = False
                     print("连接错误:" + str(a))
                 finally:
-                    self.queue_send("server_status", self.server_status)
+                    self.Process_client_send("ALL", "server_status", self.server_status)
+                    pass
 
     def receive_server(self):
         while self.server_status:
@@ -70,12 +47,11 @@ class Session_server:
                 receive_content_json = self.server_socket.recv(1024).decode('utf-8')
                 receive_content = json.loads(receive_content_json)
                 if receive_content["genre"] in ['注册', '登录']:
-                    self.queue_send("login_page_receive", receive_content)
-                print(receive_content)
+                    self.Process_client_send("Login", "login_page_receive", receive_content)
             except Exception as a:
                 print("接收错误:" + str(a))
                 self.server_status = False
-                self.queue_send("server_status", self.server_status)
+                self.Process_client_send("ALL", "server_status", self.server_status)
 
     def send_server(self, genre, target, content):
         if self.server_status:
@@ -87,4 +63,13 @@ class Session_server:
             except Exception as a:
                 print("发送错误:" + str(a))
                 self.server_status = False
-                self.queue_send("server_status", self.server_status)
+                self.Process_client_send("ALL", "server_status", self.server_status)
+
+    def Process_client_pick(self, data):
+        if data['target'] in ['ALL', 'Session_server']:
+            match data['function']:
+                case 'server_status':
+                    self.server_status = data['content']
+                    print(self.server_status)
+                case 'send_server':
+                    self.send_server(data['content']['genre'], data['content']['target'], data['content']['content'])

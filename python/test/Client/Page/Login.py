@@ -1,18 +1,22 @@
 import json
 import multiprocessing
+import os
+
 import wx
 import threading
 import time
+from Client.Process_session.Process_Client import ProcessClient
+from .Chat_main import ChatFrame
 
 
-class LoginFrame(wx.Frame):
+class LoginFrame(wx.Frame, ProcessClient):
     def __init__(self):
-        wx.Frame.__init__(self, None, id=1001, title='登录', pos=wx.DefaultPosition, size=(380, 300))
-        self.queue_in = multiprocessing.Queue()
-        self.queue_out = multiprocessing.Queue()
+        wx.Frame.__init__(self, None, id=-1, title='登录', pos=wx.DefaultPosition, size=(380, 300))
+        ProcessClient.__init__(self)
 
-        self.queue_thread = threading.Thread(target=self.queue_recv)
-        self.queue_thread.start()
+        current_file_path = __file__
+        current_file_name = os.path.basename(current_file_path).split('.')[0]
+        self.Process_client_send("Server", "Name", current_file_name)
 
         # 创建菜单栏
         menu_bar = wx.MenuBar()
@@ -99,7 +103,10 @@ class LoginFrame(wx.Frame):
         if receive_content["genre"] == '登录':
             match receive_content["data"]:
                 case 0:
-                    # 关闭当前框架
+                    app = wx.App()
+                    frame = ChatFrame()
+                    frame.Show()
+                    app.MainLoop()
                     self.Close()
                 case -1:
                     wx.MessageBox('重复登录', '登录', wx.OK | wx.ICON_INFORMATION)
@@ -112,26 +119,6 @@ class LoginFrame(wx.Frame):
                 f'注册成功\n网名 : {receive_content["data"]['NetName']} \n账号 : {receive_content["data"]['Id']} \n密码 : {receive_content["data"]['Password']}',
                 '注册', wx.OK | wx.ICON_INFORMATION)
 
-    def queue_send(self, function, content):
-        data = json.dumps({"function": function, "content": content})
-        self.queue_out.put(data)
-
-    def queue_recv(self):
-        while True:
-            try:
-                data_json = self.queue_in.get()
-                data = json.loads(data_json)
-                self.queue_pick(data)
-            except Exception as e:
-                print("Error in queue_recv:", e)
-
-    def queue_pick(self, data):
-        match data["function"]:
-            case "server_status":
-                self.server_status = data["content"]
-            case "login_page_receive":
-                self.login_page_receive(data["content"])
-
     def send_login_button(self, event):
         if self.server_status:
             account = self.login_panel.LoginPanel_account_text.GetValue().strip()
@@ -140,7 +127,7 @@ class LoginFrame(wx.Frame):
             target = "服务器"
             genre = "登录"
             data = {"genre": genre, "target": target, "content": content}
-            self.queue_send("send_server", data)
+            self.Process_client_send("Session_server", "send_server", data)
 
     def send_register_button(self, event):
         if self.server_status:
@@ -150,7 +137,15 @@ class LoginFrame(wx.Frame):
             target = "服务器"
             genre = "注册"
             data = {"genre": genre, "target": target, "content": content}
-            self.queue_send("send_server", data)
+            self.Process_client_send("Session_server", "send_server", data)
+
+    def Process_client_pick(self, data):
+        if data['target'] in ['ALL', 'Login']:
+            match data['function']:
+                case 'server_status':
+                    self.server_status = data['content']
+                case 'login_page_receive':
+                    self.login_page_receive(data['content'])
 
 
 class LoginPanel(wx.Panel):

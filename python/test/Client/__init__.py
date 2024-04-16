@@ -1,14 +1,15 @@
-from .Login import *
-from .Session_server import *
-from .Chat_main import *
+from .Page import *
+from .Socket_session import *
+from .Process_session import *
 
 
 class start_all:
     def __init__(self):
 
+        ProcessServer()
         Session_server()
 
-        app = wx.App(False)
+        app = wx.App()
         frame = LoginFrame()
-        frame.Show(True)
+        frame.Show()
         app.MainLoop()

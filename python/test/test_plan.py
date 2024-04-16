@@ -1,5 +1,5 @@
 import wx
-from Client.Chat_main import ChatFrame
+from Client.Page.Chat_main import ChatFrame
 
 if __name__ == '__main__':
     app = wx.App()

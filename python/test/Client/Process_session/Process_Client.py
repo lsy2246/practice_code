@@ -9,7 +9,6 @@ class ProcessClient:
         self.Process_server = 'localhost'
         self.Process_client_Client = Client((self.Process_server, self.Process_port))
         Process_client_recv = threading.Thread(target=self.Process_client_recv)
-        print(self.Process_client_Client)
         Process_client_recv.start()
 
     def Process_client_send(self, target, function, content):
@@ -22,17 +21,10 @@ class ProcessClient:
             try:
                 data_json = self.Process_client_Client.recv()
                 data = json.loads(data_json)
-                print(data)
+                self.Process_client_pick(data)
             except EOFError:
                 print("连接已关闭")
                 break
 
-    def Process_client_pick(self):
+    def Process_client_pick(self, data):
         pass
-
-
-if __name__ == '__main__':
-    xx = ProcessClient()
-    while True:
-        a = input("请输入")
-        xx.Process_client_send(a, a, a)
