@@ -7,7 +7,7 @@ import threading
 class ProcessServer:
     def __init__(self):
         try:
-            self.Process_port = 3244
+            self.Process_port = 8727
             self.Process_server = 'localhost'
             self.Process_server_listener = Listener((self.Process_server, self.Process_port))
             self.Process_client_link_dick = {}
@@ -48,7 +48,3 @@ class ProcessServer:
             if data['target'] in self.Process_client_link_dick.keys():
                 data_json = json.dumps(data)
                 self.Process_client_link_dick[data['target']].send(data_json)
-
-
-if __name__ == '__main__':
-    ProcessServer()

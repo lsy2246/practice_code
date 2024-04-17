@@ -1,4 +1,3 @@
-import wx
 from Client import start_all
 
 if __name__ == '__main__':

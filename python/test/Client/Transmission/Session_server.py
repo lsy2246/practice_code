@@ -4,14 +4,14 @@ import time
 import socket
 import json
 import threading
-from Client.Process_session.Process_Client import ProcessClient
+from .Process_Client import ProcessClient
 
 
 class Session_server(ProcessClient):
     def __init__(self):
         ProcessClient.__init__(self)
         self.socker_ip = "127.0.0.1"
-        self.socker_port = 8000
+        self.socker_port = 7868
         self.server_socket = None
         self.server_status = False  # 服务器状态
         self.link_server_Thread = threading.Thread(target=self.link_server)
@@ -70,6 +70,5 @@ class Session_server(ProcessClient):
             match data['function']:
                 case 'server_status':
                     self.server_status = data['content']
-                    print(self.server_status)
                 case 'send_server':
                     self.send_server(data['content']['genre'], data['content']['target'], data['content']['content'])

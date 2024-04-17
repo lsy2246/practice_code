@@ -5,8 +5,14 @@ import os
 import wx
 import threading
 import time
-from Client.Process_session.Process_Client import ProcessClient
+from Client.Transmission.Process_Client import ProcessClient
 from .Chat_main import ChatFrame
+
+
+def open_chat_window():
+    app = wx.App()
+    ChatFrame().Show()
+    app.MainLoop()
 
 
 class LoginFrame(wx.Frame, ProcessClient):
@@ -103,10 +109,7 @@ class LoginFrame(wx.Frame, ProcessClient):
         if receive_content["genre"] == '登录':
             match receive_content["data"]:
                 case 0:
-                    app = wx.App()
-                    frame = ChatFrame()
-                    frame.Show()
-                    app.MainLoop()
+                    multiprocessing.Process(target=open_chat_window).start()
                     self.Close()
                 case -1:
                     wx.MessageBox('重复登录', '登录', wx.OK | wx.ICON_INFORMATION)

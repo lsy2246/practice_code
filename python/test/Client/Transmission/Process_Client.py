@@ -5,7 +5,7 @@ from multiprocessing.connection import Client
 
 class ProcessClient:
     def __init__(self):
-        self.Process_port = 3244
+        self.Process_port = 8727
         self.Process_server = 'localhost'
         self.Process_client_Client = Client((self.Process_server, self.Process_port))
         Process_client_recv = threading.Thread(target=self.Process_client_recv)
@@ -28,6 +28,3 @@ class ProcessClient:
 
     def Process_client_pick(self, data):
         pass
-
-if __name__ == '__main__':
-    ProcessClient()

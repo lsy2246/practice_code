@@ -1,10 +1,14 @@
+import os
+
 import pymssql
 import threading
 import time
+from .Process_Client import *
 
 
-class database:
+class database(ProcessClient):
     def __init__(self):
+        ProcessClient.__init__(self)
         self.database_server = 'localhost'
         self.database_user = 'Chat'
         self.database_password = '123456'
@@ -13,6 +17,10 @@ class database:
         self.database_state = False
         self.database_conn = None
         self.database_cursor = None
+
+        current_file_path = __file__
+        current_file_name = os.path.basename(current_file_path).split('.')[0]
+        self.Process_client_send("Server", "Name", current_file_name)
 
         self.link_database_thread = threading.Thread(target=self.link_database)
         self.link_database_thread.start()
@@ -76,3 +84,26 @@ class database:
             except pymssql as a:
                 self.database_state = False
                 print(a)
+
+    def Process_client_pick(self, data):
+        if data['target'] in ['ALL', 'Database_formula']:
+            match data['function']:
+                case 'check_account_state':
+                    client_socket = data['content']['client_socket']
+                    account = data['content']['account']
+                    password = data['content']['password']
+
+                    status = self.check_account_state(account, password)
+                    content = {"account": account, "status": status}
+                    content = {"client_socket": client_socket, "genre": "客户端", "target": "登录", "content": content}
+
+                    self.Process_client_send('Session_client', 'send_client', content)
+
+                case 'sign_account':
+                    client_socket = data['content']['client_socket']
+                    account = data['content']['account']
+                    password = data['content']['password']
+
+                    info = self.sign_account(account, password)
+                    content = {"client_socket": client_socket, "genre": "客户端", "target": "注册", "content": info}
+                    self.Process_client_send('Session_client', 'send_client', content)

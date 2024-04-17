@@ -1,6 +1,5 @@
 from .Page import *
-from .Socket_session import *
-from .Process_session import *
+from .Transmission import *
 
 
 class start_all:
@@ -10,6 +9,6 @@ class start_all:
         Session_server()
 
         app = wx.App()
-        frame = LoginFrame()
-        frame.Show()
+        LoginFrame().Show()
         app.MainLoop()
+

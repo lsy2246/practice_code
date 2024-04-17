@@ -6,12 +6,15 @@ import threading
 
 class ProcessServer:
     def __init__(self):
-        self.Process_port = 12321
-        self.Process_server = 'localhost'
-        self.Process_server_listener = Listener((self.Process_server, self.Process_port))
-        self.Process_client_link_dick = {}
-        Process_client_link_Thread = threading.Thread(target=self.Process_client_link)
-        Process_client_link_Thread.start()
+        try:
+            self.Process_port = 3244
+            self.Process_server = 'localhost'
+            self.Process_server_listener = Listener((self.Process_server, self.Process_port))
+            self.Process_client_link_dick = {}
+            Process_client_link_Thread = threading.Thread(target=self.Process_client_link)
+            Process_client_link_Thread.start()
+        except:
+            print("进程通信端口绑定失败")
 
     def Process_client_link(self):
         while True:
