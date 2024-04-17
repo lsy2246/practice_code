@@ -89,21 +89,29 @@ class database(ProcessClient):
         if data['target'] in ['ALL', 'Database_formula']:
             match data['function']:
                 case 'check_account_state':
-                    client_socket = data['content']['client_socket']
+                    client_id = data['content']['client_id']
                     account = data['content']['account']
                     password = data['content']['password']
 
                     status = self.check_account_state(account, password)
                     content = {"account": account, "status": status}
-                    content = {"client_socket": client_socket, "genre": "客户端", "target": "登录", "content": content}
+                    content = {"client_id": client_id, "target": "客户端", "genre": "登录", "data": content}
 
                     self.Process_client_send('Session_client', 'send_client', content)
 
                 case 'sign_account':
-                    client_socket = data['content']['client_socket']
+                    client_id = data['content']['client_id']
                     account = data['content']['account']
                     password = data['content']['password']
 
                     info = self.sign_account(account, password)
-                    content = {"client_socket": client_socket, "genre": "客户端", "target": "注册", "content": info}
+                    content = {"client_id": client_id, "target": "客户端", "genre": "注册", "data": info}
                     self.Process_client_send('Session_client', 'send_client', content)
+
+                case 'alter_state_database':
+                    self.alter_state_database(data['content']['Id'], data['content']['sate'])
+
+
+    def detection_data(self,date):
+        if date is None:
+            self.database_cursor.execute(f"update Account set State = N'{sate}' where Id = {Id}")

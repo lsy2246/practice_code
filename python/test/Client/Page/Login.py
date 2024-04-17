@@ -9,9 +9,9 @@ from Client.Transmission.Process_Client import ProcessClient
 from .Chat_main import ChatFrame
 
 
-def open_chat_window():
+def open_chat_window(Id):
     app = wx.App()
-    ChatFrame().Show()
+    ChatFrame(Id).Show()
     app.MainLoop()
 
 
@@ -19,6 +19,7 @@ class LoginFrame(wx.Frame, ProcessClient):
     def __init__(self):
         wx.Frame.__init__(self, None, id=-1, title='登录', pos=wx.DefaultPosition, size=(380, 300))
         ProcessClient.__init__(self)
+
 
         current_file_path = __file__
         current_file_name = os.path.basename(current_file_path).split('.')[0]
@@ -107,10 +108,10 @@ class LoginFrame(wx.Frame, ProcessClient):
 
     def login_page_receive(self, receive_content):
         if receive_content["genre"] == '登录':
-            match receive_content["data"]:
+            match receive_content["data"]['status']:
                 case 0:
-                    multiprocessing.Process(target=open_chat_window).start()
-                    self.Close()
+                    self.Destroy()
+                    multiprocessing.Process(target=open_chat_window, args=(receive_content["data"]['account'],)).start()
                 case -1:
                     wx.MessageBox('重复登录', '登录', wx.OK | wx.ICON_INFORMATION)
                 case 1:
@@ -130,7 +131,9 @@ class LoginFrame(wx.Frame, ProcessClient):
             target = "服务器"
             genre = "登录"
             data = {"genre": genre, "target": target, "content": content}
-            self.Process_client_send("Session_server", "send_server", data)
+            if account and password:
+                self.Process_client_send("Session_server", "send_server", data)
+            time.sleep(3)
 
     def send_register_button(self, event):
         if self.server_status:
@@ -140,7 +143,9 @@ class LoginFrame(wx.Frame, ProcessClient):
             target = "服务器"
             genre = "注册"
             data = {"genre": genre, "target": target, "content": content}
-            self.Process_client_send("Session_server", "send_server", data)
+            if account and password:
+                self.Process_client_send("Session_server", "send_server", data)
+            time.sleep(3)
 
     def Process_client_pick(self, data):
         if data['target'] in ['ALL', 'Login']:
@@ -149,6 +154,7 @@ class LoginFrame(wx.Frame, ProcessClient):
                     self.server_status = data['content']
                 case 'login_page_receive':
                     self.login_page_receive(data['content'])
+
 
 
 class LoginPanel(wx.Panel):

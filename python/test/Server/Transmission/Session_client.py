@@ -1,4 +1,6 @@
 import os
+import random
+import string
 import time
 import socket
 import json
@@ -15,6 +17,7 @@ class link_client(ProcessClient):
         self.server_socket.bind((self.server_host, self.server_port))
         self.server_socket.listen()
         self.client_socket_dict = {}
+        self.client_max_id = 0
 
         current_file_path = __file__
         current_file_name = os.path.basename(current_file_path).split('.')[0]
@@ -27,12 +30,16 @@ class link_client(ProcessClient):
         while True:
             try:
                 client_socket, client_address = self.server_socket.accept()
+                self.client_max_id += 1
+                client_id = ''.join(random.choice(string.ascii_letters) for _ in range(10)) + str(self.client_max_id)
+                self.client_socket_dict[client_id] = client_socket
                 recv_client_Thread = threading.Thread(target=self.recv_client(client_socket), daemon=True)
                 recv_client_Thread.start()
             except:
                 pass
 
-    def send_client(self, client_socket, genre, target, content):
+    def send_client(self, client_id, genre, target, content):
+        client_socket = self.client_socket_dict[client_id]
         try:
             data = {"genre": genre, "target": target, "data": content,
                     "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
@@ -41,16 +48,18 @@ class link_client(ProcessClient):
         except:
             client_socket.close()
 
-    def pick_data(self, client_socket, data):
+    def pick_data(self, client_id, data):
         match data['genre']:
             case '登录':
-                content = {'client_socket': client_socket, 'account': data['data']['account'],
+                content = {'client_id': client_id, 'account': data['data']['account'],
                            'password': data['data']['password']}
                 self.Process_client_send("Database_formula", "check_account_state", content)
             case '注册':
-                content = {'client_socket': client_socket, 'account': data['data']['account'],
+                content = {'client_id': client_id, 'account': data['data']['account'],
                            'password': data['data']['password']}
                 self.Process_client_send("Database_formula", "sign_account", content)
+            case '数据更新':
+                self.Process_client_send("Database_formula", "sign_account", data['data'])
 
     def recv_client(self, client_socket):
         state = True
@@ -58,31 +67,48 @@ class link_client(ProcessClient):
             try:
                 data_json = client_socket.recv(1024).decode('utf-8')
                 data = json.loads(data_json)
-                self.pick_data(client_socket, data)
+                client_Id = self.find_client(client_socket, None)
+                self.pick_data(client_Id, data)
             except:
                 try:
                     client_socket.close()
                 finally:
                     state = False
-                    for key, value in self.client_socket_dict.items():
-                        if value == client_socket:
-                            del self.client_socket_dict[key]
-                            self.Process_client_send("Database_formula", "alter_state_database",
-                                                     {"Id": key, "sate": "在线"})
-                            break
+                    self.find_client(client_socket, None)
+                    client_id = self.find_client(client_socket, None)
+                    del self.client_socket_dict[client_id]
+                    if client_id.isdigit():
+                        self.Process_client_send("Database_formula", "alter_state_database",
+                                                 {"Id": client_id, "sate": 0})
 
     def Process_client_pick(self, data):
         if data['target'] in ['ALL', 'Session_client']:
             match data['function']:
                 case 'send_client':
-                    client_socket = data['content']['client_socket']
+                    client_id = data['content']['client_id']
                     genre = data['content']['genre']
                     target = data['content']['target']
-                    content = data['content']['content']
-                    self.send_client(client_socket, genre, target, content)
-                    if target == '登录':
-                        if data['content']['status'] == 0:
-                            self.client_socket_dict[data['content']['account']] = data['data']['client_socket']
-                            self.Process_client_send("Database_formula", "alter_state_database",
-                                                     {"Id": data['content']['account'],
-                                                      "sate": "在线"})
+                    content = data['content']['data']
+                    if data['content']['genre'] == '登录':
+                        if content['account'] not in self.client_socket_dict:
+                            if content['status'] == 0:
+                                client_socket = self.find_client(None, client_id)
+                                del self.client_socket_dict[client_id]
+                                client_id = content['account']
+                                self.client_socket_dict[client_id] = client_socket
+                                if client_id.isdigit():
+                                    self.Process_client_send("Database_formula", "alter_state_database",
+                                                             {"Id": client_id, "sate": 1})
+                        else:
+                            return
+                    self.send_client(client_id, genre, target, content)
+
+    def find_client(self, client_socket, client_id):
+        if client_id is None:
+            for key, value in self.client_socket_dict.items():
+                if value == client_socket:
+                    return key
+        elif client_socket is None:
+            for key, value in self.client_socket_dict.items():
+                if key == client_id:
+                    return value
