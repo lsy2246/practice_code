@@ -43,7 +43,7 @@ class link_client(ProcessClient):
         try:
             data = {"genre": genre, "target": target, "data": content,
                     "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
-            data_json = json.dumps(data)
+            data_json = json.dumps(data)+'\n'
             client_socket.send(data_json.encode("utf-8"))
         except:
             client_socket.close()

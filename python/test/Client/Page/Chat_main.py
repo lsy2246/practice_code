@@ -1,3 +1,4 @@
+import os
 import wx
 import wx.aui
 import wx.lib.scrolledpanel as scrolled
@@ -10,6 +11,10 @@ class ChatFrame(wx.Frame, ProcessClient):
     def __init__(self, Id):
         wx.Frame.__init__(self, None, size=(800, 600), title="账号:  " + str(Id))
         ProcessClient.__init__(self)
+
+        current_file_path = __file__
+        current_file_name = os.path.basename(current_file_path).split('.')[0]
+        self.Process_client_send("Server", "Name", current_file_name)
 
         ChatMain_Panel = wx.Panel(self, style=wx.BORDER_SUNKEN)
         ChatMain_box = wx.BoxSizer(wx.HORIZONTAL)
@@ -82,6 +87,8 @@ class ChatFrame(wx.Frame, ProcessClient):
 
         ChatMain_Panel.SetSizer(ChatMain_box)
 
+        self.chat_page.ChatPage_add_Contact_person(999, 'Remark', 'Time')
+
     def click_chat_button(self, event):
         self.chat_page.Hide()
         self.connect_page.Hide()
@@ -114,6 +121,20 @@ class ChatFrame(wx.Frame, ProcessClient):
         self.find_page.Show()
         self.Layout()
 
+    def Process_client_pick(self, data):
+        if data['target'] in ['ALL', 'Chat_main']:
+            match data['function']:
+                case 'ChatPage_add_Contact_person':
+                    data = data['content']
+                    Contact = eval(data['Contact'])
+                    Remark = data['Remark']
+                    Time = data['UpDataTime']
+                    self.chat_page.ChatPage_add_Contact_person(Contact, Remark, Time)
+                    self.Layout()
+                case 'ChatPage_add_Contact_tab':
+                    # self.ChatPage.ChatPage_add_Contact_tab('Id', 'Remark','Remark')
+                    print(data)
+
     class ChatPage(wx.Panel):
         def __init__(self, parent):
             wx.Panel.__init__(self, parent, style=wx.BORDER_SUNKEN)
@@ -133,28 +154,18 @@ class ChatFrame(wx.Frame, ProcessClient):
 
             self.SetSizer(ChatPage_main_box)
 
-        def ChatPage_add_Contact_person(self, Id, Remark, info):
+        def ChatPage_add_Contact_person(self, Id, Remark, Time):
             ChatPage_add_Contact_person_box = wx.BoxSizer(wx.VERTICAL)
 
-            ChatPage_add_Contact_person_top_box = wx.BoxSizer(wx.HORIZONTAL)
             if len(Remark) > 6:
                 Remark = Remark[:6] + "..."
             else:
                 Remark += ''.join([" " for i in range(max(0, 9 - len(Remark)))])
             ChatPage_add_Contact_person_NetName = wx.StaticText(self.ChatPage_Contact_person_panel, -1, Remark)
-            ChatPage_add_Contact_person_top_box.Add(ChatPage_add_Contact_person_NetName, 0, wx.ALIGN_LEFT, 0)
+            ChatPage_add_Contact_person_box.Add(ChatPage_add_Contact_person_NetName, 0, wx.ALIGN_LEFT, 0)
 
-            ChatPage_add_Contact_person_top_box.AddSpacer(20)
-
-            ChatPage_add_Contact_person_date = wx.StaticText(self.ChatPage_Contact_person_panel, -1,
-                                                             time.strftime("%Y/%m/%d", time.localtime()))
-            ChatPage_add_Contact_person_top_box.Add(ChatPage_add_Contact_person_date, 0, wx.ALIGN_CENTER_VERTICAL, 0)
-            ChatPage_add_Contact_person_box.Add(ChatPage_add_Contact_person_top_box, 0, wx.EXPAND, 0)
-
-            if len(info) > 10:
-                info = info[:10] + "..."
-            ChatPage_add_Contact_person_info = wx.StaticText(self.ChatPage_Contact_person_panel, -1, info)
-            ChatPage_add_Contact_person_box.Add(ChatPage_add_Contact_person_info, 0, wx.ALIGN_LEFT, 0)
+            ChatPage_add_Contact_person_date = wx.StaticText(self.ChatPage_Contact_person_panel, -1, Time)
+            ChatPage_add_Contact_person_box.Add(ChatPage_add_Contact_person_date, 0, wx.EXPAND, 0)
 
             self.ChatPage_Contact_person_panel.GetSizer().Add(ChatPage_add_Contact_person_box, 0, wx.ALL, 5)
             self.ChatPage_Contact_person_panel.Layout()

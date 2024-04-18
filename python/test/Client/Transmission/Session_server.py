@@ -48,7 +48,7 @@ class Session_server(ProcessClient):
                 receive_content = json.loads(receive_content_json)
                 self.content_pick(receive_content)
             except Exception as a:
-                print("接收错误:" + str(a))
+                print("客户端接收错误:" + str(a))
                 self.server_status = False
                 self.Process_client_send("ALL", "server_status", self.server_status)
 
@@ -57,7 +57,7 @@ class Session_server(ProcessClient):
             try:
                 data = {"genre": genre, "target": target, "data": content,
                         "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
-                data_json = json.dumps(data)
+                data_json = json.dumps(data)+'\n'
                 self.server_socket.send(data_json.encode("utf-8"))
             except Exception as a:
                 print("发送错误:" + str(a))
@@ -77,7 +77,6 @@ class Session_server(ProcessClient):
             case '注册' | '登录':
                 self.Process_client_send("Login", "login_page_receive", data)
             case '数据更新':
-                print(data)
-                self.Process_client_send("file_operate", "login_page_receive", data)
+                self.Process_client_send("file_operate", "save_data", data['data'])
 
 

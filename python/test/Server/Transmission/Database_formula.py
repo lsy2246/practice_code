@@ -94,37 +94,48 @@ class database(ProcessClient):
                 print(a)
 
     def detection_data(self, Id, date):
-        if date is None:
-            datas = []
+        datas = []
 
-            self.database_cursor.execute(f"select Id,Password,NetName,UpDataTime from Account where Id = {Id}")
-            Account_database = self.database_cursor.fetchall()
-            Account_content = {'Id': Account_database[0][0],
-                            'Password': Account_database[0][1],
-                            'NetName': Account_database[0][2],
-                            'UpDataTime': Account_database[0][3].strftime('%Y-%m-%d %H:%M:%S')}
-            Account_data = {"Account": Account_content}
-            datas.append(Account_data)
+        self.database_cursor.execute(f"select Id,Password,NetName,UpDataTime from Account where Id = {Id}")
+        Account_database = self.database_cursor.fetchall()
+        Account_content = {'Id': Account_database[0][0],
+                           'Password': Account_database[0][1],
+                           'NetName': Account_database[0][2],
+                           'UpDataTime': Account_database[0][3].strftime('%Y-%m-%d %H:%M:%S')}
+        if Account_content['UpDataTime'] == date:
+            return
 
-            self.database_cursor.execute(f"select ContactsId,Remark,State from Contacts where UserId = {Id}")
-            Contacts_database = self.database_cursor.fetchall()
-            Contacts_data = {"Contacts": Contacts_database}
+        Account_data = {"Account": Account_content}
+        datas.append(Account_data)
+
+        self.database_cursor.execute(
+            f"select ContactsId,Remark,State,UpDataTime from Contacts where UserId = {Id} and UpDataTime > '{date}'")
+        Contacts_database = self.database_cursor.fetchall()
+        for Contact in Contacts_database:
+            Contacts_content = {'Contact': Contact[0],
+                                'Remark': Contact[1],
+                                'State': Contact[2],
+                                'UpDataTime': Contact[3].strftime('%Y-%m-%d %H:%M:%S')}
+            Contacts_data = {"Contacts": Contacts_content}
             datas.append(Contacts_data)
 
-            self.database_cursor.execute(f"select ContactsId,Remark,State from Contacts where UserId = {Id}")
-            Contacts_database = self.database_cursor.fetchall()
-            Contacts_data = {"Contacts": Contacts_database}
-            datas.append(Contacts_data)
-
-            self.database_cursor.execute(f"select * from History where Send = {Id} or Receive ={Id}")
-            History_database = self.database_cursor.fetchall()
-            History_data = {"History": History_database}
+        self.database_cursor.execute(f"select * from History where Send = {Id} or Receive = {Id} and Time > '{date}'")
+        History_database = self.database_cursor.fetchall()
+        for History in History_database:
+            content = {
+                'Send': History[0],
+                'Receive': History[1],
+                'Type': History[2],
+                'Content': History[3],
+                'Time': History[4].strftime('%Y-%m-%d %H:%M:%S')}
+            History_data = {"History": content}
             datas.append(History_data)
-            for data in datas:
-                content = {"client_id": Id, "target": "客户端", "genre": "数据更新", "data": data}
-                self.Process_client_send('Session_client', 'send_client', content)
 
 
+        for data in datas:
+            time.sleep(0.1)
+            content = {"client_id": Id, "target": "客户端", "genre": "数据更新", "data": data}
+            self.Process_client_send('Session_client', 'send_client', content)
 
     def Process_client_pick(self, data):
         if data['target'] in ['ALL', 'Database_formula']:

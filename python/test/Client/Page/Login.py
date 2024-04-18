@@ -109,8 +109,9 @@ class LoginFrame(wx.Frame, ProcessClient):
         if receive_content["genre"] == '登录':
             match receive_content["data"]['status']:
                 case 0:
-                    self.Destroy()
+                    self.Process_client_send("file_operate", "detection_data", receive_content["data"]['account'])
                     multiprocessing.Process(target=open_chat_window, args=(receive_content["data"]['account'],)).start()
+                    self.Destroy()
                 case -1:
                     wx.MessageBox('重复登录', '登录', wx.OK | wx.ICON_INFORMATION)
                 case 1:
