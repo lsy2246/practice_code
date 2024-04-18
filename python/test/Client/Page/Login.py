@@ -20,7 +20,6 @@ class LoginFrame(wx.Frame, ProcessClient):
         wx.Frame.__init__(self, None, id=-1, title='登录', pos=wx.DefaultPosition, size=(380, 300))
         ProcessClient.__init__(self)
 
-
         current_file_path = __file__
         current_file_name = os.path.basename(current_file_path).split('.')[0]
         self.Process_client_send("Server", "Name", current_file_name)
@@ -154,7 +153,6 @@ class LoginFrame(wx.Frame, ProcessClient):
                     self.server_status = data['content']
                 case 'login_page_receive':
                     self.login_page_receive(data['content'])
-
 
 
 class LoginPanel(wx.Panel):

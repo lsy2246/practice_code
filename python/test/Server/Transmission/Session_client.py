@@ -59,7 +59,8 @@ class link_client(ProcessClient):
                            'password': data['data']['password']}
                 self.Process_client_send("Database_formula", "sign_account", content)
             case '数据更新':
-                self.Process_client_send("Database_formula", "sign_account", data['data'])
+                content = {'client_id': client_id, 'date': data['data']}
+                self.Process_client_send("Database_formula", "detection_data", content)
 
     def recv_client(self, client_socket):
         state = True

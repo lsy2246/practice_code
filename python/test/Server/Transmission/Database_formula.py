@@ -42,23 +42,27 @@ class database(ProcessClient):
             except pymssql.Error as a:
                 print(a)
 
-    def check_account_state(self, Id: int, password):
+    def check_account_state(self, client_id, Id: int, password):
         if self.database_state:
             try:
+                state = 2
                 self.database_cursor.execute(f"select Id,Password from Account where Id = {Id}")
                 request_data = self.database_cursor.fetchall()
                 if len(request_data) != 0:
                     if request_data[0][1] == password:
-                        return 0
+                        state = 0
                     else:
-                        return 1
-                else:
-                    return 2
+                        state = 1
+
+                content = {"account": Id, "status": state}
+                data = {"client_id": client_id, "target": "客户端", "genre": "登录", "data": content}
+                self.Process_client_send('Session_client', 'send_client', data)
+
             except pymssql as a:
                 self.database_state = False
                 print(a)
 
-    def sign_account(self, NetName, Password):
+    def sign_account(self, client_id, NetName, Password):
         if self.database_state:
             # 获取锁
             self.lock.acquire()
@@ -70,7 +74,11 @@ class database(ProcessClient):
                 Id = self.database_cursor.fetchone()[0]
                 # 释放锁
                 self.lock.release()
-                return {"Id": int(Id), "NetName": NetName, "Password": Password}
+                info = {"Id": int(Id), "NetName": NetName, "Password": Password}
+
+                content = {"client_id": client_id, "target": "客户端", "genre": "注册", "data": info}
+                self.Process_client_send('Session_client', 'send_client', content)
+
             except pymssql as a:
                 self.lock.release()
                 self.database_state = False
@@ -85,6 +93,39 @@ class database(ProcessClient):
                 self.database_state = False
                 print(a)
 
+    def detection_data(self, Id, date):
+        if date is None:
+            datas = []
+
+            self.database_cursor.execute(f"select Id,Password,NetName,UpDataTime from Account where Id = {Id}")
+            Account_database = self.database_cursor.fetchall()
+            Account_content = {'Id': Account_database[0][0],
+                            'Password': Account_database[0][1],
+                            'NetName': Account_database[0][2],
+                            'UpDataTime': Account_database[0][3].strftime('%Y-%m-%d %H:%M:%S')}
+            Account_data = {"Account": Account_content}
+            datas.append(Account_data)
+
+            self.database_cursor.execute(f"select ContactsId,Remark,State from Contacts where UserId = {Id}")
+            Contacts_database = self.database_cursor.fetchall()
+            Contacts_data = {"Contacts": Contacts_database}
+            datas.append(Contacts_data)
+
+            self.database_cursor.execute(f"select ContactsId,Remark,State from Contacts where UserId = {Id}")
+            Contacts_database = self.database_cursor.fetchall()
+            Contacts_data = {"Contacts": Contacts_database}
+            datas.append(Contacts_data)
+
+            self.database_cursor.execute(f"select * from History where Send = {Id} or Receive ={Id}")
+            History_database = self.database_cursor.fetchall()
+            History_data = {"History": History_database}
+            datas.append(History_data)
+            for data in datas:
+                content = {"client_id": Id, "target": "客户端", "genre": "数据更新", "data": data}
+                self.Process_client_send('Session_client', 'send_client', content)
+
+
+
     def Process_client_pick(self, data):
         if data['target'] in ['ALL', 'Database_formula']:
             match data['function']:
@@ -92,26 +133,16 @@ class database(ProcessClient):
                     client_id = data['content']['client_id']
                     account = data['content']['account']
                     password = data['content']['password']
-
-                    status = self.check_account_state(account, password)
-                    content = {"account": account, "status": status}
-                    content = {"client_id": client_id, "target": "客户端", "genre": "登录", "data": content}
-
-                    self.Process_client_send('Session_client', 'send_client', content)
+                    self.check_account_state(client_id, account, password)
 
                 case 'sign_account':
                     client_id = data['content']['client_id']
                     account = data['content']['account']
                     password = data['content']['password']
-
-                    info = self.sign_account(account, password)
-                    content = {"client_id": client_id, "target": "客户端", "genre": "注册", "data": info}
-                    self.Process_client_send('Session_client', 'send_client', content)
+                    self.sign_account(client_id, account, password)
 
                 case 'alter_state_database':
                     self.alter_state_database(data['content']['Id'], data['content']['sate'])
 
-
-    def detection_data(self,date):
-        if date is None:
-            self.database_cursor.execute(f"update Account set State = N'{sate}' where Id = {Id}")
+                case 'detection_data':
+                    self.detection_data(data['content']['client_id'], data['content']['date'])

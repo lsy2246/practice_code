@@ -46,8 +46,7 @@ class Session_server(ProcessClient):
             try:
                 receive_content_json = self.server_socket.recv(1024).decode('utf-8')
                 receive_content = json.loads(receive_content_json)
-                if receive_content["genre"] in ['注册', '登录']:
-                    self.Process_client_send("Login", "login_page_receive", receive_content)
+                self.content_pick(receive_content)
             except Exception as a:
                 print("接收错误:" + str(a))
                 self.server_status = False
@@ -72,3 +71,13 @@ class Session_server(ProcessClient):
                     self.server_status = data['content']
                 case 'send_server':
                     self.send_server(data['content']['genre'], data['content']['target'], data['content']['content'])
+
+    def content_pick(self,data):
+        match data['genre']:
+            case '注册' | '登录':
+                self.Process_client_send("Login", "login_page_receive", data)
+            case '数据更新':
+                print(data)
+                self.Process_client_send("file_operate", "login_page_receive", data)
+
+

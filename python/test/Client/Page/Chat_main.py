@@ -3,17 +3,13 @@ import wx.aui
 import wx.lib.scrolledpanel as scrolled
 import time
 import multiprocessing
-import os
-import csv
 from Client.Transmission.Process_Client import ProcessClient
 
 
 class ChatFrame(wx.Frame, ProcessClient):
     def __init__(self, Id):
-        wx.Frame().__init__(None, size=(800, 600), title="账号:  " + str(Id))
+        wx.Frame.__init__(self, None, size=(800, 600), title="账号:  " + str(Id))
         ProcessClient.__init__(self)
-
-        self.detection_data(Id)
 
         ChatMain_Panel = wx.Panel(self, style=wx.BORDER_SUNKEN)
         ChatMain_box = wx.BoxSizer(wx.HORIZONTAL)
@@ -117,30 +113,6 @@ class ChatFrame(wx.Frame, ProcessClient):
         self.find_page.Hide()
         self.find_page.Show()
         self.Layout()
-
-    def detection_data(self, Id):
-        root_path = rf'.\{Id}'
-        info_path = root_path + r'\info.csv'
-        file_root_path = root_path + r'\file'
-        other_file_path = file_root_path + r'\other'
-        image_file_path = file_root_path + r'\image'
-        if not os.path.isdir(root_path):
-            os.mkdir(root_path)
-        if not os.path.isdir(file_root_path):
-            os.mkdir(file_root_path)
-            os.mkdir(other_file_path)
-            os.mkdir(image_file_path)
-        if not os.path.exists(info_path):
-            with open(info_path, 'w', encoding='utf-8') as f:
-                pass
-        with open(info_path, 'r+', encoding='utf-8') as info:
-            if info.tell() == 0:
-                date = None
-            target = "服务器"
-            genre = "数据更新"
-            content = date
-            data = {"genre": genre, "target": target, "content": content}
-            self.Process_client_send("Session_server", "send_server", data)
 
     class ChatPage(wx.Panel):
         def __init__(self, parent):
