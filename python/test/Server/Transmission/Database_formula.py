@@ -103,6 +103,8 @@ class database(ProcessClient):
                            'NetName': Account_database[0][2],
                            'UpDataTime': Account_database[0][3].strftime('%Y-%m-%d %H:%M:%S')}
         if Account_content['UpDataTime'] == date:
+            content = {"client_id": Id, "target": "客户端", "genre": "数据更新", "data": {"更新完成": Id}}
+            self.Process_client_send('Session_client', 'send_client', content)
             return
 
         Account_data = {"Account": Account_content}
@@ -130,6 +132,8 @@ class database(ProcessClient):
                 'Time': History[4].strftime('%Y-%m-%d %H:%M:%S')}
             History_data = {"History": content}
             datas.append(History_data)
+
+        datas.append({"更新完成": Id})
 
 
         for data in datas:

@@ -54,13 +54,19 @@ class FileOperate(ProcessClient):
             data = {"genre": genre, "target": target, "content": date}
             self.Process_client_send("Session_server", "send_server", data)
 
-        time.sleep(1)
-        with open(self.Contacts_path, 'r', encoding='utf-8') as file:
-            data = csv.DictReader(file)
-            for row in data:
-                self.Process_client_send("Chat_main", "ChatPage_add_Contact_person", row)
-
-
+    def read_data(self):
+        with open(self.Contacts_path, 'r', encoding='utf-8') as Contacts:
+            data = csv.reader(Contacts)
+            next(data)
+            for i in data:
+                content = {'Contact': i[0], 'Remark': i[1], 'state': i[2], 'UpDataTime': i[3]}
+                self.Process_client_send("Chat_main", "ChatPage_add_Contact_person", content)
+        with open(self.History_path, 'r', encoding='utf-8') as History_path:
+            data = csv.reader(History_path)
+            next(data)
+            for i in data:
+                content = {'send': i[0], 'receive': i[1], 'Type': i[2], 'content': i[3], 'UpDataTime': i[4]}
+                self.Process_client_send("Chat_main", "ChatPage_add_Contact_tab", content)
 
     def save_data(self, data):
         target = list(data.keys())[0]
@@ -83,11 +89,15 @@ class FileOperate(ProcessClient):
                     if os.path.getsize(self.History_path) == 0:  # 检查文件大小是否为0
                         csv_file.writerow(list(data.keys()))
                     csv_file.writerow(list(data.values()))
+            case '更新完成':
+                self.Process_client_send("ALL", "更新完成", eval(data))
 
     def Process_client_pick(self, data):
-        if data['target'] in ['ALL', 'file_operate']:
+        if data['target'] in ['ALL', 'File_operate']:
             match data['function']:
                 case 'detection_data':
                     self.detection_data(data['content'])
                 case 'save_data':
                     self.save_data(data['content'])
+                case 'read_data':
+                    self.read_data()

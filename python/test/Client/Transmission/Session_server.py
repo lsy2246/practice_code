@@ -77,6 +77,6 @@ class Session_server(ProcessClient):
             case '注册' | '登录':
                 self.Process_client_send("Login", "login_page_receive", data)
             case '数据更新':
-                self.Process_client_send("file_operate", "save_data", data['data'])
+                self.Process_client_send("File_operate", "save_data", data['data'])
 
 

@@ -109,9 +109,8 @@ class LoginFrame(wx.Frame, ProcessClient):
         if receive_content["genre"] == '登录':
             match receive_content["data"]['status']:
                 case 0:
-                    self.Process_client_send("file_operate", "detection_data", receive_content["data"]['account'])
-                    multiprocessing.Process(target=open_chat_window, args=(receive_content["data"]['account'],)).start()
-                    self.Destroy()
+                    self.Process_client_send("File_operate", "detection_data", receive_content["data"]['account'])
+                    wx.MessageBox('登录成功正在获取数据', '登录', wx.OK | wx.ICON_INFORMATION)
                 case -1:
                     wx.MessageBox('重复登录', '登录', wx.OK | wx.ICON_INFORMATION)
                 case 1:
@@ -154,6 +153,10 @@ class LoginFrame(wx.Frame, ProcessClient):
                     self.server_status = data['content']
                 case 'login_page_receive':
                     self.login_page_receive(data['content'])
+                case '更新完成':
+                    multiprocessing.Process(target=open_chat_window, args=(data['content'],)).start()
+                    self.Destroy()
+
 
 
 class LoginPanel(wx.Panel):

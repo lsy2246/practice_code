@@ -1,9 +1,9 @@
+import csv
 import os
 import wx
-import wx.aui
-import wx.lib.scrolledpanel as scrolled
 import time
 import multiprocessing
+
 from Client.Transmission.Process_Client import ProcessClient
 
 
@@ -11,6 +11,7 @@ class ChatFrame(wx.Frame, ProcessClient):
     def __init__(self, Id):
         wx.Frame.__init__(self, None, size=(800, 600), title="账号:  " + str(Id))
         ProcessClient.__init__(self)
+        self.userid = Id
 
         current_file_path = __file__
         current_file_name = os.path.basename(current_file_path).split('.')[0]
@@ -69,6 +70,8 @@ class ChatFrame(wx.Frame, ProcessClient):
         operate_box.Add(self.chat_page, 1, wx.EXPAND, 5)
         self.chat_page.Hide()
 
+        self.Process_client_send("File_operate", "read_data", None)
+
         self.connect_page = self.ConnectPage(ChatMain_Panel)
         operate_box.Add(self.connect_page, 1, wx.EXPAND, 5)
         self.connect_page.Hide()
@@ -86,8 +89,6 @@ class ChatFrame(wx.Frame, ProcessClient):
         self.chat_page.Show()
 
         ChatMain_Panel.SetSizer(ChatMain_box)
-
-        self.chat_page.ChatPage_add_Contact_person(999, 'Remark', 'Time')
 
     def click_chat_button(self, event):
         self.chat_page.Hide()
@@ -113,6 +114,17 @@ class ChatFrame(wx.Frame, ProcessClient):
         self.site_page.Show()
         self.Layout()
 
+    def send_Chat_history(self, Contact, send, receive, Type, data, UpDataTime):
+        chat_panel = self.chat_page.chat_page_map[Contact]
+        match Type:
+            case 'text':
+                if Contact == send:
+                    contents = ['My:', data, UpDataTime]
+                    for content in contents:
+                        message = wx.StaticText(chat_panel.chat_receive_panel, label=content, style=wx.ALIGN_RIGHT)
+                        chat_panel.chat_receive_box.Add(message, flag=wx.EXPAND | wx.RIGHT, border=10)
+
+
     def click_find_button(self, event):
         self.chat_page.Hide()
         self.connect_page.Hide()
@@ -129,63 +141,63 @@ class ChatFrame(wx.Frame, ProcessClient):
                     Contact = eval(data['Contact'])
                     Remark = data['Remark']
                     Time = data['UpDataTime']
-                    self.chat_page.ChatPage_add_Contact_person(Contact, Remark, Time)
-                    self.Layout()
+                    wx.CallAfter(self.chat_page.ChatPage_add_Contact_person, Contact, Remark)
                 case 'ChatPage_add_Contact_tab':
-                    # self.ChatPage.ChatPage_add_Contact_tab('Id', 'Remark','Remark')
-                    print(data)
+                    Contact = None
+                    data = data['content']
+                    send = eval(data['send'])
+                    receive = eval(data['receive'])
+                    Type = data['Type']
+                    content = data['content']
+                    UpDataTime = data['UpDataTime']
+                    if send == self.userid:
+                        Contact = receive
+                    elif receive == self.userid:
+                        Contact = send
+                    self.send_Chat_history(Contact, send, receive, Type, content, UpDataTime)
 
     class ChatPage(wx.Panel):
         def __init__(self, parent):
             wx.Panel.__init__(self, parent, style=wx.BORDER_SUNKEN)
+
             ChatPage_main_box = wx.BoxSizer(wx.HORIZONTAL)
-            self.chat_window_id = []
+            self.chat_page_map = {}
+            self.chat_page_ids = []
+            self.current_chat_page = None  # 新增的属性用于跟踪当前显示的聊天面板
 
-            ChatPage_Contact_person_box = wx.BoxSizer(wx.VERTICAL)
-            self.ChatPage_Contact_person_panel = scrolled.ScrolledPanel(self, -1, style=wx.SUNKEN_BORDER)
-            self.ChatPage_Contact_person_panel.SetupScrolling()  # 启用滚动功能
-            self.ChatPage_Contact_person_panel.SetSizer(wx.BoxSizer(wx.VERTICAL))
-            ChatPage_Contact_person_box.Add(self.ChatPage_Contact_person_panel, proportion=1, flag=wx.EXPAND | wx.ALL,
-                                            border=5)
-            ChatPage_main_box.Add(ChatPage_Contact_person_box, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
+            self.ChatPage_Listbook = wx.Listbook(self, style=wx.LB_LEFT)
+            self.ChatPage_Listbook.Bind(wx.EVT_LISTBOOK_PAGE_CHANGED, self.on_page_changed)
 
-            self.chat_tab = wx.aui.AuiNotebook(self, style=wx.aui.AUI_NB_CLOSE_ON_ALL_TABS)
-            ChatPage_main_box.Add(self.chat_tab, proportion=3, flag=wx.EXPAND | wx.ALL, border=5)
-
+            ChatPage_main_box.Add(self.ChatPage_Listbook, 1, wx.EXPAND, 0)
             self.SetSizer(ChatPage_main_box)
 
-        def ChatPage_add_Contact_person(self, Id, Remark, Time):
-            ChatPage_add_Contact_person_box = wx.BoxSizer(wx.VERTICAL)
+        def ChatPage_add_Contact_person(self, Id, Remark):
+            contact_page = wx.Panel(self.ChatPage_Listbook)
+            self.ChatPage_Listbook.AddPage(contact_page, Remark)
+            chat_page = self.ChatPage_add_Contact_tab()
+            self.chat_page_map[Id] = chat_page
+            self.chat_page_ids.append(Id)
+            # 隐藏当前的聊天面板
+            if self.current_chat_page:
+                self.current_chat_page.Hide()
+            # 将新的聊天面板添加到ChatPage_main_box中
+            self.GetSizer().Add(chat_page, 5, wx.EXPAND)
+            # 显示新的聊天面板
+            chat_page.Show()
+            # 更新当前显示的聊天面板
+            self.current_chat_page = chat_page
+            # 重新布局
+            self.Layout()
 
-            if len(Remark) > 6:
-                Remark = Remark[:6] + "..."
-            else:
-                Remark += ''.join([" " for i in range(max(0, 9 - len(Remark)))])
-            ChatPage_add_Contact_person_NetName = wx.StaticText(self.ChatPage_Contact_person_panel, -1, Remark)
-            ChatPage_add_Contact_person_box.Add(ChatPage_add_Contact_person_NetName, 0, wx.ALIGN_LEFT, 0)
-
-            ChatPage_add_Contact_person_date = wx.StaticText(self.ChatPage_Contact_person_panel, -1, Time)
-            ChatPage_add_Contact_person_box.Add(ChatPage_add_Contact_person_date, 0, wx.EXPAND, 0)
-
-            self.ChatPage_Contact_person_panel.GetSizer().Add(ChatPage_add_Contact_person_box, 0, wx.ALL, 5)
-            self.ChatPage_Contact_person_panel.Layout()
-            self.ChatPage_Contact_person_panel.SetupScrolling()
-
-            ChatPage_add_Contact_person_NetName.Bind(wx.EVT_LEFT_DOWN,
-                                                     lambda event: self.ChatPage_add_Contact_tab(Id, Remark))
-
-        def ChatPage_add_Contact_tab(self, Id, Remark):
-            if Id in self.chat_window_id:
-                return
-            self.chat_window_id.append(Id)
-
-            chat_panel = wx.Panel(self.chat_tab)
+        def ChatPage_add_Contact_tab(self):
+            chat_panel = wx.Panel(self)
             chat_box = wx.BoxSizer(wx.VERTICAL)
 
-            chat_receive_box = wx.BoxSizer(wx.HORIZONTAL)
-            chat_receive_text = wx.TextCtrl(chat_panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
-            chat_receive_box.Add(chat_receive_text, 1, wx.EXPAND, 0)
-            chat_box.Add(chat_receive_box, 2, wx.EXPAND, 0)
+            chat_panel.chat_receive_panel = wx.ScrolledWindow(chat_panel, style=wx.BORDER_SUNKEN)
+            chat_panel.chat_receive_box = wx.BoxSizer(wx.HORIZONTAL)
+
+            chat_panel.chat_receive_panel.SetSizer(chat_panel.chat_receive_box)
+            chat_box.Add(chat_panel.chat_receive_panel, 3, wx.EXPAND | wx.ALL, 0)
 
             toolbar = wx.ToolBar(chat_panel)
             toolbar.SetToolBitmapSize((16, 16))  # Set the size of the toolbar icons
@@ -198,8 +210,8 @@ class ChatFrame(wx.Frame, ProcessClient):
             chat_box.Add(toolbar, 0, wx.EXPAND)
 
             chat_send_box = wx.BoxSizer(wx.HORIZONTAL)
-            chat_send_text = wx.TextCtrl(chat_panel, style=wx.TE_MULTILINE)
-            chat_send_box.Add(chat_send_text, 1, wx.EXPAND, 0)
+            chat_panel.chat_send_text = wx.TextCtrl(chat_panel, style=wx.TE_MULTILINE)
+            chat_send_box.Add(chat_panel.chat_send_text, 1, wx.EXPAND, 0)
             chat_box.Add(chat_send_box, 1, wx.EXPAND, 0)
 
             send_button = wx.Button(chat_panel, label='发送')  # Create a send button
@@ -207,8 +219,26 @@ class ChatFrame(wx.Frame, ProcessClient):
 
             chat_panel.SetSizer(chat_box)
 
-            self.chat_tab.AddPage(chat_panel, Remark, select=True)
-            self.GetParent().contact_windows[Id] = chat_panel
+            return chat_panel
+
+        def on_page_changed(self, event):
+            # 获取当前选定的页面的索引
+            current_page_index = self.ChatPage_Listbook.GetSelection()
+            # 通过索引从chat_page_ids列表中获取对应的Id
+            current_page_id = self.chat_page_ids[current_page_index]
+            # 从chat_page_map中找到对应的聊天面板
+            new_chat_page = self.chat_page_map[current_page_id]
+            # 隐藏旧的聊天面板
+            if self.current_chat_page:
+                self.current_chat_page.Hide()
+            # 显示新的聊天面板
+            new_chat_page.Show()
+            # 更新当前显示的聊天面板
+            self.current_chat_page = new_chat_page
+            # 重新布局
+            self.Layout()
+            # 处理完事件后，不要忘记调用event.Skip()，以便事件可以继续传播到其他处理器
+            event.Skip()
 
     class ConnectPage(wx.Panel):
         def __init__(self, parent):

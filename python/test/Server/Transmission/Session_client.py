@@ -62,6 +62,7 @@ class link_client(ProcessClient):
                 content = {'client_id': client_id, 'date': data['data']}
                 self.Process_client_send("Database_formula", "detection_data", content)
 
+
     def recv_client(self, client_socket):
         state = True
         while state:
