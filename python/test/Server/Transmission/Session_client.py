@@ -43,7 +43,7 @@ class link_client(ProcessClient):
         try:
             data = {"genre": genre, "target": target, "data": content,
                     "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
-            data_json = json.dumps(data)+'\n'
+            data_json = json.dumps(data) + '\n'
             client_socket.send(data_json.encode("utf-8"))
         except:
             client_socket.close()
@@ -61,7 +61,18 @@ class link_client(ProcessClient):
             case '数据更新':
                 content = {'client_id': client_id, 'date': data['data']}
                 self.Process_client_send("Database_formula", "detection_data", content)
-
+            case '聊天记录':
+                Send = client_id
+                Receive = data['target']
+                Time = data['datetime']
+                data = data['data']
+                Type = data['Type']
+                Content = data['content']
+                content = {'Send': Send, 'Receive': Receive, 'Time': Time, 'Type': Type, 'Content': Content}
+                self.Process_client_send("Database_formula", "update_History", content)
+                self.send_client(Send, "聊天记录", "发送", content)
+                if Receive in self.client_socket_dict:
+                    self.send_client(Receive, "聊天记录", "接收", content)
 
     def recv_client(self, client_socket):
         state = True

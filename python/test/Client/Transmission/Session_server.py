@@ -57,7 +57,7 @@ class Session_server(ProcessClient):
             try:
                 data = {"genre": genre, "target": target, "data": content,
                         "datetime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}
-                data_json = json.dumps(data)+'\n'
+                data_json = json.dumps(data) + '\n'
                 self.server_socket.send(data_json.encode("utf-8"))
             except Exception as a:
                 print("发送错误:" + str(a))
@@ -72,11 +72,14 @@ class Session_server(ProcessClient):
                 case 'send_server':
                     self.send_server(data['content']['genre'], data['content']['target'], data['content']['content'])
 
-    def content_pick(self,data):
+    def content_pick(self, data):
         match data['genre']:
             case '注册' | '登录':
                 self.Process_client_send("Login", "login_page_receive", data)
             case '数据更新':
                 self.Process_client_send("File_operate", "save_data", data['data'])
-
-
+            case '聊天记录':
+                if data['data']['Type'] == 'text':
+                    self.Process_client_send("File_operate", "save_data", {"History": data['data']})
+                    if data['target'] == '接收':
+                        self.Process_client_send("Chat_main", "Chat_screen_show", data['data'])

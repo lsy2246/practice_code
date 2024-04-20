@@ -135,29 +135,47 @@ class database(ProcessClient):
 
         datas.append({"更新完成": Id})
 
-
         for data in datas:
             time.sleep(0.1)
             content = {"client_id": Id, "target": "客户端", "genre": "数据更新", "data": data}
             self.Process_client_send('Session_client', 'send_client', content)
 
+    def update_History(self, Send, Receive, Type, Content, Time):
+        if self.database_state:
+            try:
+                self.database_cursor.execute(f"insert into History(Send, Receive, Type, Content,Time)"
+                                             f"select {Send},{Receive},'{Type}',N'{Content}','{Time}'")
+                self.database_conn.commit()
+            except pymssql as a:
+                self.database_state = False
+                print(a)
+
     def Process_client_pick(self, data):
         if data['target'] in ['ALL', 'Database_formula']:
             match data['function']:
                 case 'check_account_state':
-                    client_id = data['content']['client_id']
-                    account = data['content']['account']
-                    password = data['content']['password']
-                    self.check_account_state(client_id, account, password)
+
+                    self.check_account_state(data['content']['client_id'],
+                                             data['content']['account'],
+                                             data['content']['password'])
 
                 case 'sign_account':
-                    client_id = data['content']['client_id']
-                    account = data['content']['account']
-                    password = data['content']['password']
-                    self.sign_account(client_id, account, password)
+
+                    self.sign_account(data['content']['client_id'],
+                                      data['content']['account'],
+                                      data['content']['password'])
 
                 case 'alter_state_database':
-                    self.alter_state_database(data['content']['Id'], data['content']['sate'])
+                    self.alter_state_database(data['content']['Id'],
+                                              data['content']['sate'])
 
                 case 'detection_data':
-                    self.detection_data(data['content']['client_id'], data['content']['date'])
+                    self.detection_data(data['content']['client_id'],
+                                        data['content']['date'])
+
+                case 'update_History':
+                    self.update_History(data['content']['Send'],
+                                        data['content']['Receive'],
+                                        data['content']['Type'],
+                                        data['content']['Content'],
+                                        data['content']['Time'])

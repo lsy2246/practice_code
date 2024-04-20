@@ -65,8 +65,8 @@ class FileOperate(ProcessClient):
             data = csv.reader(History_path)
             next(data)
             for i in data:
-                content = {'send': i[0], 'receive': i[1], 'Type': i[2], 'content': i[3], 'UpDataTime': i[4]}
-                self.Process_client_send("Chat_main", "ChatPage_add_Contact_tab", content)
+                content = {'Send': i[0], 'Receive': i[1], 'Type': i[2], 'Content': i[3], 'Time': i[4]}
+                self.Process_client_send("Chat_main", "Chat_screen_show", content)
 
     def save_data(self, data):
         target = list(data.keys())[0]

@@ -132,7 +132,7 @@ class LoginFrame(wx.Frame, ProcessClient):
             data = {"genre": genre, "target": target, "content": content}
             if account and password:
                 self.Process_client_send("Session_server", "send_server", data)
-            time.sleep(3)
+
 
     def send_register_button(self, event):
         if self.server_status:
@@ -144,7 +144,7 @@ class LoginFrame(wx.Frame, ProcessClient):
             data = {"genre": genre, "target": target, "content": content}
             if account and password:
                 self.Process_client_send("Session_server", "send_server", data)
-            time.sleep(3)
+
 
     def Process_client_pick(self, data):
         if data['target'] in ['ALL', 'Login']:
