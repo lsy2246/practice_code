@@ -22,8 +22,8 @@ class ProcessClient:
                 data_json = self.Process_client_Client.recv()
                 data = json.loads(data_json)
                 self.Process_client_pick(data)
-            except EOFError:
-                print("连接已关闭")
+            except EOFError as e:
+                print("连接已关闭"+e)
                 break
 
     def Process_client_pick(self, data):

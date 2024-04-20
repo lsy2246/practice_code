@@ -11,7 +11,7 @@ from .Process_Client import *
 class link_client(ProcessClient):
     def __init__(self):
         ProcessClient.__init__(self)
-        self.server_host = "127.0.0.1"
+        self.server_host = "192.168.137.1"
         self.server_port = 7868
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.server_host, self.server_port))
@@ -33,7 +33,7 @@ class link_client(ProcessClient):
                 self.client_max_id += 1
                 client_id = ''.join(random.choice(string.ascii_letters) for _ in range(10)) + str(self.client_max_id)
                 self.client_socket_dict[client_id] = client_socket
-                recv_client_Thread = threading.Thread(target=self.recv_client(client_socket), daemon=True)
+                recv_client_Thread = threading.Thread(target=self.recv_client, args=(client_socket,), daemon=True)
                 recv_client_Thread.start()
             except:
                 pass

@@ -16,7 +16,6 @@ class ProcessServer:
         except:
             print("进程通信端口绑定失败")
 
-
     def Process_client_link(self):
         while True:
             client_connect = self.Process_server_listener.accept()
@@ -25,13 +24,16 @@ class ProcessServer:
 
     def Process_client_recv(self, client_Thread_recv):
         while True:
-            data_json = client_Thread_recv.recv()
-            data = json.loads(data_json)
-            if data['target'] == 'Server':
-                if data['function'] == 'Name':
-                    self.Process_client_link_dick[data['content']] = client_Thread_recv
-            else:
-                self.Process_client_pick(data)
+            try:
+                data_json = client_Thread_recv.recv()
+                data = json.loads(data_json)
+                if data['target'] == 'Server':
+                    if data['function'] == 'Name':
+                        self.Process_client_link_dick[data['content']] = client_Thread_recv
+                else:
+                    self.Process_client_pick(data)
+            except Exception as e:
+                print("进程关闭" + e)
 
     def Process_client_send(self, target, function, content):
         connect = self.Process_client_link_dick[target]
