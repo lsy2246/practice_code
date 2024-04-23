@@ -4,11 +4,10 @@ import wx
 import time
 import multiprocessing
 
-
 from Client.Transmission.Process_Client import ProcessClient
 
 
-class ChatFrame(wx.Frame,ProcessClient):
+class ChatFrame(wx.Frame, ProcessClient):
     def __init__(self, Id):
         wx.Frame.__init__(self, None, size=(800, 600), title="账号:  " + str(Id))
         ProcessClient.__init__(self)
@@ -91,11 +90,6 @@ class ChatFrame(wx.Frame,ProcessClient):
 
         ChatMain_Panel.SetSizer(ChatMain_box)
 
-        self.root_path = rf'.\{Id}'
-        self.Account_path = self.root_path + r'\Account.csv'
-        self.Contacts_path = self.root_path + r'\Contacts.csv'
-        self.History_path = self.root_path + r'\History.csv'
-
     def click_chat_button(self, event):
         self.chat_page.Hide()
         self.connect_page.Hide()
@@ -120,19 +114,6 @@ class ChatFrame(wx.Frame,ProcessClient):
         self.site_page.Show()
         self.Layout()
 
-    def send_Chat_history(self, Contact, send, receive, Type, data, UpDataTime):
-        chat_panel = self.chat_page.chat_page_map[Contact]
-        if Type == 'text':
-            contents = ['My' if Contact == send else 'Ta']
-            contents.append('')  # 添加一个空字符串作为消息的一部分
-            for i in range(0, len(data), 30):
-                contents.append(data[i:i + 30])
-            contents.append(UpDataTime)
-
-
-            for content in contents:
-                chat_panel.chat_receive_text.AppendText(content+'\n')
-
     def click_find_button(self, event):
         self.chat_page.Hide()
         self.connect_page.Hide()
@@ -149,20 +130,22 @@ class ChatFrame(wx.Frame,ProcessClient):
                     Contact = data['Contact']
                     Remark = data['Remark']
                     Time = data['UpDataTime']
-                    wx.CallAfter(self.chat_page.ChatPage_add_Contact_person, Contact, Remark)
-                case 'ChatPage_add_Contact_tab':
+                    state = data['state']
+                    if state:
+                        wx.CallAfter(self.chat_page.ChatPage_add_Contact_person, Contact, Remark)
+                case 'Chat_screen_show':
                     Contact = None
                     data = data['content']
-                    send = data['send']
-                    receive = data['receive']
+                    send = data['Send']
+                    receive = data['Receive']
                     Type = data['Type']
-                    content = data['content']
-                    UpDataTime = data['UpDataTime']
+                    content = data['Content']
+                    UpDataTime = data['Time']
                     if send == str(self.userid):
                         Contact = receive
                     elif receive == str(self.userid):
                         Contact = send
-                    wx.CallAfter(self.send_Chat_history, Contact, send, receive, Type, content, UpDataTime)
+                    wx.CallAfter(self.chat_page.Chat_screen_show, Contact, send, receive, Type, content, UpDataTime)
 
     class ChatPage(wx.Panel):
         def __init__(self, parent):
@@ -182,7 +165,7 @@ class ChatFrame(wx.Frame,ProcessClient):
         def ChatPage_add_Contact_person(self, Id, Remark):
             contact_page = wx.Panel(self.ChatPage_Listbook)
             self.ChatPage_Listbook.AddPage(contact_page, Remark)
-            chat_page = self.ChatPage_add_Contact_tab()
+            chat_page = self.ChatPage_add_Contact_tab(Id)
 
             self.chat_page_map[Id] = chat_page
             self.chat_page_ids.append(Id)
@@ -199,12 +182,15 @@ class ChatFrame(wx.Frame,ProcessClient):
             # 重新布局
             self.Layout()
 
-        def ChatPage_add_Contact_tab(self):
+        def ChatPage_add_Contact_tab(self, Id):
             chat_panel = wx.Panel(self)
             chat_box = wx.BoxSizer(wx.VERTICAL)
 
+            chat_panel.contact_id = Id
+
             chat_receive_box = wx.BoxSizer(wx.HORIZONTAL)
-            chat_panel.chat_receive_text = rt.RichTextCtrl(chat_panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
+            chat_panel.chat_receive_text = rt.RichTextCtrl(chat_panel,
+                                                           style=wx.VSCROLL | wx.HSCROLL | wx.NO_BORDER | wx.WANTS_CHARS)
             chat_receive_box.Add(chat_panel.chat_receive_text, 1, wx.EXPAND, 0)
             chat_box.Add(chat_receive_box, 2, wx.EXPAND, 0)
 
@@ -224,11 +210,59 @@ class ChatFrame(wx.Frame,ProcessClient):
             chat_box.Add(chat_send_box, 1, wx.EXPAND, 0)
 
             send_button = wx.Button(chat_panel, label='发送')  # Create a send button
+            send_button.Bind(wx.EVT_BUTTON, self.on_send_button_click)
             chat_send_box.Add(send_button, 0, wx.EXPAND | wx.LEFT, 5)  # Add the button to the send box
 
             chat_panel.SetSizer(chat_box)
 
             return chat_panel
+
+        def Chat_screen_show(self, Contact, send, receive, Type, data, UpDataTime):
+            chat_panel = self.chat_page_map[Contact]
+            if Type == 'text':
+                # 确定对齐方式
+                if Contact == receive:
+                    alignment = wx.TEXT_ALIGNMENT_RIGHT
+                else:
+                    alignment = wx.TEXT_ALIGNMENT_LEFT
+                # 开始设置对齐
+                chat_panel.chat_receive_text.BeginAlignment(alignment)
+                # 按每30个字符分割消息内容并写入
+                contents = [data[i:i + 30] for i in range(0, len(data), 30)]
+                contents.append(UpDataTime)  # 添加时间戳
+                for content in contents:
+                    chat_panel.chat_receive_text.WriteText(content + '\n')  # WriteText处理换行
+                # 结束对齐设置
+                chat_panel.chat_receive_text.EndAlignment()
+                # 添加额外的新行（如果需要）
+                chat_panel.chat_receive_text.Newline()
+
+                # 在添加完所有消息后
+                chat_panel.chat_receive_text.ShowPosition(chat_panel.chat_receive_text.GetLastPosition())
+                chat_panel.Refresh()
+                chat_panel.Update()
+                self.Layout()
+
+        def on_send_button_click(self, event):
+            button = event.GetEventObject()
+            chat_panel = button.GetParent()
+            send_text = chat_panel.chat_send_text.GetValue()  # 正确获取输入框内容
+            contact_id = str(chat_panel.contact_id)  # 获取联系人ID
+            if send_text == '':
+                return
+
+            self.Chat_screen_show(contact_id, None, contact_id, 'text', send_text,
+                                  time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
+
+            data = {"Type": "text", "content": send_text}
+
+            content = {"genre": '聊天记录', "target": contact_id, "content": data}
+
+            top_frame = self.GetTopLevelParent()
+
+            top_frame.Process_client_send('Session_server', 'send_server', content)
+            chat_panel.chat_send_text.SetValue('')  # 清空输入框
+            event.Skip()
 
         def on_page_changed(self, event):
             # 获取当前选定的页面的索引
