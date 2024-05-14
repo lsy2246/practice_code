@@ -49,7 +49,6 @@
 .nav_right .list li a{
     font-size: 12px;
     padding:0 15px;
-    border-right: 1px solid;
 }
 
 .nav_right .list li:first-child a{
@@ -58,9 +57,14 @@
 
 .nav_right .list li:last-child a{
     padding-right:0;
-    border:0;
-
 }
+
+.nav_right .list li:not(:last-of-type)::after{
+    content: "|";
+    position: relative;
+    width: 1px;
+}
+
 /* endregion 顶部导航条结束 */
 
 /* region 头部区域 */
@@ -104,10 +108,253 @@
 }
 .main_nav .main_nav_list li{
     float:left;
-    color:#333333;
     text-align:center;
     line-height:48px;
     margin:0 10px ;
 }
+.main_nav .main_nav_list li a:link,.main_nav .main_nav_list li a:visited{
+    color:#333333;
+    font-weight:bold;
+}
+.main_nav .main_nav_list li a:hover{
+    color:red;
+}
+
 
 /* endregion 主导航结束 */
+
+/* region 主要内容区 */
+.main_content{
+    height:458px;
+    margin-top: 10px;
+}
+
+.main_content .slide-nav{
+    background-color: #F4F4F4;
+    height:458px;
+    width: 190px;
+    position: relative;
+}
+
+.main_content .slide-nav li{
+    font-size:0;
+    height:28px;
+    line-height:28px;
+    padding-left: 16px;
+}
+
+.main_content .slide-nav li>a{
+    font-size:14px;
+    font-weight: bold;
+    color: #333333;
+}
+.main_content .slide-nav li>a:link,.main_content .slide-nav li>a:visited
+{
+    color: #333333;
+}
+
+.main_content .slide-nav li>a:hover{
+    color:red;
+}
+
+.main_content .slide-nav li>a:not(:last-of-type)::after{
+    content: "/";
+}
+
+.main_content .slide-nav li:hover{
+    background-color: #A9A9A9;
+}
+
+.main_content .slide-nav li:hover .second_menu{
+    display: block;
+}
+
+.main_content .slide-nav .second_menu{
+    height: 458px;
+    width: 690px;
+    background-color: white;
+    position: absolute;
+    left: 190px;
+    top: 0;
+    font-size: 0;
+    padding:10px;
+    display: none;
+}
+
+.main_content .slide-nav .second_menu dl{
+    height: 36px;
+    width: 670px;
+}
+
+.main_content .slide-nav .second_menu dl dt{
+    font-size: 14px;
+    float: left;
+    width: 70px;
+    margin: 0 10px;
+}
+
+.main_content .slide-nav .second_menu dl dt a:link,.main_content .slide-nav .second_menu dl dt a:visited{
+    color:#000000;
+    font-weight: bold;
+}
+
+.main_content .slide-nav .second_menu dl dt a:hover{
+    color: red;
+}
+
+.main_content .slide-nav .second_menu dl dd{
+    font-size: 14px;
+    float: left;
+    margin:0 10px;
+    height: 36px;
+}
+
+.main_content .slide-nav .second_menu dl dd a:link,.main_content .slide-nav .second_menu dl dd a:visited{
+    color:#666666;
+    font-weight: bold;
+}
+
+.main_content .slide-nav .second_menu dl dd a:hover{
+    color:red;
+}
+
+.main_content .slide-nav .second_menu dl dd::before
+{
+    content: "|";
+    position: relative;
+    width:1px;
+    right:10px;
+}
+
+.main_content .banner{
+    height:458px;
+    width: 690px;
+    margin: 0 10px;
+}
+
+.main_content .slide-other{
+    height:458px;
+    width: 290px;
+}
+
+.main_content .slide-other .slide-other_massage{
+    height:156px;
+    width: 260px;
+    margin-bottom: 10px;
+    border: 1px solid #D9D9D9 ;
+    padding:0 14px;
+}
+
+.main_content .slide-other .slide-other_massage .massage_title{
+    line-height: 38px;
+    height: 38px;
+    border-bottom: 1px solid #D9D9D9;
+    margin-bottom: 2px;
+}
+
+.main_content .slide-other .slide-other_massage .massage_title span{
+    font-size: 14px;
+    color: #000000;
+    font-weight: bold;
+}
+
+.main_content .slide-other .slide-other_massage .massage_title a{
+    font-size: 12px;
+    color: #999999;
+    font-weight: bold;
+}
+
+.main_content .slide-other .slide-other_massage .massage_list dl{
+    list-style: none;
+}
+
+.main_content .slide-other .slide-other_massage .massage_list dd{
+    position: relative;
+    font-size: 12px;
+    color: #666666;
+    height: 14px;
+    line-height: 14px;
+    padding: 6px 0;
+    font-weight: bold;
+}
+
+.main_content .slide-other .slide-other_massage .massage_list dd::before{
+    content: "[特惠]";
+    padding-right: 5px;
+}
+
+.main_content .slide-other .slide-other_massage .massage_list dd a:link,.main_content .slide-other .slide-other_massage .massage_list dd a:visited{
+    color: #666666;
+    font-weight: bold;
+}
+
+.main_content .slide-other .slide-other_massage .massage_list dd a:hover{
+    color:red;
+}
+
+.main_content .slide-other .slide-other-nav{
+    height:290px;
+    width: 290px;
+    padding:0 5px;
+
+}
+
+.main_content .slide-other .slide-other-nav dl dd{
+    height: 70px;
+    width: 48px;
+    float: left;
+    margin: 17px 11px 0;
+    text-align: center;
+}
+
+.main_content .slide-other  dl dd .picture{
+    width: 48px;
+    height: 48px;
+    background-image: url("../images/精灵图-侧边功能.png");
+}
+
+.main_content .slide-other  dl:nth-child(1) dd:nth-child(2) .picture{
+    background-position: -48px 0;
+}
+
+.main_content .slide-other  dl:nth-child(1) dd:nth-child(3) .picture{
+    background-position: -96px 0;
+}
+
+.main_content .slide-other  dl:nth-child(1) dd:nth-child(4) .picture{
+    background-position: -144px 0;
+}
+
+.main_content .slide-other  dl:nth-child(2) dd:nth-child(1) .picture{
+    background-position: 0 -48px;
+}
+
+.main_content .slide-other  dl:nth-child(2) dd:nth-child(2) .picture{
+    background-position: -48px -48px;
+}
+
+.main_content .slide-other  dl:nth-child(2) dd:nth-child(3) .picture{
+    background-position: -96px -48px;
+}
+
+.main_content .slide-other  dl:nth-child(2) dd:nth-child(4) .picture{
+    background-position: -144px -48px;
+}
+
+.main_content .slide-other  dl:nth-child(3) dd:nth-child(1) .picture{
+    background-position: 0 -96px;
+}
+
+.main_content .slide-other  dl:nth-child(3) dd:nth-child(2) .picture{
+    background-position: -48px -96px;
+}
+
+.main_content .slide-other  dl:nth-child(3) dd:nth-child(3) .picture{
+    background-position: -96px -96px;
+}
+
+.main_content .slide-other  dl:nth-child(3) dd:nth-child(4) .picture{
+    background-position: -144px -96px;
+}
+
+/* endregion 主要内容区结束 */
