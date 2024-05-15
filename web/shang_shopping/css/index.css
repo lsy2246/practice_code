@@ -230,6 +230,7 @@
     height:458px;
     width: 690px;
     margin: 0 10px;
+    font-size: 0;
 }
 
 .main_content .slide-other{
@@ -358,3 +359,79 @@
 }
 
 /* endregion 主要内容区结束 */
+
+/* region 秒杀 */
+.seckill{
+    margin-top: 10px;
+    font-size: 0;
+}
+.seckill a{
+    float: left;
+}
+
+.seckill a:not(:last-child){
+    margin-right: 11px;
+}
+/* endregion 秒杀结束 */
+
+/* region 楼层 */
+.floor .floor_nav{
+    margin-top:48px ;
+    height:34px;
+    border-bottom: 2px solid #DD302D;
+}
+
+.floor .floor_nav span{
+    line-height: 34px;
+    height: 34px;
+    font-size: 20px;
+    color: #000000;
+    font-weight: bold;
+}
+
+.floor .floor_nav dl dt{
+    float: left;
+    color: #DD302D;
+    height: 34px;
+    line-height: 34px;
+}
+
+.floor .floor_nav dl dt a:link,.floor .floor_nav dl dt a:visited{
+    color:red;
+}
+
+.floor .floor_nav dl dt a:hover{
+    color: white;
+    background-color: red;
+}
+
+.floor .floor_nav dl dd{
+    float: left;
+    height: 34px;
+    line-height: 34px;
+    margin-left:20px ;
+}
+
+.floor .floor_nav dl dd:before{
+    content: "|";
+    width: 1px;
+    position: relative;
+    right: 10px;
+}
+
+.floor .floor_nav dl dd a:link,.floor .floor_nav dl dd a:visited
+{
+    font-size: 16px;
+    color: #666666;
+}
+
+.floor .floor_nav dl dd a:hover
+{
+    color: red;
+}
+
+.floor .floor_info{
+    height:432px;
+    background-color: skyblue;
+}
+/* endregion 楼层结束 */
