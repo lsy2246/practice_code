@@ -432,6 +432,152 @@
 
 .floor .floor_info{
     height:432px;
-    background-color: skyblue;
 }
+
+.floor .floor_info>div{
+    float: left;
+    font-size: 0;
+}
+
+.floor .floor_info .item1{
+    width: 230px;
+    height: 100%;
+    font-size: 0;
+}
+
+.floor .floor_info .item1 dl{
+    height: 108px;
+    width: 190px;
+    margin: 20px 20px 0;
+    font-size: 16px;
+}
+
+.floor .floor_info .item1 dt{
+    float: left;
+    width: 90px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #D9D9D9;
+}
+
+.floor .floor_info .item1 dt a:link,.floor .floor_info .item1 dt a:visited
+{
+    font-size: 16px;
+    color: #666666;
+}
+
+.floor .floor_info .item1 dt a:hover{
+    color:red;
+}
+
+.floor .floor_info .item1 dt:nth-child(odd){
+    margin-right: 10px;
+}
+
+.floor .floor_info .item1 dt:nth-child(n+3){
+    margin-top: 14px;
+}
+
+.floor .floor_info .item1 img{
+    margin: 30px 18px;
+}
+
+.floor .floor_info .item2{
+    width: 340px;
+    height: 100%;
+}
+
+.floor .floor_info .item3{
+    background-color: skyblue;
+    width: 206px;
+    height: 100%;
+}
+
+.floor .floor_info .item3 img
+{
+    width: 206px;
+    height: 215px;
+}
+
+.floor .floor_info .item3 img:first-child{
+    border-bottom: 1px solid #D9D9D9;
+}
+
+
+.floor .floor_info .item4{
+    width: 206px;
+    height: 100%;
+    border-left: 1px solid #E2E2E2;
+    border-right: 1px solid #E2E2E2;
+}
+
+
+
 /* endregion 楼层结束 */
+
+/* region 页脚 */
+.footer{
+    margin-top: 48px;
+    background: #483E3E;
+    height: 1000px;
+    overflow:hidden
+}
+
+.footer a:link,.footer a:visited{
+    font-size: 14px;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+.footer a:hover{
+    color:red;
+}
+
+.footer .top_link{
+    margin-top: 48px;
+    border-bottom: 1px solid #584D4D;
+    padding-bottom:22px;
+}
+
+.footer .top_link div{
+    width: 190px;
+    float: left;
+}
+
+.footer .top_link div:not(:last-child){
+    margin-right: 10px;
+}
+
+.footer .top_link div a{
+    display: block;
+    height: 32px;
+    line-height: 32px;
+}
+
+.footer .bottom_link{
+    margin-top: 47px;
+    text-align: center;
+}
+
+.footer .bottom_link dl{
+    display: flex;
+    align-items: center; /* 垂直居中 */
+    justify-content: center; /* 水平居中 */
+    margin-bottom: 10px;
+}
+
+.footer .bottom_link dl dd{
+    float: left;
+    height: 18px;
+    line-height: 18px;
+}
+
+.footer .bottom_link dl dd:not(:last-child):after{
+    content: "|";
+    margin: 0 26px;
+    color: #D9D9D9;
+}
+
+/* endregion 页脚 */
