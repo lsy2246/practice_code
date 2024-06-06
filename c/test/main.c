@@ -1,169 +1,164 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include <unistd.h>
-#include<string.h>
+//头文件
+#include <stdio.h>
+#include <windows.h>
+#include <conio.h>
+#include <time.h>
 
-struct Contact//每个联系人的结构体
+//自定义头文件
+#include "founction_statement_page.h"//界面
+#include "function_statement_effect.h"//功能
+
+//初始化全局变量
+bool pick_revision = true;//初始化文件是否修改
+bool pick_view_mode = false;//视图模式
+unsigned int Total = 0;//初始化学生总数
+
+static struct Snake
 {
-	char name[20];//名字
-	char sex[10];//性别
-	char email[30];//email
+    //0为y,1为x
+    int head[2];
+    int body[2];
+    int tail[2];
 };
 
-enum Operate//选择的枚举函数
-{
-	view=1,find,add,delete,quit//查看,查看个人,新增,删除,退出
-};
+static struct Snake snake ;
 
-void view_mode(void)//查看所有联系人函数
+static void main_printf_view ( void )//主页菜单
 {
-	FILE *file=fopen("contact.txt","a+b");//打开文件
-	struct Contact contact;//声明一块结构体临时储存读取到的通讯录
-	while(fread (&contact , sizeof(struct Contact) , 1 , file) == 1)
-	{
-		printf("姓名:%s",contact.name);
-		printf(" 性别:%s",contact.sex);
-		printf(" 电子邮箱:%s\n",contact.email);
-	}
-	fclose(file);//关闭文件
+    HideCursor ( );//隐藏光标
+    system ( "cls" );//清屏
+
+    CursorJump ( 8 , 50 );
+    color ( 2 );//设置颜色
+    printf ( "欢迎使用学生管理系统" );
+    CursorJump ( 9 , 48 );
+    color ( 4 );//设置颜色
+    printf ( "按下相应按键进入对应模式" );
+
+    CursorJump ( 10 , 47 );
+    for ( int i = 0 ; i < 26 ; ++ i )
+    {
+        color ( 7 );//设置颜色
+        printf ( "-" );
+    }
+
+    CursorJump ( 11 , 52 );
+    color ( 1 );//设置颜色
+    printf ( "[Enter]" );
+    color ( 7 );//设置颜色
+    printf ( " 进入程序\n" );
+    CursorJump ( 12 , 52 );
+    color ( 1 );//设置颜色
+    printf ( "[M]" );
+    color ( 7 );//设置颜色
+    printf ( "\t    管理课程" );
+
+    CursorJump ( 13 , 52 );
+    color ( 1 );//设置颜色
+    printf ( "[ESC]" );
+    color ( 7 );//设置颜色
+    printf ( "   退出程序\n" );
+
+    for ( int i = 6 ; i <= 15 ; ++ i )
+    {
+        for ( int j = 45 ; j <= 74 ; ++ j )
+        {
+            if ( i == 6 || i == 15 || j == 45 || j == 74 )
+            {
+                CursorJump ( i , j );
+                color ( 7 );//设置颜色
+                printf ( "■" );
+            }
+        }
+    }
 }
 
-void find_mode(void)//查找联系人函数
+static void main_move_snake(void)//移动小蛇
 {
-	FILE *file=fopen("contact.txt","a+b");//打开文件
-	char tmp_name[20]="a";//申请接受用户的名字
-	struct Contact contact;//临时接受的结构体
-	printf("请输入需要查找的联系人:");
-	scanf("%20s",tmp_name);//接受用户需要查找的姓名
-	while(fread(&contact,sizeof(struct Contact),1,file) == 1)
-	{
-		if(strcmp(contact.name,tmp_name) == 0)
-		{
-			printf("姓名:%s",contact.name);
-			printf(" 性别:%s",contact.sex);
-			printf(" 电子邮箱:%s",contact.email);
-			fclose(file);//关闭文件
-			return;//结束函数
-		}
-	}
-
-	printf("查无此人\n");
+    Sleep (80);
+    CursorJump ( snake.tail[0] , snake.tail[1] );
+    printf (" ");
+    snake.tail[0]=snake.body[0];
+    snake.tail[1]=snake.body[1];
+    snake.body[0]=snake.head[0];
+    snake.body[1]=snake.head[1];
+    if(snake.head[0]==6&&snake.head[1]<74)
+    {
+        snake.head[1]++;
+    }
+    else if(snake.head[1]==74&&snake.head[0]<15)
+    {
+        snake.head[0]++;
+    }
+    else if(snake.head[0]==15&&snake.head[1]>45)
+    {
+        snake.head[1]--;
+    }
+    else if(snake.head[1]==45&&snake.head[0]>7)
+    {
+        snake.head[0]--;
+    }
+    else
+    {
+        snake.tail[0]=6;
+        snake.tail[1]=45;
+        snake.body[0]=6;
+        snake.body[1]=46;
+        snake.head[0]=6;
+        snake.head[1]=47;
+        main_printf_view();
+    }
+    color ( 13 );//设置颜色
+    CursorJump ( snake.tail[0] , snake.tail[1] );
+    printf ("□");
+    CursorJump ( snake.body[0] , snake.body[1] );
+    printf ("□");
+    CursorJump ( snake.head[0] , snake.head[1] );
+    printf ("■");
 }
 
-void add_mode(void)//新增联系人函数
+//主函数
+int main ( void )
 {
-	FILE *file=fopen("contact.txt","a+b");//以读的方式打开文件
-	struct Contact contact;//声明一个临时结构体来接收用户
-	struct Contact tmp_contact;//声明一个结构体来检查有无重复
-	printf("请输入姓名:");
-	scanf("%20s",contact.name);
-	fseek(file, 0, SEEK_SET);//将文件指针移动到开头，并清除之前读取的内容
-	//查找是否已经存入
-	while(fread(&tmp_contact,sizeof(struct Contact),1,file) == 1)
-	{
-		if(strcmp(tmp_contact.name,contact.name) == 0)
-		{
-			printf("联系人已经存在\n");
-			printf("姓名:%s",tmp_contact.name);
-			printf(" 性别:%s",tmp_contact.sex);
-			printf(" 电子邮箱:%s",tmp_contact.email);
-			fclose(file);//关闭文件
-			return;//结束函数
-		}
-	}
-	printf("请输入性别:");
-	scanf("%10s",contact.sex);
-	printf("请输入电子邮箱:");
-	scanf("%30s",contact.email);
-	while (strcmp(contact.email,"@") != 0)
-	{
-		while(getchar()!='\n');//清除缓存
-		printf("请输入正确格式的电子邮箱:");
-		scanf("%30s",contact.email);//重新接收	
-	}
-	fwrite(&contact,sizeof(struct Contact),1,file);//写入文件
-	fclose(file);//关闭文件
-	printf("新建成功\n");
-	printf("姓名:%s",contact.name);
-	printf(" 性别:%s",contact.sex);
-	printf(" 电子邮箱:%s",contact.email);
-}
+    //定义变量
+    static char start_pick = '0';//开始的选择
+    snake.head[0]=7;
+    snake.head[1]=45;
+    srand ( ( unsigned ) time ( NULL ) );
+    while ( 1 )
+    {
+        main_move_snake();//移动小蛇
+        //获取用户的输入
+        if ( _kbhit ( ) )
+        {
+            start_pick = ( char ) _getch ( );
+        }
+        //判断用户输入
+        switch ( start_pick )
+        {
+            case ENTER:
+            {
+                start_pick = '0';
+                system_start ( );//管理系统主页
+                snake.head[0]=7;
+                snake.head[1]=45;
+                break;
+            }
+            case 'm':
+            case 'M':
+            {
+                start_pick = '0';
+                course_start ( );//管理系统主页
+                snake.head[0]=7;
+                snake.head[1]=45;
+                break;
+            }
 
-void delete_mode(void)//删除联系人函数
-{
-	FILE *file=fopen("contact.txt","rb");//通讯录文件
-    FILE *tmp_file=fopen("tmp_contact.txt","wb");//零时通讯录文件
-	char tmp_name[20]="a";//临时接收用户需要删除的姓名
-	struct Contact contact;//声明结构体找到需要删除的位置
-	printf("请输入需要删除的联系人的姓名:");
-	scanf("%s",tmp_name);//接收需要删除的联系人的姓名
-	while(fread( &contact , sizeof(struct Contact) , 1 ,file ) == 1)
-	{
-		if( strcmp(contact.name,tmp_name) != 0)
-		{
-            fwrite(&contact,sizeof(struct Contact) , 1 ,tmp_file);//如果不是需要删除的名字写入临时文件
-		}
-	}
-	fclose(file);//关闭文件
-    fclose(tmp_file);//关闭零时文件
-    remove("contact.txt");//将原有通讯录删除
-    rename("tmp_contact.txt", "contact.txt");//将临时通讯录更名
-    printf("删除成功\n");
-}
-
-
-int main(void)
-{
-	int oprate=0;//创建选择
-	start://主页面标签
-	printf("\n———————通讯录——————\n");
-	printf("%d.查看全部联系人\n",view);
-	printf("%d.查找联系人\n",find);
-	printf("%d.新增联系人\n",add);
-	printf("%d.删除联系人\n",delete);
-	printf("%d.退出程序\n",quit);
-	printf("请输入需要进入的模式:");
-	while( (scanf("%d",&oprate)) != 1 || oprate < 1|| oprate > 5)
-	{
-		while(getchar()!='\n');//清除缓存
-		printf("请输入正确的数字:");
-		scanf("%d",&oprate);//重新获取数字
-	}
-	switch(oprate)
-	{
-		case view:
-			{
-				while(getchar()!='\n');//清除缓存
-				view_mode();//进入查看函数
-				goto start;//回到主页
-				break;//防止进入下一个
-			}
-		case find:
-			{
-				while(getchar()!='\n');//清除缓存
-				find_mode();//进看个人函数
-				goto start;//回到主页
-				break;//防止进入下一个
-			}	
-		case add:
-			{
-				while(getchar()!='\n');//清除缓存
-				add_mode();//进入新增函数
-				goto start;//回到主页
-				break;//防止进入下一个
-			}
-		case delete:
-			{
-				while(getchar()!='\n');//清除缓存
-				delete_mode();//进入删除函数
-				goto start;//回到主页
-				break;//防止进入下一个
-			}
-		case quit:
-			{
-				printf("欢迎下次使用\n");
-				break;
-			}
-	}	
-	return 0;
+            case ESC:
+            {
+                return 0;
+            }
+        }
+    }
+    return 0;
 }
