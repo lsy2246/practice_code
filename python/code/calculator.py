@@ -51,33 +51,26 @@ def format_data(data):
     while _static_tmp:
         formula.append(_static_tmp.pop(-1))
 
-    return formula
+    numbers_stack = []
+    while formula:
+        single_item = formula.pop(0)
+        if single_item.isdigit():
+            numbers_stack.append(single_item)
+        else:
+            number2 = float(numbers_stack.pop(-1))
+            number1 = float(numbers_stack.pop(-1))
+            match single_item:
+                case '+':
+                    numbers_stack.append(number1 + number2)
+                case '-':
+                    numbers_stack.append(number1 - number2)
+                case '*':
+                    numbers_stack.append(number1 * number2)
+                case '/':
+                    numbers_stack.append(number1 / number2)
+                case '%':
+                    numbers_stack.append(number1 % number2)
+    return numbers_stack[0]
 
-
-def compute(formula):
-    if len(formula) == 1:
-        return formula[0]
-    else:
-        for index, item in enumerate(formula):
-            if item in ['+', '-', '*', '/', '%']:
-                match item:
-                    case '+':
-                        formula[index - 2] = float(formula[index - 2]) + float(formula[index - 1])
-                    case '-':
-                        formula[index - 2] = float(formula[index - 2]) - float(formula[index - 1])
-                    case '*':
-                        formula[index - 2] = float(formula[index - 2]) * float(formula[index - 1])
-                    case '/':
-                        formula[index - 2] = float(formula[index - 2]) / float(formula[index - 1])
-                    case '%':
-                        formula[index - 2] = float(formula[index - 2]) % float(formula[index - 1])
-                formula.pop(index - 1)
-                formula.pop(index - 1)
-                formula = compute(formula)
-                return formula
-
-
-Equation = "3%2"
-formula = format_data(Equation)
-result = compute(formula)
-print(result)
+Equation = "1+2/2+(3*3+2)"
+print(format_data(Equation))
