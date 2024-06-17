@@ -9,6 +9,9 @@ user="root" # 数据库用户名
 password="lsy22.com" # 数据库密码
 original_dir=$(pwd) # 记录原始目录
 
+# 激活百度网盘环境
+source ~/myvenv/bin/activate
+
 # 组合备份
 for item in "${mysql_arry[@]}"; do
     # 创建SQL备份
@@ -34,6 +37,11 @@ for item in "${mysql_arry[@]}"; do
     rm "${item}_${date_time}.sql"
     # 上传到云存储
     bypy upload "${item}_${date_time}.zip" "/${item}/${year}/"
+    # 上传到百度网盘存储
+    bypy upload "${item}_${date_time}.zip" "/${item}/"
+    # 上传到阿里云盘
+    aliyunpan upload "${item}_${date_time}.zip" "/网站/${item}/${year}/"
+    # 删除文件
     rm "${item}_${date_time}.zip"
 done
 
@@ -47,8 +55,11 @@ for item in "${web_arry[@]}"; do
         mv "${item}_${date_time}_data.zip" "$original_dir"
         # 返回原始目录
         cd "$original_dir" || exit
-        # 上传到云存储
-        bypy upload "${item}_${date_time}_data.zip" "/${item}/${year}/"
+        # 上传到百度网盘存储
+        bypy upload "${item}_${date_time}.zip" "/${item}/"
+        # 上传到阿里云盘
+        aliyunpan upload "${item}_${date_time}.zip" "/网站/${item}/${year}/"
+        # 删除文件
         rm "${item}_${date_time}_data.zip"
     fi
 done

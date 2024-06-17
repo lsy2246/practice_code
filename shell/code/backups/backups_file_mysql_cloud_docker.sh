@@ -5,6 +5,9 @@ date_time=$(date +"%Y_%m_%d") # 日期格式
 year=$(date +"%Y") #年份
 original_dir=$(pwd) # 记录原始目录
 
+# 激活百度网盘环境
+source ~/myvenv/bin/activate
+
 for item in "$web_path"/*; do
     item_name=$(basename "$item")
     # 切换到网站目录进行压缩
@@ -14,9 +17,7 @@ for item in "$web_path"/*; do
     mv "${item_name}_${date_time}.zip" "$original_dir"
     # 返回原始目录
     cd "$original_dir" || exit
-    # 激活百度网盘环境
-    source ~/shell/myvenv/bin/activate
-    # 上传到云存储
+    # 上传到百度网盘存储
     bypy upload "${item_name}_${date_time}.zip" "/${item_name}/"
     # 上传到阿里云盘
     aliyunpan upload "${item_name}_${date_time}.zip" "/网站/${item_name}/${year}/"
