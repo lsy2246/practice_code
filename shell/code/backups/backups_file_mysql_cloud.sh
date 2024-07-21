@@ -22,14 +22,12 @@ for item in "${mysql_arry[@]}"; do
         # 切换到网站目录进行压缩
         cd "${web_path}/${item}/" || exit
         zip -r "${item}_web_${date_time}.zip" .
-        # 移动压缩文件回原始目录
-        mv "${item}_web_${date_time}.zip" "$original_dir"
-        # 返回原始目录
-        cd "$original_dir" || exit
         # 将数据库SQL文件和网站压缩包一起压缩
         zip "${item}_${date_time}.zip" "${item}_${date_time}.sql" "${item}_web_${date_time}.zip"
         # 删除临时的网站压缩包
         rm "${item}_web_${date_time}.zip"
+        # 返回原始目录
+        cd "$original_dir" || exit
     else
         # 否则，只压缩数据库
         zip "${item}_${date_time}.zip" "${item}_${date_time}.sql"
@@ -51,15 +49,13 @@ for item in "${web_arry[@]}"; do
         # 切换到网站目录进行压缩
         cd "${web_path}/${item}/" || exit
         zip -r "${item}_${date_time}_data.zip" .
-        # 移动压缩文件回原始目录
-        mv "${item}_${date_time}_data.zip" "$original_dir"
-        # 返回原始目录
-        cd "$original_dir" || exit
         # 上传到百度网盘存储
         bypy upload "${item}_${date_time}.zip" "/${item}/"
         # 上传到阿里云盘
         aliyunpan upload "${item}_${date_time}.zip" "/网站/${item}/${year}/"
         # 删除文件
         rm "${item}_${date_time}_data.zip"
+        # 返回原始目录
+        cd "$original_dir" || exit
     fi
 done
