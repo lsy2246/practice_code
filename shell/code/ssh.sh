@@ -45,7 +45,7 @@ install_key(){
     fi
     
     
-    systemctl restart sshd.service
+    sudo systemctl restart sshd.service
 
     echo "密钥安装完成"
 }
@@ -132,10 +132,10 @@ alter_port() {
     echo "端口已经修改为$port_number，记得防火墙放行"  
 }
 
-if [ "$(id -u)" != "0" ]; then  
-   echo "该脚本必须以root权限运行" 1>&2  
-   exit 1  
-fi  
+if not command -v sudo &> /dev/null
+then
+    echo "sudo 未安装"
+fi
 
 while true
 do
