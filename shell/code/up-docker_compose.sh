@@ -6,5 +6,5 @@ docker_path="/var/www"
 for dir in "$docker_path"/*/; do
 	cd "$dir" || exit  
 	sudo docker compose pull  
-        sudo docker compose up -d  
+  sudo docker compose up -d
 done
