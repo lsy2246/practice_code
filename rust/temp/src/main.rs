@@ -1,13 +1,14 @@
-extern crate wasm_bindgen;
+use core::Server;
+mod core;
+mod request;
+mod respond;
+mod route;
 
-use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
-extern {
-    pub fn alert(s: &str);
-}
-
-#[wasm_bindgen]
-pub fn greet(name: &str) {
-    alert(&format!("Hello, {}!", name));
+fn main() {
+    let server = Server::new( 8000);
+    server.route("/","get",|request, respond| {
+        respond.send();
+        println!("{}",request.method())
+    });
+    server.start();
 }
