@@ -1,0 +1,84 @@
+.chessBoard{
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: 400px;
+    height: 480px;
+    border: 5px solid #BF9970;
+    border-radius: 10px;
+    background: #E1BD97;
+}
+.homeMenu h1{
+    text-align: center;
+    font-size: 50px;
+    margin: 50px;
+}
+.homeMenu ul{
+    list-style-type: none;
+    padding: 0;
+    margin: auto;
+    text-align: center;
+    font-size: 30px;
+    width: 250px;
+}
+.homeMenu ul li{
+    margin-top: 20px;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+.configure{
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: 400px;
+    height: 400px;
+    border: 5px solid #f6f1f1;
+    border-radius: 10px;
+    background: #f8f5f5;
+    user-select: none;
+}
+
+.configure .x{
+    position: absolute;
+    font-size: 20px;
+    right: 5%;
+    top: 5%;
+    cursor: pointer;
+}
+.configure .title{
+    position: absolute;
+    font-size: 20px;
+    left: 5%;
+    top: 5%;
+}
+.configure .option{
+    position: absolute;
+    top: 15%;
+    width: 100%;
+    background: #FAFAFA;
+}
+.configure .option span{
+    font-size: 20px;
+    display: block;
+    margin-left: 5%;
+}
+.configure .option select{
+    display: block;
+    width: 90%;
+    margin-left: 5%;
+    height: 40px;
+}
+.configure .start{
+    position: absolute;
+    font-size: 25px;
+    right: 5%;
+    bottom: 5%;
+    cursor: pointer;
+}

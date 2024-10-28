@@ -10,7 +10,7 @@ enum Grade {
     Bishop,
     Knight,
     Pawn,
-    None
+    None,
 }
 
 impl Grade {
@@ -32,7 +32,6 @@ enum Camp {
     Black,
     White,
 }
-
 impl Camp {
     fn as_str(&self) -> &'static str {
         match self {
@@ -40,7 +39,15 @@ impl Camp {
             Camp::White => "white",
         }
     }
+    fn from_string(s: String) -> Camp {
+        match s.as_str() {
+            "black" => Camp::Black,
+            "white" => Camp::White,
+            _ => Camp::White,
+        }
+    }
 }
+
 
 struct Chessman {
     grade: Grade,
@@ -49,19 +56,20 @@ struct Chessman {
 
 struct Player {
     username: String,
-    time:u32,
-    score:u32
+    score: u32,
 }
+
 
 #[wasm_bindgen]
 pub struct ChessGame {
     players: HashMap<Camp, Player>,
-    chess: Vec<Chessman>,
+    chessboard: Vec<Chessman>,
+    current: Camp,
 }
 
 impl fmt::Display for ChessGame {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for line in self.chess.as_slice().chunks(8) {
+        for line in self.chessboard.as_slice().chunks(8) {
             for square in line {
                 write!(f, " ")?;
                 match square.camp {
@@ -97,7 +105,7 @@ impl fmt::Display for ChessGame {
 
 #[wasm_bindgen]
 impl ChessGame {
-    pub fn new(time:u32) -> ChessGame {
+    pub fn new(current: String) -> ChessGame {
         fn level_position(index: u8) -> Grade {
             match index {
                 0 | 7 => Grade::Rook,
@@ -112,19 +120,30 @@ impl ChessGame {
             let row = i / 8;
             let color = if row == 0 || row == 1 { Camp::Black } else { Camp::White };
             if row == 1 || row == 6 {
-                return Chessman { grade: Grade::Pawn, camp: color }
+                return Chessman { grade: Grade::Pawn, camp: color };
             } else if row == 0 || row == 7 {
                 return Chessman { grade: level_position(i % 8), camp: color }
-            }  else {
+            } else {
                 Chessman { grade: Grade::None, camp: color }
             }
         }).collect();
-        let mut players=HashMap::new();
-        players.insert(Camp::Black, Player{username:String::from("黑色玩家"), time, score:0 });
-        players.insert(Camp::White, Player{username:String::from("白色玩家"), time, score:0 });
+        let mut players = HashMap::new();
+        players.insert(Camp::Black, Player { username: String::from("黑色玩家"), score: 0 });
+        players.insert(Camp::White, Player { username: String::from("白色玩家"), score: 0 });
 
-        ChessGame { players, chess: chess_game }
+        ChessGame { current: Camp::from_string(current), players, chessboard: chess_game }
     }
     pub fn render(&self) -> String { self.to_string() }
 }
 
+#[wasm_bindgen]
+impl ChessGame {
+    pub fn get_chessboard(&self) -> Vec<JsValue> {
+        let mut chessboard = Vec::new();
+        for i in self.chessboard.iter() {
+            let chess = vec![i.grade.as_str().to_string(), i.camp.as_str().to_string()];
+            chessboard.push(JsValue::from(chess));
+        };
+        chessboard
+    }
+}
