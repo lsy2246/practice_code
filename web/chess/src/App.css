@@ -1,11 +1,11 @@
-.chessBoard{
+.homeMenu{
     position: absolute;
     left: 0;
     top: 0;
     right: 0;
     bottom: 0;
     margin: auto;
-    width: 400px;
+    width: 480px;
     height: 480px;
     border: 5px solid #BF9970;
     border-radius: 10px;
@@ -81,4 +81,14 @@
     right: 5%;
     bottom: 5%;
     cursor: pointer;
+}
+#chessBoardCanvas{
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    border: 5px solid #BF9970;
+    border-radius: 10px;
 }
