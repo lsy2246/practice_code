@@ -1,0 +1,16 @@
+[package]
+name = "font-to-svg"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+ttf-parser = "0.25.1"
+svg = "0.18.0"
+web-sys = { version = "0.3", features = ["console"] }
+base64 = "0.22.1"
+console_error_panic_hook = "0.1.7"

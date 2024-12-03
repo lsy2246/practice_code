@@ -1,0 +1,287 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.App {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.input-group {
+  margin: 20px 0;
+}
+
+.input-group input {
+  margin: 10px 0;
+  padding: 8px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.svg-preview {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.svg-preview svg {
+  max-width: 100%;
+  height: auto;
+  min-height: 200px;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .svg-preview {
+    background: #1a1a1a;
+    border-color: #333;
+  }
+  
+  .svg-preview svg {
+    color: #fff;
+  }
+}
+
+.error {
+  color: red;
+  margin: 10px 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.input-group {
+  margin: 20px 0;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.svg-preview {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.svg-preview h3 {
+  margin-top: 0;
+}
+
+.convert-button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 20px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.convert-button:hover {
+  background-color: #45a049;
+}
+
+.convert-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.download-button {
+  background-color: #2196F3;
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 10px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.download-button:hover {
+  background-color: #1976D2;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.button-group .download-button {
+  margin: 0;
+}
+
+.animated-text {
+  max-width: 100%;
+  height: auto;
+  min-height: 200px;
+}
+
+.animated-text path {
+  fill: transparent;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-dashoffset: var(--path-length);
+  stroke-dasharray: var(--path-length) var(--path-length);
+  animation: logo-anim 15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform-origin: center;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes logo-anim {
+  0% {
+    stroke-dashoffset: var(--path-length);
+    stroke-dasharray: var(--path-length) var(--path-length);
+    opacity: 0;
+    fill: transparent;
+  }
+
+  5% {
+    opacity: 1;
+    stroke-dashoffset: var(--path-length);
+    stroke-dasharray: var(--path-length) var(--path-length);
+  }
+
+  /* 慢速绘画过程 */
+  50% {
+    stroke-dashoffset: 0;
+    stroke-dasharray: var(--path-length) var(--path-length);
+    fill: transparent;
+  }
+
+  /* 慢慢填充效果 */
+  60% {
+    stroke-dashoffset: 0;
+    stroke-dasharray: var(--path-length) var(--path-length);
+    fill: currentColor;
+    opacity: 1;
+  }
+
+  /* 保持填充状态 */
+  75% {
+    stroke-dashoffset: 0;
+    stroke-dasharray: var(--path-length) var(--path-length);
+    fill: currentColor;
+    opacity: 1;
+  }
+
+  /* 变回线条 */
+  85% {
+    stroke-dashoffset: 0;
+    stroke-dasharray: var(--path-length) var(--path-length);
+    fill: transparent;
+    opacity: 1;
+  }
+
+  /* 线条消失 */
+  95% {
+    stroke-dashoffset: var(--path-length);
+    stroke-dasharray: var(--path-length) var(--path-length);
+    fill: transparent;
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: var(--path-length);
+    stroke-dasharray: var(--path-length) var(--path-length);
+    fill: transparent;
+    opacity: 0;
+  }
+}
+
+/* 确保在暗色模式下的颜色正确 */
+@media (prefers-color-scheme: dark) {
+  .animated-text path {
+    stroke: currentColor;
+  }
+}
