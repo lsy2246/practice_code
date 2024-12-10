@@ -189,6 +189,7 @@ const Game: React.FC = () => {
 
     useEffect(()=>{
         drawChess(chessGame);
+        console.log(chessGame?.render())
     },[])
     function chessBoardClick(e: React.MouseEvent<HTMLCanvasElement>) {
         const client=e.currentTarget.getBoundingClientRect();

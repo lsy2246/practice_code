@@ -1,0 +1,530 @@
+@font-face {
+  font-family: 'PP Neue Corp Wide';
+  src: url('../assets/z.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --color-neutral-900: #0a0a0a;
+  --color-light: #ffffff;
+  --color-black: #0a0a0a;
+  --container-padding: 2rem;
+  --section-padding: 4rem;
+  --color-dark-rgb: 10, 10, 10;
+  --bg-gradient-start: #1a1a2e;
+  --bg-gradient-end: #0a0a0a;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));
+  color: var(--color-light);
+}
+
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+.parallax {
+  width: 100%;
+  position: relative;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+.parallax__header {
+  z-index: 2;
+  padding: var(--section-padding) var(--container-padding);
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+  overflow: visible;
+}
+
+.parallax__visuals {
+  object-fit: cover;
+  width: 100%;
+  max-width: none;
+  height: 120%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.parallax__black-line-overflow {
+  z-index: 20;
+  background-color: var(--color-black);
+  width: 100%;
+  height: 2px;
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+}
+
+.parallax__layers {
+  object-fit: cover;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+.parallax__layer-img {
+  pointer-events: none;
+  object-fit: cover;
+  width: 100%;
+  max-width: none;
+  height: 117.5%;
+  position: absolute;
+  top: -17.5%;
+  left: 0;
+}
+
+.parallax__layer-title {
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100svh;
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.parallax__title {
+  pointer-events: auto;
+  text-align: center;
+  text-transform: none;
+  margin-top: 0;
+  margin-bottom: .1em;
+  margin-right: .075em;
+  font-family: 'PP Neue Corp Wide', sans-serif;
+  font-size: 11vw;
+  font-weight: 800;
+  line-height: 1;
+  position: relative;
+}
+
+.parallax__fade {
+  z-index: 30;
+  background: linear-gradient(to top, 
+    rgba(10, 10, 10, 1) 0%, 
+    rgba(10, 10, 10, 0.95) 15%, 
+    rgba(10, 10, 10, 0.85) 30%, 
+    rgba(10, 10, 10, 0.75) 45%, 
+    rgba(10, 10, 10, 0.6) 60%,
+    rgba(10, 10, 10, 0.4) 75%, 
+    rgba(10, 10, 10, 0.2) 85%, 
+    rgba(10, 10, 10, 0.1) 92%, 
+    transparent 100%
+  );
+  width: 100%;
+  height: 30%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.parallax__content {
+  padding: var(--section-padding) var(--container-padding);
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(to bottom, 
+    rgba(26, 42, 46, 0.95) 0%,
+    rgba(10, 10, 10, 0.98) 85%,
+    var(--color-black) 100%
+  );
+}
+
+.osmo-icon-svg {
+  width: 8em;
+  position: relative;
+  color: var(--color-light);
+}
+
+.travel-grid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.travel-item {
+  padding: 2rem;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  position: relative;
+}
+
+.travel-item:hover {
+  transform: translateY(-5px);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+}
+
+.travel-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  background: linear-gradient(
+    45deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.travel-item h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--color-light);
+  font-family: 'PP Neue Corp Wide', sans-serif;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.travel-item p {
+  color: var(--color-light);
+  line-height: 1.8;
+  opacity: 0.9;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.travel-item::after {
+  content: '点击查看图片';
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.travel-item:hover::after {
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  .travel-intro h2 {
+    font-size: 2rem;
+  }
+  
+  .travel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(to bottom,
+    rgba(10, 10, 10, 0.98) 0%,
+    rgba(26, 42, 46, 0.95) 100%
+  );
+}
+
+.slider {
+  position: absolute;
+  top: 5vh;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  perspective: 300px;
+  perspective-origin: 50% 50%;
+}
+
+.card {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  width: 50%;
+  height: 400px;
+  border-radius: 10px;
+  overflow: hidden;
+  transform: translate3d(-50%, -50%, 0);
+  background-color: #000;
+}
+
+.card img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.75;
+  top: 0;
+  left: 0;
+}
+
+.copy {
+  display: none;
+}
+
+h1 {
+  display: none;
+}
+
+h1 span {
+  display: none;
+}
+
+@media(max-width: 768px) {
+  .card {
+    width: 90%;
+    height: 300px;
+  }
+}
+
+.slider-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(to bottom,
+    var(--color-black) 0%,
+    rgba(26, 42, 46, 0.95) 15%,
+    rgba(10, 10, 10, 0.98) 100%
+  );
+  margin-top: -2px;
+}
+
+.slider-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.5;
+  animation: gridMove 30s linear infinite;
+  pointer-events: none;
+}
+
+.circle-decoration {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.circle-left {
+  left: -150px;
+  top: 20%;
+}
+
+.circle-right {
+  right: -150px;
+  bottom: 20%;
+}
+
+.number-decoration {
+  position: absolute;
+  font-size: 120px;
+  font-weight: 800;
+  color: #ffffff;
+  font-family: 'PP Neue Corp Wide', sans-serif;
+}
+
+.number-top {
+  top: 5%;
+  right: 10%;
+}
+
+.number-bottom {
+  bottom: 5%;
+  left: 10%;
+}
+
+.side-text {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.85) !important;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 0.3em;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-shadow: none;
+  z-index: 10;
+  mix-blend-mode: normal;
+}
+
+.side-text:hover {
+  text-shadow: none;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.side-text-left {
+  left: 3rem;
+}
+
+.side-text-right {
+  right: 2rem;
+  writing-mode: vertical-lr;
+}
+
+.side-text::before {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 150px;
+  background: linear-gradient(
+    to bottom, 
+    transparent, 
+    rgba(255, 255, 255, 0.5), 
+    transparent
+  );
+  left: 50%;
+  transform: translateX(-50%);
+  top: -150px;
+}
+
+.side-text::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 150px;
+  background: linear-gradient(
+    to bottom, 
+    transparent, 
+    rgba(255, 255, 255, 0.5), 
+    transparent
+  );
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -150px;
+}
+
+.year-display {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.85) !important;
+  letter-spacing: 0.5em;
+  font-weight: 500;
+  text-shadow: none;
+  z-index: 10;
+  mix-blend-mode: normal;
+}
+
+.year-display:hover {
+  text-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .side-text {
+    display: none;
+  }
+}
+
+@keyframes gridMove {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(50px);
+  }
+}
+
+.card:hover {
+  transform: translate(-50%, -50%);
+}
+
+/* 添加旅行卡片的悬停效果 */
+.travel-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.travel-item:hover {
+  transform: translateY(-10px);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.travel-item h3 {
+  transition: color 0.3s ease;
+}
+
+.travel-item:hover h3 {
+  color: #fff;
+}
+
+.travel-item p {
+  transition: opacity 0.3s ease;
+}
+
+.travel-item:hover p {
+  opacity: 0.9;
+}
+
+.parallax__content::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 150px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--color-black) 100%
+  );
+  pointer-events: none;
+}
+ 

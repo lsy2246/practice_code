@@ -56,7 +56,7 @@ const App: React.FC = () => {
   };
 
   const handleDownloadCss = () => {
-    const animationCss = `
+    const animationCss = `/* 注意：每个路径都需要在 SVG 中设置 --path-length 变量 */
 .animated-text {
   max-width: 100%;
   height: auto;
@@ -66,8 +66,9 @@ const App: React.FC = () => {
   fill: transparent;
   stroke: currentColor;
   stroke-width: 2;
+  /* 使用每个路径自己的长度 */
+  stroke-dasharray: var(--path-length);
   stroke-dashoffset: var(--path-length);
-  stroke-dasharray: var(--path-length) var(--path-length);
   animation: logo-anim 15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   transform-origin: center;
   stroke-linecap: round;
@@ -88,14 +89,12 @@ const App: React.FC = () => {
     stroke-dasharray: var(--path-length) var(--path-length);
   }
 
-  /* 慢速绘画过程 */
   50% {
     stroke-dashoffset: 0;
     stroke-dasharray: var(--path-length) var(--path-length);
     fill: transparent;
   }
 
-  /* 慢慢填充效果 */
   60% {
     stroke-dashoffset: 0;
     stroke-dasharray: var(--path-length) var(--path-length);
@@ -103,7 +102,6 @@ const App: React.FC = () => {
     opacity: 1;
   }
 
-  /* 保持填充状态 */
   75% {
     stroke-dashoffset: 0;
     stroke-dasharray: var(--path-length) var(--path-length);
@@ -111,7 +109,6 @@ const App: React.FC = () => {
     opacity: 1;
   }
 
-  /* 变回线条 */
   85% {
     stroke-dashoffset: 0;
     stroke-dasharray: var(--path-length) var(--path-length);
@@ -119,7 +116,6 @@ const App: React.FC = () => {
     opacity: 1;
   }
 
-  /* 线条消失 */
   95% {
     stroke-dashoffset: var(--path-length);
     stroke-dasharray: var(--path-length) var(--path-length);
@@ -132,6 +128,13 @@ const App: React.FC = () => {
     stroke-dasharray: var(--path-length) var(--path-length);
     fill: transparent;
     opacity: 0;
+  }
+}
+
+/* 确保在暗色模式下的颜色正确 */
+@media (prefers-color-scheme: dark) {
+  .animated-text path {
+    stroke: currentColor;
   }
 }`;
 

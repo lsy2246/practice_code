@@ -210,7 +210,8 @@ impl FontHandler {
                             
                             paths.push(Path::new()
                                 .set("d", builder.path_data)
-                                .set("fill", "currentColor"));
+                                .set("fill", "currentColor")
+                                .set("style", format!("--path-length: {};", builder.path_length)));
                         }
                     }
                     

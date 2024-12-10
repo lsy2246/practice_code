@@ -210,8 +210,8 @@
   fill: transparent;
   stroke: currentColor;
   stroke-width: 2;
+  stroke-dasharray: var(--path-length);
   stroke-dashoffset: var(--path-length);
-  stroke-dasharray: var(--path-length) var(--path-length);
   animation: logo-anim 15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   transform-origin: center;
   stroke-linecap: round;
