@@ -1,0 +1,452 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+import ScrollReveal from "../../components/aceternity/ScrollReveal.astro";
+
+// 获取旅行攻略集合
+const travels = await getCollection("travel");
+
+// 按发布日期排序
+function sortByDate<T extends { data: { pubDate?: Date | string, updatedDate?: Date | string } }>(a: T, b: T): number {
+  return new Date(b.data.pubDate || b.data.updatedDate || 0).getTime() - 
+         new Date(a.data.pubDate || a.data.updatedDate || 0).getTime();
+}
+
+const sortedTravels = [...travels].sort(sortByDate);
+
+// 提取所有标签并按数量排序
+const allTags: {name: string, count: number}[] = [];
+travels.forEach((travel) => {
+  travel.data.tags.forEach((tag: string) => {
+    const existing = allTags.find(t => t.name === tag);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      allTags.push({ name: tag, count: 1 });
+    }
+  });
+});
+
+const sortedTags = [...allTags].sort((a, b) => b.count - a.count);
+
+// 提取所有季节
+const allSeasons = new Set<string>();
+travels.forEach((travel) => {
+  if (travel.data.season) {
+    allSeasons.add(travel.data.season);
+  }
+});
+const seasons = Array.from(allSeasons);
+
+// 提取所有类型
+const allTypes = new Set<string>();
+travels.forEach((travel) => {
+  if (travel.data.type) {
+    allTypes.add(travel.data.type);
+  }
+});
+const types = Array.from(allTypes);
+
+// 提取所有难度
+const allDifficulties = new Set<string>();
+travels.forEach((travel) => {
+  if (travel.data.difficulty) {
+    allDifficulties.add(travel.data.difficulty);
+  }
+});
+const difficulties = Array.from(allDifficulties);
+
+// 提取所有城市
+const cities: {name: string, count: number}[] = [];
+travels.forEach((travel) => {
+  if (travel.data.city) {
+    const existingCity = cities.find(c => c.name === travel.data.city);
+    if (existingCity) {
+      existingCity.count++;
+    } else {
+      cities.push({ name: travel.data.city, count: 1 });
+    }
+  }
+});
+
+// 按城市出现次数排序
+cities.sort((a, b) => b.count - a.count);
+
+// 分页相关
+const itemsPerPage = 10;
+const totalPages = Math.ceil(sortedTravels.length / itemsPerPage);
+const currentPage = 1;
+const visibleTravels = sortedTravels.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage
+);
+---
+
+<MainLayout title="旅行攻略 - 河北游礼">
+  <!-- 手绘旅行日记本风格的头部 -->
+  <div class="bg-theme-primary-bg dark:bg-slate-900 py-12 relative overflow-hidden">
+    <!-- 装饰性笔触元素 -->
+    <div class="absolute top-0 right-0 w-40 h-40 bg-[url('/images/ink-splash.png')] bg-no-repeat opacity-10"></div>
+    <div class="absolute bottom-0 left-0 w-32 h-32 bg-[url('/images/coffee-stain.png')] bg-no-repeat opacity-5"></div>
+    
+    <div class="container mx-auto px-4 relative">
+      <div class="max-w-4xl mx-auto">
+        <!-- 手绘风格标题 -->
+        <div class="mb-10 relative">
+          <div class="absolute -top-8 -left-8 w-16 h-16 bg-[url('/images/paper-clip.png')] bg-no-repeat opacity-70 transform -rotate-12"></div>
+          <div class="relative inline-block">
+            <h1 class="text-5xl font-handwriting text-slate-800 dark:text-primary-100 leading-tight transform -rotate-1 relative z-10">
+              河北私人旅行笔记
+            </h1>
+            <div class="absolute -bottom-3 left-0 w-full h-3 bg-primary-300 dark:bg-primary-600 opacity-40 transform rotate-1"></div>
+          </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row gap-8 items-start">
+          <!-- 左侧类似日记本的介绍 -->
+          <div class="md:w-1/2 bg-white dark:bg-slate-800 p-6 border border-slate-200 dark:border-slate-700 rounded-sm shadow-md transform rotate-1 relative">
+            <!-- 装饰性贴纸 -->
+            <div class="absolute -top-3 -right-3 w-12 h-12 bg-[url('/images/washi-tape.png')] bg-no-repeat opacity-80 transform -rotate-15"></div>
+            
+            <p class="font-handwriting text-lg text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
+              这里不是旅行社的标准路线，而是我私人的旅途记录和探索笔记...
+            </p>
+            <p class="font-handwriting text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
+              河北的每一处风景都有自己的故事，我带着好奇心和相机，在乡间小路、古老城墙和山林溪流间留下足迹。现在，我愿与你分享这些未经商业包装的真实体验。
+            </p>
+          </div>
+          
+          <!-- 右侧似手绘地图的概述 -->
+          <div class="md:w-1/2 bg-theme-primary-bg dark:bg-slate-800/50 p-5 border border-primary-200 dark:border-slate-700 rounded-sm shadow-md transform -rotate-1">
+            <h2 class="font-handwriting text-2xl text-slate-800 dark:text-primary-300 mb-3 flex items-center">
+              <span class="inline-block w-6 h-6 mr-2 bg-[url('/images/compass-icon.png')] bg-contain bg-no-repeat"></span>
+              地域指南
+            </h2>
+            <div class="space-y-2 font-handwriting text-slate-700 dark:text-slate-300">
+              <div class="flex items-start">
+                <span class="inline-block w-4 h-4 mr-2 mt-1 bg-[url('/images/marker-dot.png')] bg-contain bg-no-repeat"></span>
+                <p>北部：长城脚下的古朴村落</p>
+              </div>
+              <div class="flex items-start">
+                <span class="inline-block w-4 h-4 mr-2 mt-1 bg-[url('/images/marker-dot.png')] bg-contain bg-no-repeat"></span>
+                <p>南部：太行山下的幽静峡谷</p>
+              </div>
+              <div class="flex items-start">
+                <span class="inline-block w-4 h-4 mr-2 mt-1 bg-[url('/images/marker-dot.png')] bg-contain bg-no-repeat"></span>
+                <p>东部：渤海湾的日出时分</p>
+              </div>
+              <div class="flex items-start">
+                <span class="inline-block w-4 h-4 mr-2 mt-1 bg-[url('/images/marker-dot.png')] bg-contain bg-no-repeat"></span>
+                <p>西部：坝上草原的风与云</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 主要内容区域 - 手账风格布局 -->
+  <div class="bg-theme-primary-bg dark:bg-slate-900 py-16 relative">
+    <!-- 装饰性背景元素 -->
+    <div class="absolute top-20 right-20 w-60 h-60 bg-[url('/images/map-element.png')] bg-no-repeat opacity-5"></div>
+    <div class="absolute bottom-40 left-40 w-48 h-48 bg-[url('/images/compass-rose.png')] bg-no-repeat opacity-5 transform rotate-15"></div>
+    
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 lg:grid-cols-7 gap-8">
+        <!-- 左侧筛选栏 - 旅行者的笔记本风格 -->
+        <div class="lg:col-span-2">
+          <div class="sticky top-24 space-y-8">
+            <!-- 旅行者的口袋笔记本 -->
+            <div class="bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 p-6 shadow-md transform -rotate-1 relative">
+              <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-16 h-5 bg-[url('/images/binding-tape.png')] bg-contain bg-no-repeat"></div>
+              
+              <h2 class="font-handwriting text-2xl text-slate-800 dark:text-primary-100 mb-6 pb-3 border-b border-slate-200 dark:border-slate-700">
+                旅行者笔记
+              </h2>
+              
+              <!-- 搜索类似手写字段 -->
+              <div class="mb-8">
+                <label class="block font-handwriting text-lg text-slate-700 dark:text-slate-300 mb-2">查找旅程</label>
+                <div class="relative">
+                  <input
+                    type="text"
+                    placeholder="输入关键词..."
+                    class="w-full px-4 py-2 bg-theme-primary-bg dark:bg-slate-700/50 border-b-2 border-slate-300 dark:border-slate-600 font-handwriting text-slate-800 dark:text-slate-200 focus:outline-none focus:border-theme-primary dark:focus:border-theme-primary placeholder-slate-400"
+                  />
+                  <div class="absolute right-2 top-2 opacity-60">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 季节关联 -->
+              <div class="mb-8">
+                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-100 mb-4 flex items-center">
+                  <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/season-icon.png')] bg-contain bg-no-repeat"></span>
+                  最适季节
+                </h3>
+                <div class="grid grid-cols-2 gap-2">
+                  {seasons.map((season) => (
+                    <label class="flex items-center cursor-pointer group">
+                      <div class="relative">
+                        <input type="checkbox" class="absolute opacity-0 w-0 h-0" />
+                        <div class="w-5 h-5 border border-slate-400 dark:border-slate-600 group-hover:border-primary-500"></div>
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-20 bg-primary-400"></div>
+                      </div>
+                      <span class="ml-2 font-handwriting text-slate-700 dark:text-slate-300 group-hover:text-primary-800 dark:group-hover:text-primary-400">
+                        {season}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <!-- 旅行类型 -->
+              <div class="mb-8">
+                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-100 mb-4 flex items-center">
+                  <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/travel-type-icon.png')] bg-contain bg-no-repeat"></span>
+                  旅行方式
+                </h3>
+                <div class="space-y-2">
+                  {types.map((type) => (
+                    <label class="flex items-center cursor-pointer group">
+                      <div class="relative">
+                        <input type="checkbox" class="absolute opacity-0 w-0 h-0" />
+                        <div class="w-5 h-5 border border-slate-400 dark:border-slate-600 group-hover:border-primary-500"></div>
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-20 bg-primary-400"></div>
+                      </div>
+                      <span class="ml-2 font-handwriting text-slate-700 dark:text-slate-300 group-hover:text-primary-800 dark:group-hover:text-primary-400">
+                        {type}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <!-- 城市筛选 - 新增部分 -->
+              <div class="mb-8">
+                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-100 mb-4 flex items-center">
+                  <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/city-icon.png')] bg-contain bg-no-repeat"></span>
+                  目的地城市
+                </h3>
+                <div class="space-y-2">
+                  {cities.map((city) => (
+                    <label class="flex items-center cursor-pointer group">
+                      <div class="relative">
+                        <input type="checkbox" class="absolute opacity-0 w-0 h-0" />
+                        <div class="w-5 h-5 border border-slate-400 dark:border-slate-600 group-hover:border-primary-500"></div>
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-20 bg-primary-400"></div>
+                      </div>
+                      <span class="ml-2 font-handwriting text-slate-700 dark:text-slate-300 group-hover:text-primary-800 dark:group-hover:text-primary-400">
+                        {city.name} <span class="text-xs text-slate-500 dark:text-slate-400">({city.count})</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <!-- 旅行灵感标签 -->
+              <div class="mb-4">
+                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-100 mb-4 flex items-center">
+                  <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/tag-icon.png')] bg-contain bg-no-repeat"></span>
+                  旅行灵感
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  {sortedTags.slice(0, 10).map((tag) => (
+                    <span class="px-2 py-1 bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-300 text-sm font-handwriting border border-slate-200 dark:border-slate-600 cursor-pointer hover:bg-primary-100 dark:hover:bg-primary-900/30 hover:border-primary-300 dark:hover:border-primary-700 transform hover:-rotate-1 transition-transform">
+                      # {tag.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 右侧内容列表 - 旅行日记页面风格 -->
+        <div class="lg:col-span-5">
+          <!-- 引言部分 -->
+          <div class="mb-12">
+            <p class="text-xl font-handwriting text-slate-700 dark:text-slate-300 leading-relaxed max-w-2xl">
+              这些是我在河北各地的旅行笔记，不是官方推荐，而是个人探索与体验的记录。希望能给你不一样的旅行灵感...
+            </p>
+          </div>
+          
+          <!-- 旅行笔记列表 -->
+          <div class="space-y-10">
+            {visibleTravels.map((travel, index) => (
+              <ScrollReveal animation={index % 2 === 0 ? "slide-right" : "slide-left"}>
+                <a 
+                  href={`/travel/${travel.slug}`}
+                  class="block group"
+                >
+                  <div class={`bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden shadow-md transform ${index % 2 === 0 ? 'rotate-1' : '-rotate-1'} hover:shadow-lg transition-shadow relative`}>
+                    <!-- 装饰性元素 -->
+                    <div class="absolute top-3 right-3 w-16 h-16 bg-[url('/images/polaroid-corner.png')] bg-contain bg-no-repeat opacity-20"></div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
+                      <div class="md:col-span-1 h-full">
+                        <div class="h-48 md:h-full bg-primary-100 dark:bg-slate-700 relative border-b md:border-r border-slate-200 dark:border-slate-700">
+                          <div class="flex items-center justify-center h-full font-handwriting italic text-slate-500 dark:text-slate-400">
+                            {travel.data.title} 照片
+                          </div>
+                          {travel.data.featured && (
+                            <div class="absolute top-3 left-3 px-3 py-1 bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-400 text-xs font-handwriting border border-primary-200 dark:border-primary-800/50 transform -rotate-3 shadow-sm">
+                              ★ 私藏路线
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div class="md:col-span-2 p-6">
+                        <h3 class="text-2xl font-handwriting text-slate-800 dark:text-primary-100 mb-3 group-hover:text-primary-800 dark:group-hover:text-primary-400 transition-colors">
+                          {travel.data.title}
+                        </h3>
+                        
+                        <div class="flex flex-wrap gap-4 mb-4 text-sm font-handwriting text-slate-600 dark:text-slate-400">
+                          {travel.data.season && (
+                            <div class="flex items-center">
+                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/season-small.png')] bg-contain bg-no-repeat"></span>
+                              {travel.data.season}
+                            </div>
+                          )}
+                          
+                          {travel.data.type && (
+                            <div class="flex items-center">
+                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/type-small.png')] bg-contain bg-no-repeat"></span>
+                              {travel.data.type}
+                            </div>
+                          )}
+                          
+                          {travel.data.days && (
+                            <div class="flex items-center">
+                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/days-small.png')] bg-contain bg-no-repeat"></span>
+                              {travel.data.days}天
+                            </div>
+                          )}
+                          
+                          {travel.data.difficulty && (
+                            <div class="flex items-center">
+                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/difficulty-small.png')] bg-contain bg-no-repeat"></span>
+                              难度: {travel.data.difficulty}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <p class="font-handwriting text-slate-600 dark:text-slate-400 leading-relaxed mb-4 line-clamp-3">
+                          {travel.data.description}
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-2 mb-3">
+                          {travel.data.tags.slice(0, 3).map((tag: string) => (
+                            <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                              #{tag}
+                            </span>
+                          ))}
+                          {travel.data.tags.length > 3 && (
+                            <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                              +{travel.data.tags.length - 3}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div class="text-primary-700 dark:text-primary-500 text-sm font-handwriting group-hover:underline mt-2 flex items-center">
+                          阅读完整笔记
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </ScrollReveal>
+            ))}
+          </div>
+          
+          <!-- 分页 - 手绘风格 -->
+          <div class="mt-12 flex justify-center">
+            <div class="inline-flex border border-slate-300 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800">
+              <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
+                上一页
+              </button>
+              <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-white bg-primary-600 dark:bg-primary-700">
+                1
+              </button>
+              {totalPages > 1 && (
+                <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
+                  2
+                </button>
+              )}
+              {totalPages > 2 && (
+                <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
+                  3
+                </button>
+              )}
+              {totalPages > 1 && (
+                <button class="px-4 py-2 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
+                  下一页
+                </button>
+              )}
+            </div>
+          </div>
+          
+          <!-- 底部引言 - 旅行者的话 -->
+          <div class="mt-16 text-center max-w-2xl mx-auto">
+            <p class="text-lg font-handwriting text-slate-600 dark:text-slate-400 italic relative">
+              <span class="absolute -top-6 left-0 text-4xl opacity-20">"</span>
+              旅行不在于目的地的远近，而在于看世界的眼光。河北的每一处风景，都值得用心发现...
+              <span class="absolute -bottom-6 right-0 text-4xl opacity-20">"</span>
+            </p>
+            <div class="mt-8 flex justify-center">
+              <div class="w-16 h-8 bg-[url('/images/signature.png')] bg-contain bg-no-repeat opacity-70"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</MainLayout>
+
+<style>
+  .font-handwriting {
+    font-family: cursive, sans-serif;
+  }
+
+  .font-adventure {
+    font-family: cursive, sans-serif;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+</style>
+
+<script>
+  // 客户端交互逻辑
+  document.addEventListener('DOMContentLoaded', () => {
+    // 选项卡切换
+    const tabLinks = document.querySelectorAll('.container .whitespace-nowrap');
+    
+    tabLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        // 移除所有活动状态
+        tabLinks.forEach(tab => {
+          tab.classList.remove('text-primary-800', 'dark:text-primary-400', 'border-b-2', 'border-primary-500');
+          tab.classList.add('text-slate-600', 'dark:text-slate-400');
+        });
+        
+        // 设置当前活动状态
+        link.classList.remove('text-slate-600', 'dark:text-slate-400');
+        link.classList.add('text-primary-800', 'dark:text-primary-400', 'border-b-2', 'border-primary-500');
+      });
+    });
+  });
+</script> 

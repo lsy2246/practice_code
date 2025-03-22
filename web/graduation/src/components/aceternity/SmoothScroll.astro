@@ -1,0 +1,106 @@
+---
+interface Props {
+  enabled?: boolean;
+  duration?: number; // 滚动持续时间，毫秒
+  easing?: 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out';
+}
+
+const { 
+  enabled = true, 
+  duration = 800, 
+  easing = 'ease-out'
+} = Astro.props;
+
+// 将缓动函数名转换为贝塞尔曲线
+const getBezier = () => {
+  switch(easing) {
+    case 'linear': return 'cubic-bezier(0, 0, 1, 1)';
+    case 'ease-in': return 'cubic-bezier(0.42, 0, 1, 1)';
+    case 'ease-out': return 'cubic-bezier(0, 0, 0.58, 1)';
+    case 'ease-in-out': return 'cubic-bezier(0.42, 0, 0.58, 1)';
+    default: return 'cubic-bezier(0, 0, 0.58, 1)'; // ease-out
+  }
+};
+
+const bezier = getBezier();
+---
+
+<script define:vars={{ enabled, duration, bezier }}>
+  // 仅在启用时执行
+  if (enabled) {
+    document.addEventListener('DOMContentLoaded', () => {
+      // 创建平滑滚动样式
+      const style = document.createElement('style');
+      style.textContent = `
+        html {
+          scroll-behavior: smooth;
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+          html {
+            scroll-behavior: auto;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // 处理所有锚点链接，添加平滑滚动
+      const anchorLinks = document.querySelectorAll('a[href^="#"]:not([href="#"])');
+      anchorLinks.forEach(anchor => {
+        anchor.addEventListener('click', (e) => {
+          const targetId = anchor.getAttribute('href');
+          if (!targetId) return;
+          
+          const targetElement = document.querySelector(targetId);
+          if (!targetElement) return;
+          
+          e.preventDefault();
+          
+          const offsetTop = targetElement.getBoundingClientRect().top + window.scrollY;
+          
+          // 执行平滑滚动
+          window.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+          });
+        });
+      });
+      
+      // 返回顶部按钮处理
+      const scrollToTopButtons = document.querySelectorAll('.scroll-to-top');
+      scrollToTopButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        });
+      });
+      
+      // 显示/隐藏返回顶部按钮
+      const toggleScrollToTopVisibility = () => {
+        scrollToTopButtons.forEach(button => {
+          if (window.scrollY > 300) {
+            button.classList.add('opacity-100');
+            button.classList.remove('opacity-0', 'pointer-events-none');
+          } else {
+            button.classList.add('opacity-0', 'pointer-events-none');
+            button.classList.remove('opacity-100');
+          }
+        });
+      };
+      
+      window.addEventListener('scroll', toggleScrollToTopVisibility);
+      toggleScrollToTopVisibility(); // 初始检查
+    });
+  }
+</script>
+
+<!-- 返回顶部按钮 -->
+<button class="scroll-to-top fixed bottom-8 right-8 bg-color-primary-600 dark:bg-color-dark-primary-600 text-white rounded-full p-3 shadow-lg opacity-0 pointer-events-none transition-opacity z-50">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+  </svg>
+  <span class="sr-only">返回顶部</span>
+</button> 

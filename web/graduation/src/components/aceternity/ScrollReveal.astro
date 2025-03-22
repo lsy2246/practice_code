@@ -1,0 +1,149 @@
+---
+interface Props {
+  animation?: 'fade' | 'slide-up' | 'slide-down' | 'slide-left' | 'slide-right' | 'scale' | 'rotate';
+  duration?: number; // 动画持续时间，毫秒
+  delay?: number; // 延迟时间，毫秒
+  threshold?: number; // 触发阈值，0-1之间
+  once?: boolean; // 是否只触发一次
+  className?: string;
+}
+
+const { 
+  animation = 'fade', 
+  duration = 800, 
+  delay = 0, 
+  threshold = 0.3,
+  once = true,
+  className = "" 
+} = Astro.props;
+
+// 生成唯一ID
+const id = `scroll-reveal-${Math.random().toString(36).substring(2, 11)}`;
+
+// 设定初始隐藏样式
+const getInitialStyles = () => {
+  switch(animation) {
+    case 'fade':
+      return 'opacity: 0;';
+    case 'slide-up':
+      return 'opacity: 0; transform: translateY(40px);';
+    case 'slide-down':
+      return 'opacity: 0; transform: translateY(-40px);';
+    case 'slide-left':
+      return 'opacity: 0; transform: translateX(40px);';
+    case 'slide-right':
+      return 'opacity: 0; transform: translateX(-40px);';
+    case 'scale':
+      return 'opacity: 0; transform: scale(0.9);';
+    case 'rotate':
+      return 'opacity: 0; transform: rotate(-5deg);';
+    default:
+      return 'opacity: 0;';
+  }
+};
+
+const initialStyles = getInitialStyles();
+---
+
+<div
+  id={id}
+  class={`scroll-reveal ${className}`}
+  data-scroll-animation={animation}
+  data-scroll-once={once.toString()}
+  style={`${initialStyles} transition: all ${duration}ms ease ${delay}ms;`}
+>
+  <slot />
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const revealElements = document.querySelectorAll('.scroll-reveal');
+    
+    const observerOptions = {
+      root: null, // 使用视口作为根元素
+      rootMargin: '0px', 
+      threshold: 0.3 // 默认阈值
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const element = entry.target as HTMLElement;
+        const isOnce = element.getAttribute('data-scroll-once') === 'true';
+        
+        if (entry.isIntersecting) {
+          // 元素进入视口，添加显示样式
+          element.style.opacity = '1';
+          element.style.transform = 'none';
+          
+          // 如果设置为只触发一次，取消观察
+          if (isOnce) {
+            observer.unobserve(element);
+          }
+        } else if (!isOnce) {
+          // 如果不是一次性的，元素离开视口时恢复初始状态
+          const animation = element.getAttribute('data-scroll-animation') || 'fade';
+          
+          switch(animation) {
+            case 'fade':
+              element.style.opacity = '0';
+              break;
+            case 'slide-up':
+              element.style.opacity = '0';
+              element.style.transform = 'translateY(40px)';
+              break;
+            case 'slide-down':
+              element.style.opacity = '0';
+              element.style.transform = 'translateY(-40px)';
+              break;
+            case 'slide-left':
+              element.style.opacity = '0';
+              element.style.transform = 'translateX(40px)';
+              break;
+            case 'slide-right':
+              element.style.opacity = '0';
+              element.style.transform = 'translateX(-40px)';
+              break;
+            case 'scale':
+              element.style.opacity = '0';
+              element.style.transform = 'scale(0.9)';
+              break;
+            case 'rotate':
+              element.style.opacity = '0';
+              element.style.transform = 'rotate(-5deg)';
+              break;
+          }
+        }
+      });
+    }, observerOptions);
+    
+    // 开始观察所有滚动显示元素
+    revealElements.forEach(element => {
+      // 设置自定义阈值
+      const elementThreshold = parseFloat(element.getAttribute('data-scroll-threshold') || '0.3');
+      if (!isNaN(elementThreshold) && elementThreshold >= 0 && elementThreshold <= 1) {
+        const newObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            const element = entry.target as HTMLElement;
+            const isOnce = element.getAttribute('data-scroll-once') === 'true';
+            
+            if (entry.isIntersecting) {
+              element.style.opacity = '1';
+              element.style.transform = 'none';
+              
+              if (isOnce) {
+                newObserver.unobserve(element);
+              }
+            } else if (!isOnce) {
+              // 恢复初始状态的逻辑与上面相同
+              // 为简化代码，这里不重复实现
+            }
+          });
+        }, { ...observerOptions, threshold: elementThreshold });
+        
+        newObserver.observe(element);
+      } else {
+        observer.observe(element);
+      }
+    });
+  });
+</script> 

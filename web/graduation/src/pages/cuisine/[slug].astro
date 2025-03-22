@@ -1,0 +1,177 @@
+---
+import { getCollection, getEntry, type CollectionEntry } from "astro:content";
+import MainLayout from "../../layouts/MainLayout.astro";
+import ScrollReveal from "../../components/aceternity/ScrollReveal.astro";
+
+// 定义Props类型
+export interface Props {
+  entry: CollectionEntry<"cuisine">;
+}
+
+// 生成静态路径
+export async function getStaticPaths() {
+  const cuisines = await getCollection("cuisine");
+  return cuisines.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+// 获取当前美食数据
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// 获取相关美食
+const allCuisines = await getCollection("cuisine");
+const relatedCuisines = allCuisines
+  .filter(
+    (item) => 
+      item.slug !== entry.slug && 
+      (item.data.category === entry.data.category || 
+      item.data.tags.some((tag) => entry.data.tags.includes(tag)))
+  )
+  .slice(0, 3);
+---
+
+<MainLayout title={`${entry.data.title} - 河北游礼`}>
+  <!-- 英雄区域 -->
+  <div class="relative h-[50vh] min-h-[400px]">
+    <!-- 背景图片 -->
+    <div class="absolute inset-0">
+      <img 
+        src={entry.data.image} 
+        alt={entry.data.title}
+        class="w-full h-full object-cover"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-black/30"></div>
+    </div>
+    
+    <!-- 内容 -->
+    <div class="absolute inset-0 flex items-end">
+      <div class="container mx-auto px-4 pb-12">
+        <ScrollReveal animation="slide-up">
+          <div class="max-w-4xl">
+            <!-- 面包屑导航 -->
+            <div class="flex items-center gap-2 text-white/80 mb-4">
+              <a href="/" class="hover:text-white transition-colors">首页</a>
+              <span>/</span>
+              <a href="/cuisine" class="hover:text-white transition-colors">美食</a>
+              <span>/</span>
+              <span class="text-white">{entry.data.title}</span>
+            </div>
+
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">{entry.data.title}</h1>
+            
+            <!-- 标签 -->
+            <div class="flex flex-wrap gap-2 mb-6">
+              {entry.data.tags.map((tag) => (
+                <span class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
+            
+            <p class="text-xl text-white/90 max-w-3xl">{entry.data.description}</p>
+          </div>
+        </ScrollReveal>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主要内容区域 -->
+  <div class="py-12 bg-gray-50 dark:bg-gray-900">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <!-- 左侧内容 -->
+        <div class="lg:col-span-8">
+          <ScrollReveal animation="fade">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+              <div class="prose prose-lg dark:prose-invert max-w-none">
+                <Content />
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
+        
+        <!-- 右侧边栏 -->
+        <div class="lg:col-span-4 space-y-8">
+          <!-- 食材信息卡片 -->
+          {entry.data.ingredients && entry.data.ingredients.length > 0 && (
+            <ScrollReveal animation="slide-up">
+              <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-6 flex items-center">
+                  <span class="text-2xl mr-2">🥘</span>
+                  主要食材
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                  {entry.data.ingredients.map((ingredient) => (
+                    <div class="flex items-center bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                      <span class="text-amber-600 dark:text-amber-400 mr-2">•</span>
+                      <span>{ingredient}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </ScrollReveal>
+          )}
+
+          <!-- 烹饪信息卡片 -->
+          <ScrollReveal animation="slide-up" delay={100}>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+              <h3 class="text-xl font-bold mb-6 flex items-center">
+                <span class="text-2xl mr-2">⏱️</span>
+                烹饪信息
+              </h3>
+              <div class="space-y-4">
+                <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span class="text-gray-600 dark:text-gray-300">烹饪时间</span>
+                  <span class="font-medium">{entry.data.cookTime || '45分钟'}</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span class="text-gray-600 dark:text-gray-300">难度等级</span>
+                  <span class="font-medium">{entry.data.difficulty || '中等'}</span>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          <!-- 相关美食推荐 -->
+          {relatedCuisines.length > 0 && (
+            <ScrollReveal animation="slide-up" delay={200}>
+              <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-6 flex items-center">
+                  <span class="text-2xl mr-2">🍽️</span>
+                  相关美食
+                </h3>
+                <div class="space-y-4">
+                  {relatedCuisines.map((cuisine) => (
+                    <a 
+                      href={`/cuisine/${cuisine.slug}`}
+                      class="block group"
+                    >
+                      <div class="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-600">
+                        <img 
+                          src={cuisine.data.image} 
+                          alt={cuisine.data.title}
+                          class="w-16 h-16 rounded-lg object-cover"
+                        />
+                        <div>
+                          <h4 class="font-medium group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                            {cuisine.data.title}
+                          </h4>
+                          <p class="text-sm text-gray-600 dark:text-gray-400">
+                            {cuisine.data.category}
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </ScrollReveal>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</MainLayout> 

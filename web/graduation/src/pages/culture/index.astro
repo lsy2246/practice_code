@@ -1,0 +1,763 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+import ScrollReveal from "../../components/aceternity/ScrollReveal.astro";
+
+// 获取文化内容集合
+const cultures = await getCollection("culture");
+
+// 按照日期排序
+const sortByDate = <T extends { data: { pubDate?: Date | string, updatedDate?: Date | string } }>(a: T, b: T): number => {
+  return new Date(b.data.pubDate || b.data.updatedDate || 0).getTime() - 
+         new Date(a.data.pubDate || a.data.updatedDate || 0).getTime();
+};
+
+// 按发布日期排序
+const sortedCultures = [...cultures].sort(sortByDate);
+
+// 提取所有标签
+const allTags: {name: string, count: number}[] = [];
+sortedCultures.forEach((culture: CollectionEntry<"culture">) => {
+  culture.data.tags.forEach((tag: string) => {
+    const existingTag = allTags.find(t => t.name === tag);
+    if (existingTag) {
+      existingTag.count++;
+    } else {
+      allTags.push({ name: tag, count: 1 });
+    }
+  });
+});
+
+// 按照标签出现次数排序
+allTags.sort((a, b) => b.count - a.count);
+
+// 获取所有分类并计数
+const categories: {name: string, count: number}[] = [];
+sortedCultures.forEach((culture: CollectionEntry<"culture">) => {
+  if (culture.data.category) {
+    const existingCategory = categories.find(c => c.name === culture.data.category);
+    if (existingCategory) {
+      existingCategory.count++;
+    } else {
+      categories.push({ name: culture.data.category, count: 1 });
+    }
+  }
+});
+
+// 按照分类出现次数排序
+categories.sort((a, b) => b.count - a.count);
+
+// 获取所有城市并计数
+const cities: {name: string, count: number}[] = [];
+sortedCultures.forEach((culture: CollectionEntry<"culture">) => {
+  if (culture.data.city) {
+    const existingCity = cities.find(c => c.name === culture.data.city);
+    if (existingCity) {
+      existingCity.count++;
+    } else {
+      cities.push({ name: culture.data.city, count: 1 });
+    }
+  }
+});
+
+// 按照城市出现次数排序
+cities.sort((a, b) => b.count - a.count);
+
+// 提取所有历史时期
+const periods: {name: string, count: number}[] = [];
+sortedCultures.forEach((culture: CollectionEntry<"culture">) => {
+  if ((culture.data as any).period) {
+    const existingPeriod = periods.find(p => p.name === (culture.data as any).period);
+    if (existingPeriod) {
+      existingPeriod.count++;
+    } else {
+      periods.push({ name: (culture.data as any).period, count: 1 });
+    }
+  }
+});
+
+// 按照历史时期出现次数排序
+periods.sort((a, b) => b.count - a.count);
+
+// 分页逻辑
+const itemsPerPage = 9;
+const page = 1; // 当前页码，实际应用中应该从查询参数获取
+const totalPages = Math.ceil(sortedCultures.length / itemsPerPage);
+const currentPageCultures = sortedCultures.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+// 搜索和筛选逻辑（实际应用中应该根据查询参数来筛选）
+const searchQuery = '';
+const selectedCategory = '';
+const selectedPeriod = '';
+const selectedTags: string[] = [];
+const sortBy: 'date' | 'name' = 'date';
+---
+
+<MainLayout title="河北文化典藏 - 河北游礼">
+  <!-- 古籍书卷风格的头部 -->
+  <div class="relative overflow-hidden bg-scroll-bg dark:bg-scroll-bg-dark min-h-[500px] flex items-center">
+    <!-- 古纸纹理和装饰 -->
+    <div class="absolute inset-0 bg-pattern opacity-10 dark:opacity-15"></div>
+    <div class="absolute top-0 left-0 w-32 h-32 bg-scroll-corner opacity-30 -rotate-12"></div>
+    <div class="absolute bottom-0 right-0 w-32 h-32 bg-scroll-corner opacity-30 rotate-180"></div>
+    
+    <!-- 宣纸上的水墨效果 -->
+    <div class="absolute -right-20 top-1/4 w-40 h-40 bg-ink-splash opacity-10 dark:opacity-15 rotate-12"></div>
+    <div class="absolute -left-10 bottom-1/4 w-32 h-32 bg-ink-splash opacity-10 dark:opacity-15 -rotate-12"></div>
+    
+    <!-- 古籍书卷式标题区域 -->
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="max-w-4xl mx-auto text-center">
+        <!-- 书卷式装饰 -->
+        <div class="scroll-decoration relative py-12">
+          <!-- 上卷轴 -->
+          <div class="absolute top-0 left-0 right-0 h-8 bg-scroll-top dark:bg-scroll-top-dark"></div>
+          
+          <!-- 下卷轴 -->
+          <div class="absolute bottom-0 left-0 right-0 h-8 bg-scroll-bottom dark:bg-scroll-bottom-dark"></div>
+          
+          <!-- 典籍风格标题 -->
+          <div class="py-10 px-8">
+            <div class="mb-4 seal-mark">
+              <div class="seal absolute -top-6 right-10 w-20 h-20 opacity-80"></div>
+            </div>
+            
+            <div class="official-title">
+              <h2 class="text-sm font-ancient tracking-[0.2em] text-ancient-red dark:text-ancient-red-dark mb-4">河北文化典藏</h2>
+              <h1 class="text-5xl md:text-6xl font-ancient text-ancient-black dark:text-ancient-white mb-4 leading-snug">文化瑰宝</h1>
+              <div class="w-40 h-0.5 mx-auto my-6 bg-ancient-accent dark:bg-ancient-accent-dark"></div>
+            </div>
+            
+            <p class="font-ancient-body text-lg text-ancient-black dark:text-ancient-white max-w-2xl mx-auto leading-relaxed">
+              典藏千年冀州文明，承载河北厚重历史文化积淀，
+              <br>以字画诗词、戏曲非遗，述说河北文化的绵长与精彩
+            </p>
+            
+            <!-- 朝代时间轴提示 -->
+            <div class="mt-8 flex justify-center">
+              <div class="px-6 py-3 bg-ancient-paper/80 dark:bg-ancient-paper-dark/80 border border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black/80 dark:text-ancient-white/80">
+                <span class="font-ancient-small tracking-wider">周 · 秦 · 汉 · 唐 · 宋 · 元 · 明 · 清 · 民国 · 现代</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 装饰性书法元素 -->
+    <div class="absolute -top-10 -left-10 w-40 h-40 opacity-5 dark:opacity-10 calligraphy-decoration"></div>
+    <div class="absolute -bottom-10 -right-10 w-40 h-40 opacity-5 dark:opacity-10 calligraphy-decoration rotate-180"></div>
+  </div>
+  
+
+  <!-- 主内容区域 - 古籍风格 -->
+  <div class="bg-ancient-paper dark:bg-ancient-paper-dark py-12">
+    <div class="container mx-auto px-4">
+      <!-- 文化介绍语 - 书卷风格 -->
+      <div class="mb-16 max-w-4xl mx-auto">
+        <div class="px-8 py-10 text-center border-l-2 border-r-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 bg-ancient-paper-light/50 dark:bg-ancient-paper-dark/50 relative">
+          <!-- 装饰性笔触 -->
+          <div class="absolute top-0 left-0 w-16 h-16 opacity-10 bg-ink-flower bg-no-repeat bg-contain"></div>
+          <div class="absolute bottom-0 right-0 w-16 h-16 opacity-10 bg-ink-flower bg-no-repeat bg-contain transform rotate-180"></div>
+          
+          <p class="text-xl text-ancient-black dark:text-ancient-white font-ancient-body leading-relaxed">
+            河北，古称"冀州"，是中华文明的发祥地之一。这片土地上流传着众多的文化瑰宝，从京剧、评剧等传统戏曲，到皮影、剪纸等民间艺术，从千年古刹到悠久历史的传统习俗，共同构成了河北独特而丰富的文化景观。
+          </p>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-10">
+        <!-- 左侧筛选栏 - 古籍风格 -->
+        <div class="lg:col-span-1">
+          <div class="sticky top-24 space-y-8">
+            <!-- 搜索框 - 书法风 -->
+            <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
+              <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                典籍检索
+              </h3>
+              
+              <div class="relative">
+                <input 
+                  type="text" 
+                  placeholder="输入关键词..." 
+                  class="w-full px-4 py-2 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 placeholder-ancient-black/50 dark:placeholder-ancient-white/50 text-ancient-black dark:text-ancient-white font-ancient-body focus:outline-none focus:border-ancient-accent dark:focus:border-ancient-accent-dark"
+                />
+                <div class="absolute right-3 top-2 text-ancient-accent/70 dark:text-ancient-accent-dark/70">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 分类筛选 - 卷轴风格 -->
+            <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
+              <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                文化分类
+              </h3>
+              
+              <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 pr-2">
+                {categories.map((category) => (
+                  <div class="flex items-center group cursor-pointer">
+                    <div class="w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20 transition-colors"></div>
+                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-ancient-accent dark:group-hover:text-ancient-accent-dark transition-colors">
+                      <span>{category.name}</span>
+                      <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({category.count})</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <!-- 城市筛选 - 新增部分 -->
+            <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
+              <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                地域分布
+              </h3>
+              
+              <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 pr-2">
+                {cities.map((city) => (
+                  <div class="flex items-center group cursor-pointer">
+                    <div class="w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20 transition-colors"></div>
+                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-ancient-accent dark:group-hover:text-ancient-accent-dark transition-colors">
+                      <span>{city.name}</span>
+                      <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({city.count})</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <!-- 历史时期筛选 -->
+            <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
+              <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                历史朝代
+              </h3>
+              
+              <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 pr-2">
+                {periods.map((period) => (
+                  <div class="flex items-center group cursor-pointer">
+                    <div class="w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20 transition-colors"></div>
+                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-ancient-accent dark:group-hover:text-ancient-accent-dark transition-colors">
+                      <span>{period.name}</span>
+                      <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({period.count})</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <!-- 标签筛选 - 古籍风格 -->
+            <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
+              <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                特色标签
+              </h3>
+              
+              <div class="flex flex-wrap gap-2">
+                {allTags.map((tag) => (
+                  <span class="px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-ancient-black dark:text-ancient-white text-sm font-ancient-small border border-ancient-accent/30 dark:border-ancient-accent-dark/30 cursor-pointer hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50 hover:text-ancient-accent dark:hover:text-ancient-accent-dark">
+                    {tag.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 右侧内容 - 古籍风格 -->
+        <div class="lg:col-span-3">
+          <!-- 文化列表 - 古籍风格 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {currentPageCultures.map((culture, index) => (
+              <ScrollReveal animation="fade" delay={index * 100}>
+                <a href={`/culture/${culture.slug}`} class="block group">
+                  <div class="ancient-card border border-ancient-accent/40 dark:border-ancient-accent-dark/40 overflow-hidden group-hover:shadow-md group-hover:border-ancient-red/50 dark:group-hover:border-ancient-red-dark/50 transition-all duration-300">
+                    <div class="aspect-[5/4] bg-ancient-paper-light/70 dark:bg-ancient-paper-dark/70 relative">
+                      <!-- 装饰元素 -->
+                      <div class="absolute top-2 left-2 w-8 h-8 bg-ink-decoration opacity-10 dark:opacity-15"></div>
+                      <div class="absolute bottom-2 right-2 w-8 h-8 bg-ink-decoration opacity-10 dark:opacity-15 rotate-180"></div>
+                      
+                      <!-- 默认内容显示 -->
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-ancient-black/40 dark:text-ancient-white/40 font-ancient">{culture.data.title}</span>
+                      </div>
+                      
+                      <!-- 印章效果 -->
+                      {index % 4 === 0 && (
+                        <div class="absolute top-4 right-4 w-16 h-16 bg-seal-mark opacity-40 rotate-12"></div>
+                      )}
+                      
+                      {/* 文化类别标签 */}
+                      {culture.data.category && (
+                        <div class="absolute top-3 right-3 px-2 py-1 bg-ancient-paper/90 dark:bg-ancient-paper-dark/90 text-ancient-black dark:text-ancient-white text-xs font-ancient-small border border-ancient-accent/30 dark:border-ancient-accent-dark/30">
+                          {culture.data.category}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div class="p-5">
+                      <div class="mb-3">
+                        <h3 class="text-xl font-ancient text-ancient-black dark:text-ancient-white group-hover:text-ancient-red dark:group-hover:text-ancient-red-dark transition-colors">
+                          {culture.data.title}
+                        </h3>
+                        {(culture.data as any).period && (
+                          <div class="text-sm text-ancient-black/70 dark:text-ancient-white/70 mt-1 font-ancient-small">
+                            {(culture.data as any).period} 时期
+                          </div>
+                        )}
+                      </div>
+                      
+                      <p class="text-ancient-black/80 dark:text-ancient-white/80 text-sm line-clamp-2 mb-4 font-ancient-body">
+                        {culture.data.description}
+                      </p>
+                      
+                      <div class="flex flex-wrap gap-1.5 mb-4">
+                        {culture.data.tags.slice(0, 3).map((tag: string) => (
+                          <span class="px-2 py-1 bg-ancient-paper-light/50 dark:bg-ancient-paper-dark/50 text-ancient-black/70 dark:text-ancient-white/70 text-xs font-ancient-small border border-ancient-accent/20 dark:border-ancient-accent-dark/20">
+                            {tag}
+                          </span>
+                        ))}
+                        {culture.data.tags.length > 3 && (
+                          <span class="px-2 py-1 bg-ancient-paper-light/50 dark:bg-ancient-paper-dark/50 text-ancient-black/70 dark:text-ancient-white/70 text-xs font-ancient-small border border-ancient-accent/20 dark:border-ancient-accent-dark/20">
+                            +{culture.data.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div class="flex items-center text-ancient-black/80 dark:text-ancient-white/80 text-sm group-hover:translate-x-1 transition-transform font-ancient-small group-hover:text-ancient-red dark:group-hover:text-ancient-red-dark">
+                        查阅详情
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </ScrollReveal>
+            ))}
+          </div>
+          
+          <!-- 分页控件 - 古籍风格 -->
+          {totalPages > 1 && (
+            <div class="mt-16 flex justify-center">
+              <div class="inline-flex border border-ancient-accent/40 dark:border-ancient-accent-dark/40 bg-ancient-paper-light/70 dark:bg-ancient-paper-dark/70 rounded">
+                <a
+                  href={page > 1 ? `/culture?page=${page - 1}` : '#'}
+                  class={`px-4 py-2 text-sm font-ancient-small ${
+                    page > 1
+                      ? 'text-ancient-black dark:text-ancient-white hover:bg-ancient-paper-light dark:hover:bg-ancient-paper-dark hover:text-ancient-red dark:hover:text-ancient-red-dark'
+                      : 'text-ancient-black/40 dark:text-ancient-white/40 cursor-not-allowed'
+                  } border-r border-ancient-accent/30 dark:border-ancient-accent-dark/30`}
+                >
+                  上一页
+                </a>
+                
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <a
+                      href={`/culture?page=${pageNum}`}
+                      class={`px-4 py-2 text-sm border-r border-ancient-accent/30 dark:border-ancient-accent-dark/30 font-ancient ${
+                        pageNum === page
+                          ? 'bg-ancient-red/10 dark:bg-ancient-red-dark/10 text-ancient-red dark:text-ancient-red-dark'
+                          : 'text-ancient-black dark:text-ancient-white hover:bg-ancient-paper-light dark:hover:bg-ancient-paper-dark'
+                      }`}
+                    >
+                      {pageNum}
+                    </a>
+                  );
+                })}
+                
+                {totalPages > 5 && <span class="px-4 py-2 text-sm border-r border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black/60 dark:text-ancient-white/60 font-ancient-small">...</span>}
+                
+                {totalPages > 5 && (
+                  <a
+                    href={`/culture?page=${totalPages}`}
+                    class="px-4 py-2 text-sm border-r border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:bg-ancient-paper-light dark:hover:bg-ancient-paper-dark hover:text-ancient-red dark:hover:text-ancient-red-dark font-ancient-small"
+                  >
+                    {totalPages}
+                  </a>
+                )}
+                
+                <a
+                  href={page < totalPages ? `/culture?page=${page + 1}` : '#'}
+                  class={`px-4 py-2 text-sm font-ancient-small ${
+                    page < totalPages
+                      ? 'text-ancient-black dark:text-ancient-white hover:bg-ancient-paper-light dark:hover:bg-ancient-paper-dark hover:text-ancient-red dark:hover:text-ancient-red-dark'
+                      : 'text-ancient-black/40 dark:text-ancient-white/40 cursor-not-allowed'
+                  }`}
+                >
+                  下一页
+                </a>
+              </div>
+            </div>
+          )}
+          
+          <!-- 底部引言 - 古籍风格 -->
+          <div class="mt-20 mb-10 text-center relative">
+            <!-- 装饰元素 -->
+            <div class="absolute left-1/4 top-0 w-16 h-1 bg-ancient-accent/30 dark:bg-ancient-accent-dark/30"></div>
+            <div class="absolute right-1/4 bottom-0 w-16 h-1 bg-ancient-accent/30 dark:bg-ancient-accent-dark/30"></div>
+            
+            <blockquote class="text-xl text-ancient-black dark:text-ancient-white font-ancient italic">
+              "文化是一个国家、一个民族的灵魂"
+            </blockquote>
+            <div class="mt-3 text-sm text-ancient-black/60 dark:text-ancient-white/60 font-ancient-small">— 河北历史文化研究院</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</MainLayout>
+
+<script>
+  // 实际应用中这里会有更多的客户端交互逻辑
+  document.addEventListener('DOMContentLoaded', () => {
+    // 初始化筛选和搜索功能
+    const searchInput = document.querySelector('input[placeholder="输入关键词..."]');
+    const tags = document.querySelectorAll('.flex-wrap.gap-2 span');
+    
+    if (searchInput) {
+      searchInput.addEventListener('keydown', (e) => {
+        if ((e as KeyboardEvent).key === 'Enter') {
+          // 执行搜索逻辑
+          const query = (e.target as HTMLInputElement).value;
+          if (query) {
+            window.location.href = `/culture?search=${encodeURIComponent(query)}`;
+          }
+        }
+      });
+    }
+    
+    // 为标签添加点击事件
+    tags.forEach((tag) => {
+      tag.addEventListener('click', () => {
+        const tagText = tag.textContent?.trim() || '';
+        if (tagText) {
+          window.location.href = `/culture?tag=${encodeURIComponent(tagText)}`;
+        }
+      });
+    });
+    
+    // 添加古籍翻页动画效果
+    const cultureCards = document.querySelectorAll('.ancient-card');
+    
+    cultureCards.forEach((card, index) => {
+      // 设置初始状态
+      (card as HTMLElement).style.opacity = '0';
+      (card as HTMLElement).style.transform = 'translateY(20px) rotateY(5deg)';
+      (card as HTMLElement).style.transition = 'all 0.5s ease-out';
+    });
+    
+    // 添加进场动画
+    setTimeout(() => {
+      cultureCards.forEach((card, index) => {
+        setTimeout(() => {
+          (card as HTMLElement).style.opacity = '1';
+          (card as HTMLElement).style.transform = 'translateY(0) rotateY(0)';
+        }, 100 + (index * 80));
+      });
+    }, 300);
+  });
+</script>
+
+<style>
+  /* 古籍主题背景 */
+  .bg-scroll-bg {
+    background-color: var(--bg-scroll);
+    background-image: url('/images/ancient-paper-texture.png');
+    background-blend-mode: multiply;
+  }
+  
+  .bg-scroll-bg-dark {
+    background-color: var(--bg-scroll);
+    background-image: url('/images/ancient-paper-texture.png');
+    background-blend-mode: overlay;
+  }
+  
+  .bg-ancient-paper {
+    background-color: var(--bg-paper);
+    background-image: url('/images/rice-paper.png');
+    background-size: 500px;
+    background-blend-mode: multiply;
+  }
+  
+  .bg-ancient-paper-dark {
+    background-color: var(--bg-paper);
+    background-image: url('/images/rice-paper.png');
+    background-size: 500px;
+    background-blend-mode: overlay;
+  }
+  
+  .bg-ancient-paper-light {
+    background-color: var(--color-primary-50);
+    background-image: url('/images/rice-paper-light.png');
+    background-size: 300px;
+    background-blend-mode: multiply;
+  }
+  
+  .bg-nav-texture {
+    background-color: var(--color-secondary-100);
+    background-image: url('/images/bamboo-texture.png');
+    background-blend-mode: multiply;
+  }
+  
+  .bg-nav-texture-dark {
+    background-color: var(--color-dark-primary-100);
+    background-image: url('/images/bamboo-texture.png');
+    background-blend-mode: overlay;
+  }
+  
+  .bg-pattern {
+    background-image: url('/images/chinese-pattern.png');
+    background-size: 200px;
+  }
+  
+  .bg-scroll-corner {
+    background-image: url('/images/scroll-corner.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+  
+  .bg-scroll-top {
+    background-image: url('/images/scroll-top.png');
+    background-size: 100% 100%;
+    background-repeat: repeat-x;
+  }
+  
+  .bg-scroll-top-dark {
+    background-image: url('/images/scroll-top-dark.png');
+    background-size: 100% 100%;
+    background-repeat: repeat-x;
+  }
+  
+  .bg-scroll-bottom {
+    background-image: url('/images/scroll-bottom.png');
+    background-size: 100% 100%;
+    background-repeat: repeat-x;
+  }
+  
+  .bg-scroll-bottom-dark {
+    background-image: url('/images/scroll-bottom-dark.png');
+    background-size: 100% 100%;
+    background-repeat: repeat-x;
+  }
+  
+  .bg-ink-splash {
+    background-image: url('/images/ink-splash.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+  
+  .bg-ink-decoration {
+    background-image: url('/images/ink-decoration.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+  
+  .bg-ink-flower {
+    background-image: url('/images/ink-flower.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+  
+  .bg-seal-mark {
+    background-image: url('/images/seal-mark.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+  
+  .calligraphy-decoration {
+    background-image: url('/images/calligraphy.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+  
+  .seal {
+    background-image: url('/images/red-seal.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+  
+  /* 古籍主题颜色 */
+  .text-ancient-red {
+    color: #8a2c12;
+  }
+  
+  .text-ancient-red-dark {
+    color: #c34c2a;
+  }
+  
+  .text-ancient-black {
+    color: #362e21;
+  }
+  
+  .text-ancient-white {
+    color: #f1e8d8;
+  }
+  
+  .bg-ancient-accent {
+    background-color: #9c4f2e;
+  }
+  
+  .bg-ancient-accent-dark {
+    background-color: #854025;
+  }
+  
+  .border-ancient-accent {
+    border-color: #9c4f2e;
+  }
+  
+  .border-ancient-accent-dark {
+    border-color: #854025;
+  }
+  
+  /* 古籍卡片样式 */
+  .ancient-card {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: rgba(248, 245, 232, 0.7);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  :root.dark .ancient-card {
+    background-color: rgba(45, 40, 34, 0.7);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .ancient-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  :root.dark .ancient-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* 书卷装饰 */
+  .scroll-decoration {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  /* 印章效果 */
+  .seal-mark {
+    position: relative;
+  }
+  
+  .seal-mark::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80px;
+    height: 80px;
+    background-image: url('/images/red-seal.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.2;
+    transform: rotate(15deg);
+  }
+  
+  /* 卷轴打开动画 */
+  @keyframes unrollScroll {
+    0% {
+      opacity: 0;
+      transform: translateY(-100px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .scroll-decoration {
+    animation: unrollScroll 1.2s ease-out;
+  }
+  
+  /* 印章浮现动画 */
+  @keyframes revealSeal {
+    0% {
+      opacity: 0;
+      transform: scale(0.5) rotate(0deg);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.2) rotate(15deg);
+    }
+    100% {
+      opacity: 0.8;
+      transform: scale(1) rotate(15deg);
+    }
+  }
+  
+  .seal {
+    animation: revealSeal 1.5s ease-out forwards;
+    animation-delay: 0.8s;
+    opacity: 0;
+  }
+  
+  /* 水墨渐显动画 */
+  @keyframes inkReveal {
+    0% {
+      opacity: 0;
+      filter: blur(10px);
+    }
+    100% {
+      opacity: 0.1;
+      filter: blur(0);
+    }
+  }
+  
+  .bg-ink-splash, .bg-ink-decoration, .bg-ink-flower {
+    animation: inkReveal 2s ease-out forwards;
+  }
+  
+  /* 隐藏滚动条但保留功能 */
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
+  
+  /* 标题毛笔效果 */
+  .official-title h1 {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .official-title h1::after {
+    content: '';
+    position: absolute;
+    bottom: -0.25rem;
+    left: 1rem;
+    right: 1rem;
+    height: 2px;
+    background-color: #8a2c12;
+    transform: rotate(-0.5deg);
+  }
+  
+  :root.dark .official-title h1::after {
+    background-color: #c34c2a;
+  }
+</style> 

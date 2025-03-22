@@ -1,0 +1,159 @@
+---
+interface Props {
+  text?: string;
+  href?: string;
+  className?: string;
+  color?: string;
+  glowSize?: 'small' | 'medium' | 'large';
+  glowIntensity?: 'low' | 'medium' | 'high';
+  pulseAnimation?: boolean;
+}
+
+const { 
+  text = "霓虹按钮", 
+  href,
+  className = "",
+  color = "rgb(101, 111, 247)", // 紫色
+  glowSize = 'medium',
+  glowIntensity = 'medium',
+  pulseAnimation = true
+} = Astro.props;
+
+// 计算发光尺寸
+const getGlowSizePx = (size: string) => {
+  switch (size) {
+    case 'small': return 10;
+    case 'large': return 30;
+    default: return 20;
+  }
+};
+
+// 计算发光强度值
+const getIntensityValue = (intensity: string) => {
+  switch (intensity) {
+    case 'low': return 0.6;
+    case 'high': return 1;
+    default: return 0.8;
+  }
+};
+
+const glowSizePx = getGlowSizePx(glowSize);
+const intensityValue = getIntensityValue(glowIntensity);
+
+const buttonId = `neon-btn-${Math.random().toString(36).substring(2, 11)}`;
+---
+
+<div class={`neon-button-wrapper ${pulseAnimation ? 'pulse-enabled' : ''} ${className}`}>
+  {href ? (
+    <a 
+      id={buttonId}
+      href={href}
+      class="neon-button relative inline-block px-6 py-3 rounded-md font-medium transition-all duration-300 overflow-hidden"
+    >
+      <span class="relative z-10">{text}</span>
+    </a>
+  ) : (
+    <button 
+      id={buttonId}
+      class="neon-button relative inline-block px-6 py-3 rounded-md font-medium transition-all duration-300 overflow-hidden"
+    >
+      <span class="relative z-10">{text}</span>
+    </button>
+  )}
+</div>
+
+<style define:vars={{ color, glowSizePx, intensityValue }}>
+  .neon-button-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .neon-button {
+    background-color: transparent;
+    color: var(--color);
+    border: 2px solid var(--color);
+    transition: all 0.3s ease;
+    transform: translateY(0);
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+  }
+  
+  .neon-button:hover {
+    color: white;
+    background-color: var(--color);
+    box-shadow: 
+      0 0 calc(var(--glowSizePx) * 1px) 0 var(--color),
+      0 0 calc(var(--glowSizePx) * 2px) 0 var(--color),
+      0 0 calc(var(--glowSizePx) * 3px) 0 rgba(var(--rgb-values), calc(var(--intensityValue) * 0.5));
+    transform: translateY(-3px);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  }
+  
+  .pulse-enabled .neon-button:hover::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: inherit;
+    z-index: -1;
+    animation: neon-pulse 1.5s ease-in-out infinite;
+    background: transparent;
+    border: 2px solid var(--color);
+    opacity: 0;
+  }
+  
+  @keyframes neon-pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+    70% {
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+</style>
+
+<script define:vars={{ buttonId, color }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+    
+    // 计算RGB值以便在CSS中使用rgba
+    const getRGB = (colorStr) => {
+      // 检查是否为hex格式
+      if (colorStr.startsWith('#')) {
+        const hex = colorStr.substring(1);
+        return [
+          parseInt(hex.substring(0, 2), 16),
+          parseInt(hex.substring(2, 4), 16),
+          parseInt(hex.substring(4, 6), 16)
+        ].join(', ');
+      }
+      
+      // 检查是否已经是rgb格式
+      const rgbMatch = colorStr.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (rgbMatch) {
+        return `${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}`;
+      }
+      
+      // 默认回退颜色
+      return '101, 111, 247';
+    };
+    
+    const rgbValues = getRGB(color);
+    button.style.setProperty('--rgb-values', rgbValues);
+    
+    // 鼠标移动时的额外发光效果
+    button.addEventListener('mousemove', (e) => {
+      const rect = button.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      // 设置发光的中心点
+      button.style.setProperty('--x', `${x}px`);
+      button.style.setProperty('--y', `${y}px`);
+    });
+  });
+</script> 

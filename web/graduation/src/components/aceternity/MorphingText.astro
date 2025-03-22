@@ -1,0 +1,152 @@
+---
+interface Props {
+  phrases: string[];
+  className?: string;
+  textSize?: string;
+}
+
+const { 
+  phrases = ["河北旅游", "河北文化", "河北美食"], 
+  className = "",
+  textSize = "text-7xl sm:text-8xl md:text-9xl"
+} = Astro.props;
+
+const id = `morphing-text-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<div class={`relative mx-auto w-full max-w-screen-xl text-center font-sans font-bold ${className}`} id={id}>
+  <!-- 容器高度设置为自动，让内容决定高度 -->
+  <div class="relative flex justify-center items-center text-center min-h-[1.5em]">
+    <span class="text-span-1 block ${textSize} opacity-100 blur-none transition-all absolute left-1/2 transform -translate-x-1/2"></span>
+    <span class="text-span-2 absolute left-1/2 transform -translate-x-1/2 block ${textSize} opacity-0 blur-none transition-all"></span>
+  </div>
+  
+  <!-- SVG 滤镜 -->
+  <svg class="fixed h-0 w-0">
+    <defs>
+      <filter id="threshold">
+        <feColorMatrix
+          in="SourceGraphic"
+          type="matrix"
+          values="1 0 0 0 0
+                  0 1 0 0 0
+                  0 0 1 0 0
+                  0 0 0 255 -140"
+        />
+      </filter>
+    </defs>
+  </svg>
+</div>
+
+<script define:vars={{ phrases, id }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById(id);
+    if (!container) return;
+    
+    const text1 = container.querySelector('.text-span-1');
+    const text2 = container.querySelector('.text-span-2');
+    
+    if (!text1 || !text2) return;
+    
+    // 设置初始文本
+    text1.textContent = phrases[0];
+    text2.textContent = phrases[1];
+    
+    // 应用滤镜
+    container.style.filter = 'url(#threshold) blur(0.6px)';
+    
+    // 变形时间和冷却时间(秒)
+    const morphTime = 1.5;
+    const cooldownTime = 0.5;
+    
+    let textIndex = 0;
+    let morph = 0;
+    let cooldown = cooldownTime;
+    
+    let lastTime = new Date();
+    let animationFrameId;
+    
+    function setMorphStyles(fraction) {
+      // 为第二个文本(进入)设置样式
+      text2.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
+      text2.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
+      
+      // 为第一个文本(退出)设置样式
+      const invertedFraction = 1 - fraction;
+      text1.style.filter = `blur(${Math.min(8 / invertedFraction - 8, 100)}px)`;
+      text1.style.opacity = `${Math.pow(invertedFraction, 0.4) * 100}%`;
+      
+      // 设置当前和下一个文本内容
+      text1.textContent = phrases[textIndex % phrases.length];
+      text2.textContent = phrases[(textIndex + 1) % phrases.length];
+    }
+    
+    function doMorph() {
+      morph -= cooldown;
+      cooldown = 0;
+      
+      let fraction = morph / morphTime;
+      
+      if (fraction > 1) {
+        cooldown = cooldownTime;
+        fraction = 1;
+      }
+      
+      setMorphStyles(fraction);
+      
+      if (fraction === 1) {
+        textIndex++;
+      }
+    }
+    
+    function doCooldown() {
+      morph = 0;
+      
+      text2.style.filter = "none";
+      text2.style.opacity = "100%";
+      
+      text1.style.filter = "none";
+      text1.style.opacity = "0%";
+    }
+    
+    function animate() {
+      animationFrameId = requestAnimationFrame(animate);
+      
+      const newTime = new Date();
+      const dt = (newTime.getTime() - lastTime.getTime()) / 1000;
+      lastTime = newTime;
+      
+      cooldown -= dt;
+      
+      if (cooldown <= 0) {
+        doMorph();
+      } else {
+        doCooldown();
+      }
+    }
+    
+    // 启动动画
+    animate();
+    
+    // 清理
+    window.addEventListener('beforeunload', () => {
+      cancelAnimationFrame(animationFrameId);
+    });
+  });
+</script>
+
+<style>
+  /* 确保文本样式适合横向显示 */
+  .text-span-1, .text-span-2 {
+    width: auto;
+    white-space: nowrap;
+    display: block;
+    line-height: 1.2;
+    text-align: center;
+  }
+  
+  /* 确保容器有合适的内边距 */
+  div[id^="morphing-text-"] {
+    padding: 1rem 0;
+  }
+</style> 

@@ -1,0 +1,893 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+import ScrollReveal from "../../components/aceternity/ScrollReveal.astro";
+
+// 获取美食内容集合
+const cuisines = await getCollection("cuisine");
+
+// 按照日期排序
+const sortByDate = <T extends { data: { pubDate?: Date | string, updatedDate?: Date | string } }>(a: T, b: T): number => {
+  return new Date(b.data.pubDate || b.data.updatedDate || 0).getTime() - 
+         new Date(a.data.pubDate || a.data.updatedDate || 0).getTime();
+};
+
+// 按发布日期排序
+const sortedCuisines = [...cuisines].sort(sortByDate);
+
+// 提取所有标签
+const allTags: {name: string, count: number}[] = [];
+sortedCuisines.forEach((cuisine: CollectionEntry<"cuisine">) => {
+  cuisine.data.tags.forEach((tag: string) => {
+    const existingTag = allTags.find(t => t.name === tag);
+    if (existingTag) {
+      existingTag.count++;
+    } else {
+      allTags.push({ name: tag, count: 1 });
+    }
+  });
+});
+
+// 按照标签出现次数排序
+allTags.sort((a, b) => b.count - a.count);
+
+// 获取所有分类并计数
+const categories: {name: string, count: number}[] = [];
+sortedCuisines.forEach((cuisine: CollectionEntry<"cuisine">) => {
+  if (cuisine.data.category) {
+    const existingCategory = categories.find(c => c.name === cuisine.data.category);
+    if (existingCategory) {
+      existingCategory.count++;
+    } else {
+      categories.push({ name: cuisine.data.category, count: 1 });
+    }
+  }
+});
+
+// 按照分类出现次数排序
+categories.sort((a, b) => b.count - a.count);
+
+// 获取所有产地并计数
+const citys: {name: string, count: number}[] = [];
+sortedCuisines.forEach((cuisine: CollectionEntry<"cuisine">) => {
+  if (cuisine.data.city) {
+    const existingcity = citys.find(o => o.name === cuisine.data.city);
+    if (existingcity) {
+      existingcity.count++;
+    } else {
+      citys.push({ name: cuisine.data.city, count: 1 });
+    }
+  }
+});
+
+// 按照产地出现次数排序
+citys.sort((a, b) => b.count - a.count);
+
+// 获取所有口味并计数
+const tastes: {name: string, count: number}[] = [];
+sortedCuisines.forEach((cuisine: CollectionEntry<"cuisine">) => {
+  if (cuisine.data.taste) {
+    const existingTaste = tastes.find(t => t.name === cuisine.data.taste);
+    if (existingTaste) {
+      existingTaste.count++;
+    } else {
+      tastes.push({ name: cuisine.data.taste, count: 1 });
+    }
+  }
+});
+
+// 按照口味出现次数排序
+tastes.sort((a, b) => b.count - a.count);
+
+// 分页逻辑
+const itemsPerPage = 9;
+// 从URL参数获取当前页码
+const url = new URL(Astro.request.url);
+const page = parseInt(url.searchParams.get('page') || '1');
+const totalPages = Math.ceil(sortedCuisines.length / itemsPerPage);
+const currentPageCuisines = sortedCuisines.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+// 搜索和筛选逻辑（实际应用中应该根据查询参数来筛选）
+const searchQuery = '';
+const selectedCategory = '';
+const selectedcity = '';
+const selectedTaste = '';
+const selectedTags: string[] = [];
+const sortBy: 'date' | 'name' = 'date';
+
+// 分页参数
+const queryParams = '';  // 在实际应用中，这里应该是基于筛选条件构建的查询字符串
+---
+
+<MainLayout title="河北美食食谱 - 河北游礼">
+  <!-- 食谱风格头部 -->
+  <div class="relative overflow-hidden bg-recipe-paper dark:bg-recipe-paper-dark min-h-[400px] flex items-center">
+    <!-- 纸张纹理和装饰 -->
+    <div class="absolute inset-0 bg-[url('/images/recipe-paper-texture.png')] opacity-10"></div>
+    <div class="absolute top-0 left-0 w-32 h-32 bg-[url('/images/spoon-fork.png')] bg-no-repeat bg-contain opacity-15 -rotate-12"></div>
+    <div class="absolute bottom-0 right-0 w-32 h-32 bg-[url('/images/chef-hat.png')] bg-no-repeat bg-contain opacity-15 rotate-12"></div>
+    
+    <!-- 食谱标题区域 -->
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="max-w-4xl mx-auto text-center recipe-card">
+        <!-- 食谱卡片装饰 -->
+        <div class="recipe-card-pins absolute -top-3 left-1/2 transform -translate-x-1/2">
+          <div class="w-6 h-6 bg-red-500 dark:bg-red-700 rounded-full absolute -left-16 shadow-md"></div>
+          <div class="w-6 h-6 bg-amber-500 dark:bg-amber-700 rounded-full absolute left-16 shadow-md"></div>
+        </div>
+        
+        <!-- 手写风格标题 -->
+        <div class="handwritten-title py-6">
+          <h1 class="text-6xl md:text-7xl font-recipe text-brown-900 dark:text-brown-100 mb-2 recipe-title">河北美食食谱</h1>
+          <div class="w-3/4 mx-auto h-px bg-brown-300 dark:bg-brown-700 my-6"></div>
+          <p class="text-xl text-brown-700 dark:text-brown-300 font-recipe-body mb-6 leading-relaxed">
+            收集自河北各地的传统美食配方，
+            <br>家传秘方与地方特色，尽在此食谱
+        </p>
+      </div>
+      
+        <!-- 食谱元数据 -->
+        <div class="recipe-metadata flex flex-wrap justify-center gap-8 text-sm text-brown-600 dark:text-brown-400 mb-8">
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <span>{cuisines.length} 道经典菜肴</span>
+          </div>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>{citys.length} 个地方特色</span>
+          </div>
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            <span>收集于 2023 年</span>
+          </div>
+        </div>
+        
+        <!-- 食谱快速搜索 -->
+        <div class="recipe-search relative max-w-lg mx-auto mb-6">
+          <input 
+            type="text" 
+            placeholder="搜索菜名、食材或地区..." 
+            class="w-full px-4 py-3 border-2 border-secondary-300 dark:border-secondary-700 bg-recipe-paper/80 dark:bg-recipe-paper-dark/90 rounded-md font-recipe-body text-secondary-900 dark:text-secondary-200 placeholder-secondary-500 dark:placeholder-secondary-400 focus:outline-none focus:border-primary-500 dark:focus:border-primary-400"
+          />
+          <button class="absolute right-3 top-3 text-secondary-500 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </div>
+        
+        <!-- 食谱标签 -->
+        <div class="recipe-tags flex flex-wrap justify-center gap-2">
+          <a href="#" class="px-3 py-1 bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-200 text-sm rounded-full font-recipe-body hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors">家常菜</a>
+          <a href="#" class="px-3 py-1 bg-accent-100 dark:bg-accent-900/50 text-accent-800 dark:text-accent-200 text-sm rounded-full font-recipe-body hover:bg-accent-200 dark:hover:bg-accent-800 transition-colors">传统名菜</a>
+          <a href="#" class="px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 text-sm rounded-full font-recipe-body hover:bg-green-200 dark:hover:bg-green-800 transition-colors">地方特色</a>
+          <a href="#" class="px-3 py-1 bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200 text-sm rounded-full font-recipe-body hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors">小吃点心</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 装饰性图案 -->
+    <div class="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-brown-300 dark:border-brown-700 opacity-50"></div>
+    <div class="absolute -bottom-4 -right-4 w-24 h-24 border-b-4 border-r-4 border-brown-300 dark:border-brown-700 opacity-50"></div>
+              </div>
+  
+  <!-- 主内容区域 - 食谱风格 -->
+  <div class="bg-recipe-paper dark:bg-recipe-paper-dark py-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- 左侧筛选区域 - 食谱风格 -->
+        <div class="lg:col-span-3">
+          <div class="sticky top-20 space-y-8">
+            <!-- 食谱筛选卡片 -->
+            <div class="recipe-card-item p-6">
+              <!-- 搜索筛选框 -->
+              <div class="mb-8">
+                <h3 class="text-base font-recipe mb-4 text-brown-800 dark:text-brown-200 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  食谱检索
+                </h3>
+                <div class="relative">
+                  <input
+                    type="text"
+                    placeholder="输入菜名或食材..."
+                    class="w-full bg-amber-50/50 dark:bg-amber-900/20 border border-brown-300 dark:border-brown-700 px-4 py-2 text-brown-800 dark:text-brown-200 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400 focus:ring-2 focus:ring-amber-200 dark:focus:ring-amber-800/50 rounded-md font-recipe-body text-sm"
+                  />
+                  <div class="absolute right-3 top-2 text-brown-500 dark:text-brown-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+                
+              <!-- 菜系筛选 -->
+              <div class="mb-8">
+                <h3 class="text-base font-recipe mb-4 text-brown-800 dark:text-brown-200 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z" />
+                  </svg>
+                  菜系
+              </h3>
+              <div class="space-y-3">
+                  {categories.map((category, index) => (
+                    <label class="flex items-center group cursor-pointer font-recipe-body">
+                      <div class="w-4 h-4 border border-brown-400 dark:border-brown-600 mr-3 group-hover:border-amber-500 dark:group-hover:border-amber-400 transition-colors"></div>
+                      <div class="font-light text-brown-700 dark:text-brown-300 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors flex items-center justify-between w-full">
+                        <span>{category.name}</span>
+                        <span class="text-amber-600/70 dark:text-amber-500/50 bg-amber-50/80 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-full text-xs">{category.count}</span>
+                      </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+              <!-- 地域筛选 -->
+              <div class="mb-8">
+                <h3 class="text-base font-recipe mb-4 text-brown-800 dark:text-brown-200 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  地域特色
+              </h3>
+                <div class="grid grid-cols-2 gap-3">
+                {citys.map((city) => (
+                    <label class="flex items-center group cursor-pointer font-recipe-body">
+                      <div class="w-4 h-4 border border-brown-400 dark:border-brown-600 mr-2 group-hover:border-green-500 dark:group-hover:border-green-400 transition-colors"></div>
+                      <div class="font-light text-brown-700 dark:text-brown-300 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors text-sm truncate">
+                        <span>{city.name}</span> <span class="text-green-600/70 dark:text-green-500/50 text-xs">({city.count})</span>
+                      </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            <!-- 口味筛选 -->
+              <div class="mb-8">
+                <h3 class="text-base font-recipe mb-4 text-brown-800 dark:text-brown-200 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  味道特点
+              </h3>
+                <div class="flex flex-wrap gap-2">
+                {tastes.map((taste) => (
+                    <label class="inline-flex items-center group cursor-pointer px-3 py-1 bg-orange-50/70 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-full font-recipe-body">
+                      <div class="w-3 h-3 border border-orange-400 dark:border-orange-500 mr-2 rounded-full group-hover:bg-orange-400 dark:group-hover:bg-orange-500 transition-colors"></div>
+                      <div class="font-light text-orange-800 dark:text-orange-300 text-xs">
+                        {taste.name} <span class="text-orange-600/70 dark:text-orange-500/50">({taste.count})</span>
+                      </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+              <!-- 食材筛选 -->
+              <div>
+                <h3 class="text-base font-recipe mb-4 text-brown-800 dark:text-brown-200 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  主要食材
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                  {allTags.map((tag, i) => {
+                    // 为标签生成不同的颜色
+                    const colors = ['amber', 'red', 'green', 'orange', 'amber', 'red'];
+                    const colorClasses = {
+                      'amber': 'border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-200 hover:border-amber-400 dark:hover:border-amber-700 bg-amber-50/50 dark:bg-amber-900/20',
+                      'red': 'border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 hover:text-red-900 dark:hover:text-red-200 hover:border-red-400 dark:hover:border-red-700 bg-red-50/50 dark:bg-red-900/20',
+                      'green': 'border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-200 hover:border-green-400 dark:hover:border-green-700 bg-green-50/50 dark:bg-green-900/20',
+                      'orange': 'border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 hover:text-orange-900 dark:hover:text-orange-200 hover:border-orange-400 dark:hover:border-orange-700 bg-orange-50/50 dark:bg-orange-900/20'
+                    };
+                    const color = colors[i % colors.length] as keyof typeof colorClasses;
+                    return (
+                      <div class={`inline-block px-3 py-1 text-xs border rounded-full cursor-pointer transition-colors font-recipe-body ${colorClasses[color]}`}>
+                    {tag.name}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+              
+            <!-- 烹饪小贴士 -->
+            <div class="recipe-card-item p-5 mt-6">
+              <div class="flex items-start space-x-3">
+                <div class="text-amber-600 dark:text-amber-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="font-recipe text-base text-brown-800 dark:text-brown-200 mb-2">食谱小贴士</h4>
+                  <p class="text-sm text-brown-700 dark:text-brown-300 leading-relaxed font-recipe-body">
+                    烹饪是一门艺术，每一道河北美食都融合了独特的地域文化和历史传承，讲究用料、火候与调味的绝妙平衡。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 右侧食谱展示区 -->
+        <div class="lg:col-span-9">
+          <!-- 筛选状态 -->
+          {(searchQuery || selectedCategory || selectedcity || selectedTaste || selectedTags.length > 0) && (
+            <div class="mb-8 bg-amber-50/50 dark:bg-amber-900/20 p-4 border-l-4 border-amber-300 dark:border-amber-700 rounded-r-lg">
+              <div class="flex flex-wrap items-center gap-3 text-sm text-brown-700 dark:text-brown-300">
+                <div class="font-recipe text-xs tracking-wider text-amber-700 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-900/50 px-2 py-1 rounded">筛选条件</div>
+                  
+                {/* 筛选条件显示 */}
+                  
+                <button class="ml-auto text-red-600 hover:text-red-800 dark:hover:text-red-300 text-sm flex items-center space-x-1 bg-white/80 dark:bg-black/30 px-3 py-1 rounded-full font-recipe-body">
+                  <span>重置</span>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+          
+          <!-- 食谱卡片列表 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {currentPageCuisines.map((cuisine, index) => {
+              // 随机食谱纸张背景颜色
+              const paperColors = [
+                'bg-amber-50/80 border-amber-200 dark:bg-amber-900/30 dark:border-amber-800',
+                'bg-orange-50/80 border-orange-200 dark:bg-orange-900/30 dark:border-orange-800',
+                'bg-red-50/80 border-red-200 dark:bg-red-900/30 dark:border-red-800',
+                'bg-green-50/80 border-green-200 dark:bg-green-900/30 dark:border-green-800'
+              ];
+              const paperColor = paperColors[index % paperColors.length];
+              
+              return (
+              <ScrollReveal animation="fade">
+                <a href={`/cuisine/${cuisine.slug}`} class="block group">
+                    <div class={`recipe-card-item border transition-all duration-300 ${paperColor}`}>
+                      <!-- 食谱卡片头部 -->
+                      <div class="aspect-[4/3] relative overflow-hidden">
+                        <div class={`absolute inset-0 bg-recipe-paper dark:bg-recipe-paper-dark flex items-center justify-center`}>
+                          <span class="text-brown-400 dark:text-brown-600 font-recipe-body">{cuisine.data.title}</span>
+                    </div>
+                    
+                        <!-- 图钉装饰 -->
+                        <div class="absolute top-3 left-3 w-4 h-4 bg-red-500 dark:bg-red-700 rounded-full shadow-sm"></div>
+                        <div class="absolute top-3 right-3 w-4 h-4 bg-amber-500 dark:bg-amber-700 rounded-full shadow-sm"></div>
+                        
+                        {cuisine.data.category && (
+                          <div class="absolute bottom-3 right-3 px-2 py-1 text-xs font-recipe-body bg-white/90 dark:bg-black/70 text-brown-800 dark:text-brown-200 rounded-md shadow-sm border border-brown-200 dark:border-brown-800">
+                            {cuisine.data.category}
+                          </div>
+                        )}
+                        
+                        <!-- 推荐标记 -->
+                        {Math.random() > 0.7 && (
+                          <div class="absolute -top-1 -left-1 rotate-12">
+                            <div class="bg-red-600 text-white px-6 py-1 text-xs font-recipe transform -rotate-45 shadow-md">
+                              推荐
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <!-- 食谱内容 -->
+                      <div class="p-5">
+                        <h3 class="text-xl font-recipe text-brown-900 dark:text-brown-100 mb-3 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
+                          {cuisine.data.title}
+                        </h3>
+                        
+                        <!-- 食谱元数据 -->
+                        <div class="flex flex-wrap gap-3 text-sm mb-3">
+                          {cuisine.data.city && (
+                            <div class="flex items-center px-2 py-0.5 bg-amber-50/80 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-full">
+                              <span class="text-amber-800 dark:text-amber-300 text-xs font-recipe-body">{cuisine.data.city}</span>
+                            </div>
+                          )}
+                          {cuisine.data.taste && (
+                            <div class="flex items-center px-2 py-0.5 bg-red-50/80 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-full">
+                              <span class="text-red-800 dark:text-red-300 text-xs font-recipe-body">{cuisine.data.taste}</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <!-- 食谱描述 -->
+                        <p class="text-brown-700 dark:text-brown-300 text-sm line-clamp-3 mb-4 font-recipe-body">
+                        {cuisine.data.description}
+                      </p>
+                      
+                        <!-- 食材标签 -->
+                      <div class="flex flex-wrap gap-2 mb-4">
+                          {cuisine.data.tags.slice(0, 3).map((tag: string, i: number) => (
+                            <span class="px-2 py-0.5 text-xs font-recipe-body bg-brown-100/80 dark:bg-brown-900/30 text-brown-800 dark:text-brown-200 border border-brown-200 dark:border-brown-800 rounded-full">
+                              #{tag}
+                          </span>
+                        ))}
+                        {cuisine.data.tags.length > 3 && (
+                            <span class="px-2 py-0.5 text-xs font-recipe-body bg-brown-100/80 dark:bg-brown-900/30 text-brown-800 dark:text-brown-200 border border-brown-200 dark:border-brown-800 rounded-full">
+                            +{cuisine.data.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                      
+                        <!-- 查看详情 -->
+                        <div class="flex justify-between items-center">
+                          <div class="text-sm text-amber-700 dark:text-amber-300 flex items-center group-hover:translate-x-1 transition-transform font-recipe-body">
+                            查看详细食谱
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                          </div>
+                          
+                          <!-- 食谱标记 -->
+                          {Math.random() > 0.5 && (
+                            <span class="text-xs px-2 py-0.5 bg-orange-100/80 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border border-orange-200 dark:border-orange-800 rounded-full font-recipe-body">传统</span>
+                          )}
+                          {Math.random() > 0.7 && (
+                            <span class="text-xs px-2 py-0.5 bg-green-100/80 dark:bg-green-900/30 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800 rounded-full font-recipe-body">家常</span>
+                          )}
+                        </div>
+                    </div>
+                  </div>
+                </a>
+              </ScrollReveal>
+              );
+            })}
+          </div>
+          
+          <!-- 分页控件 - 食谱风格分页 -->
+          <div class="flex justify-center items-center space-x-2 mt-12">
+          {totalPages > 1 && (
+              <div class="flex flex-wrap gap-2 items-center bg-recipe-paper-light dark:bg-recipe-paper-dark p-4 rounded-lg border border-amber-200 dark:border-amber-800 shadow-md">
+                <!-- 上一页按钮 -->
+                <a 
+                  href={page > 1 ? `?page=${page - 1}${queryParams}` : '#'} 
+                  class={`flex items-center px-3 py-1.5 ${
+                    page === 1 
+                      ? 'text-brown-400 dark:text-brown-600 cursor-not-allowed' 
+                      : 'text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30'
+                  } rounded-md font-recipe-body transition-colors`}
+                >
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  上一页
+                </a>
+                
+                <!-- 页码 -->
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                  <a 
+                    href={`?page=${pageNum}${queryParams}`} 
+                    class={`px-3 py-1.5 font-recipe ${
+                      page === pageNum 
+                        ? 'bg-amber-600 text-white dark:bg-amber-700' 
+                        : 'text-brown-700 dark:text-brown-300 hover:bg-amber-100 dark:hover:bg-amber-900/30'
+                    } rounded-md transition-colors`}
+                  >
+                    {pageNum}
+                  </a>
+                ))}
+                
+                <!-- 下一页按钮 -->
+                <a 
+                  href={page < totalPages ? `?page=${page + 1}${queryParams}` : '#'} 
+                  class={`flex items-center px-3 py-1.5 ${
+                    page === totalPages 
+                      ? 'text-brown-400 dark:text-brown-600 cursor-not-allowed' 
+                      : 'text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30'
+                  } rounded-md font-recipe-body transition-colors`}
+                >
+                  下一页
+                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </div>
+            )}
+            </div>
+          
+          <!-- 食谱主题页脚 -->
+          <div class="mt-16 text-center">
+            <div class="flex flex-col items-center">
+              <div class="text-amber-600 dark:text-amber-400 mb-3">
+                <img src="/images/cuisine/chef-hat.svg" alt="Chef Hat" class="w-12 h-12 mx-auto opacity-80" />
+              </div>
+              <p class="text-brown-700 dark:text-brown-300 font-recipe max-w-2xl mx-auto">
+                河北美食宝库收录了<span class="text-amber-600 dark:text-amber-400 mx-1">{cuisines.length}+</span>种传统佳肴与地方特色小吃。
+                每一道食谱都承载着我们的文化记忆和烹饪智慧。尽情探索，找到属于你的美食灵感！
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</MainLayout>
+
+<style>
+
+  .bg-recipe-paper {
+    background-color: var(--bg-recipe);
+  }
+
+  .bg-recipe-paper-dark {
+    background-color: var(--bg-recipe);
+  }
+
+  .bg-recipe-paper-light {
+    background-color: var(--color-primary-50);
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23f59e0b' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  }
+
+  .bg-wood-texture {
+    background-color: var(--color-secondary-300);
+    background-image: url('/images/wood-texture.png');
+    background-blend-mode: multiply;
+  }
+
+  .bg-wood-texture-dark {
+    background-color: var(--color-secondary-900);
+    background-image: url('/images/wood-texture.png');
+    background-blend-mode: overlay;
+  }
+
+  .text-brown-900 {
+    color: var(--color-secondary-900);
+  }
+
+  .text-brown-800 {
+    color: var(--color-secondary-800);
+  }
+
+  .text-brown-700 {
+    color: var(--color-secondary-700);
+  }
+
+  .text-brown-600 {
+    color: var(--color-secondary-600);
+  }
+
+  .text-brown-500 {
+    color: var(--color-secondary-500);
+  }
+
+  .text-brown-400 {
+    color: var(--color-secondary-400);
+  }
+
+  .text-brown-300 {
+    color: var(--color-secondary-300);
+  }
+
+  .text-brown-200 {
+    color: var(--color-secondary-200);
+  }
+
+  .text-brown-100 {
+    color: var(--color-secondary-100);
+  }
+
+  .recipe-card {
+    position: relative;
+    padding: 1.5rem;
+    background-color: #f8f3e9;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  :root.dark .recipe-card {
+    background-color: #2c2419;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  .recipe-title {
+    position: relative;
+    display: inline-block;
+  }
+
+  .recipe-title::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 1rem;
+    right: 1rem;
+    height: 2px;
+    background-color: #b08f77;
+    transform: rotate(-0.5deg);
+  }
+
+  :root.dark .recipe-title::after {
+    background-color: #7c604a;
+  }
+
+  /* 手写风格的下划线 */
+  .handwritten-title p {
+    position: relative;
+  }
+
+  .handwritten-title p::after {
+    content: '';
+    position: absolute;
+    bottom: -0.25rem;
+    left: 25%;
+    right: 25%;
+    height: 1px;
+    background-color: #b08f77;
+    transform: rotate(-0.25deg);
+  }
+
+  :root.dark .handwritten-title p::after {
+    background-color: #7c604a;
+  }
+
+  /* 食谱卡片样式 */
+  .recipe-card-item {
+    position: relative;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    background-color: var(--recipe-card-bg, rgba(255, 251, 235, 0.9));
+  }
+
+  .dark .recipe-card-item {
+    background-color: var(--recipe-card-bg-dark, rgba(120, 53, 15, 0.1));
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  /* 隐藏滚动条但保留功能 */
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
+
+  /* 食谱纸张纹理动画 */
+  @keyframes textureFloat {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 1% 1%; }
+  }
+
+  .bg-recipe-paper, .bg-recipe-paper-dark {
+    animation: textureFloat 10s ease-in-out infinite;
+    background-size: 200px 200px;
+  }
+
+  /* 装饰性图案旋转动画 */
+  @keyframes slowRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .recipe-decoration {
+    animation: slowRotate 120s linear infinite;
+  }
+
+  /* 食谱卡片悬停效果 */
+  .recipe-card-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  :root.dark .recipe-card-item:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  }
+</style>
+
+<script>
+  // 页面加载完成后执行
+  document.addEventListener('DOMContentLoaded', () => {
+    // 检测当前颜色模式
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    
+    // 获取元素
+    const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+    const categoryLabels = document.querySelectorAll('.font-recipe-body');
+    const resetButton = document.querySelector('button');
+    const recipeCards = document.querySelectorAll('.recipe-card-item');
+    const paperBg = document.querySelector('.bg-recipe-paper');
+    
+    // 食谱卡片初始样式
+    recipeCards.forEach((card, index) => {
+      // 设置初始状态
+      (card as HTMLElement).style.opacity = '0';
+      (card as HTMLElement).style.transform = 'translateY(20px)';
+      (card as HTMLElement).style.transition = 'all 0.4s ease-out';
+    });
+    
+    // 为食谱卡片添加进场动画
+    setTimeout(() => {
+      recipeCards.forEach((card, index) => {
+        setTimeout(() => {
+          (card as HTMLElement).style.opacity = '1';
+          (card as HTMLElement).style.transform = 'translateY(0)';
+        }, 100 + (index * 50));
+      });
+    }, 200);
+    
+    // 食谱卡片悬停效果
+    recipeCards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        (card as HTMLElement).style.transform = 'translateY(-5px)';
+        (card as HTMLElement).style.boxShadow = isDarkMode 
+          ? '0 10px 15px -3px rgba(0, 0, 0, 0.4)' 
+          : '0 10px 15px -3px rgba(251, 191, 36, 0.1), 0 4px 6px -2px rgba(251, 191, 36, 0.05)';
+      });
+      
+      card.addEventListener('mouseleave', () => {
+        (card as HTMLElement).style.transform = 'translateY(0)';
+        (card as HTMLElement).style.boxShadow = isDarkMode 
+          ? '0 4px 8px rgba(0, 0, 0, 0.2)' 
+          : '0 4px 8px rgba(0, 0, 0, 0.05)';
+      });
+    });
+    
+    // 搜索框交互效果
+    if (searchInput) {
+      searchInput.addEventListener('focus', () => {
+        if (searchInput.parentElement) {
+          searchInput.parentElement.classList.add('ring-2', 'ring-amber-200');
+          if (isDarkMode) {
+            searchInput.parentElement.classList.add('ring-amber-800/50');
+          }
+        }
+      });
+      
+      searchInput.addEventListener('blur', () => {
+        if (searchInput.parentElement) {
+          searchInput.parentElement.classList.remove('ring-2', 'ring-amber-200', 'ring-amber-800/50');
+        }
+      });
+      
+      // 搜索功能
+      searchInput.addEventListener('keyup', (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          const searchValue = searchInput.value.trim();
+          if (searchValue) {
+            // 构建搜索URL并跳转
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('search', searchValue);
+            currentUrl.searchParams.delete('page'); // 重置页码
+            window.location.href = currentUrl.toString();
+          }
+        }
+      });
+    }
+    
+    // 筛选标签点击效果
+    const filterLabels = document.querySelectorAll('.recipe-card-item label');
+    filterLabels.forEach(label => {
+      label.addEventListener('click', () => {
+        const checkbox = label.querySelector('div:first-child');
+        if (checkbox) {
+          // 切换选中状态
+          if (checkbox.classList.contains('bg-amber-500') || 
+              checkbox.classList.contains('bg-red-500') || 
+              checkbox.classList.contains('bg-green-500') || 
+              checkbox.classList.contains('bg-orange-500')) {
+            checkbox.classList.remove('bg-amber-500', 'bg-red-500', 'bg-green-500', 'bg-orange-500');
+          } else {
+            const labelText = label.textContent || '';
+            if (labelText.includes('菜系')) {
+              checkbox.classList.add('bg-amber-500');
+            } else if (labelText.includes('地域')) {
+              checkbox.classList.add('bg-green-500');
+            } else if (labelText.includes('味道')) {
+              checkbox.classList.add('bg-orange-500');
+            } else {
+              checkbox.classList.add('bg-red-500');
+            }
+          }
+        }
+        
+        // 注意：实际筛选逻辑需要后端支持，这里只是添加视觉反馈
+      });
+    });
+    
+    // 美食标签点击事件
+    const tagButtons = document.querySelectorAll('.flex-wrap .inline-block');
+    tagButtons.forEach(tag => {
+      tag.addEventListener('click', () => {
+        // 为标签添加选中效果
+        tag.classList.toggle('ring-2');
+        tag.classList.toggle('ring-amber-400');
+        tag.classList.toggle('dark:ring-amber-600');
+        
+        // 注意：实际筛选逻辑需要后端支持，这里只是添加视觉反馈
+      });
+    });
+    
+    // 重置按钮效果
+    if (resetButton) {
+      resetButton.addEventListener('mouseenter', () => {
+        resetButton.classList.add('bg-red-50', 'dark:bg-red-900/30');
+      });
+      
+      resetButton.addEventListener('mouseleave', () => {
+        resetButton.classList.remove('bg-red-50', 'dark:bg-red-900/30');
+      });
+      
+      resetButton.addEventListener('click', () => {
+        // 重置所有筛选条件
+        window.location.href = window.location.pathname;
+      });
+    }
+    
+    // 添加页面滚动动画效果
+    const addScrollAnimation = () => {
+      const elements = document.querySelectorAll('.recipe-card-item');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      elements.forEach(el => {
+        observer.observe(el);
+      });
+    };
+    
+    // 如果浏览器支持IntersectionObserver，添加滚动动画
+    if ('IntersectionObserver' in window) {
+      addScrollAnimation();
+    }
+    
+    // 添加食谱纸张效果装饰元素
+    if (paperBg) {
+      // 创建随机装饰元素
+      const createDecorElement = (className: string, icon: string) => {
+        const element = document.createElement('div');
+        element.className = className;
+        element.innerHTML = icon;
+        element.style.position = 'absolute';
+        element.style.opacity = '0.15';
+        element.style.zIndex = '1';
+        return element;
+      };
+      
+      // 添加食谱装饰
+      const decorations = [
+        { icon: '🍴', className: 'recipe-decor text-2xl' },
+        { icon: '🥄', className: 'recipe-decor text-2xl' },
+        { icon: '🍽️', className: 'recipe-decor text-2xl' },
+        { icon: '📝', className: 'recipe-decor text-2xl' },
+        { icon: '⭐', className: 'recipe-decor text-2xl' }
+      ];
+      
+      decorations.forEach((decor) => {
+        const el = createDecorElement(decor.className, decor.icon);
+        el.style.left = `${Math.random() * 90}%`;
+        el.style.top = `${Math.random() * 90}%`;
+        el.style.transform = `rotate(${Math.random() * 360}deg)`;
+        (paperBg as HTMLElement).appendChild(el);
+      });
+    }
+  });
+  
+  // 添加键盘快捷键支持
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    // Alt + S 聚焦搜索框
+    if (e.altKey && e.key === 's') {
+      e.preventDefault();
+      const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.focus();
+      }
+    }
+  });
+</script> 

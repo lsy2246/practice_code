@@ -1,0 +1,63 @@
+---
+interface Props {
+  words: string[];
+  baseText?: string;
+  className?: string;
+  duration?: number; // 每个词的显示时间(毫秒)
+}
+
+const { 
+  words, 
+  baseText = "河北", 
+  className = "", 
+  duration = 2000 
+} = Astro.props;
+
+const id = `gradient-text-${Math.random().toString(36).substring(2, 11)}`;
+---
+
+<div class={`gradient-text-wrapper ${className}`}>
+  <div class="relative inline-block">
+    <span class="inline-block">{baseText}</span>
+    <div id={id} class="gradient-text absolute top-0 left-0 right-0 bottom-0 text-transparent bg-clip-text bg-gradient-to-r from-color-primary-500 to-color-primary-700 dark:from-color-dark-primary-400 dark:to-color-dark-primary-600">
+      <span class="gradient-word inline-block">{words[0]}</span>
+    </div>
+  </div>
+</div>
+
+<script define:vars={{ id, words, duration }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    const gradientText = document.getElementById(id);
+    if (!gradientText) return;
+    
+    const wordElement = gradientText.querySelector('.gradient-word');
+    if (!wordElement) return;
+    
+    let currentIndex = 0;
+    
+    const updateWord = () => {
+      // 淡出当前词
+      wordElement.classList.add('opacity-0');
+      
+      // 更新词并淡入
+      setTimeout(() => {
+        currentIndex = (currentIndex + 1) % words.length;
+        wordElement.textContent = words[currentIndex];
+        wordElement.classList.remove('opacity-0');
+      }, 300); // 300ms淡出时间
+    };
+    
+    // 设置定时器更新词语
+    setInterval(updateWord, duration);
+  });
+</script>
+
+<style>
+  .gradient-word {
+    transition: opacity 0.3s ease;
+  }
+  
+  .opacity-0 {
+    opacity: 0;
+  }
+</style> 

@@ -1,0 +1,61 @@
+---
+interface Props {
+  bgColor?: 'white' | 'gray' | 'primary' | 'none';
+  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'none';
+  className?: string;
+}
+
+const { 
+  bgColor = 'white', 
+  padding = 'lg',
+  maxWidth = 'lg',
+  className = "" 
+} = Astro.props;
+
+// 设置背景颜色
+const getBgColorClass = () => {
+  switch(bgColor) {
+    case 'white': return 'bg-white dark:bg-color-dark-bg';
+    case 'gray': return 'bg-gray-100 dark:bg-color-dark-surface';
+    case 'primary': return 'bg-color-primary-50 dark:bg-color-dark-primary-50';
+    case 'none': return '';
+    default: return 'bg-white dark:bg-color-dark-bg';
+  }
+};
+
+// 设置内边距
+const getPaddingClass = () => {
+  switch(padding) {
+    case 'none': return '';
+    case 'sm': return 'py-4 px-4';
+    case 'md': return 'py-8 px-4 sm:px-6';
+    case 'lg': return 'py-12 px-4 sm:px-6 lg:px-8';
+    case 'xl': return 'py-16 px-4 sm:px-6 lg:px-8';
+    default: return 'py-12 px-4 sm:px-6 lg:px-8';
+  }
+};
+
+// 设置最大宽度
+const getMaxWidthClass = () => {
+  switch(maxWidth) {
+    case 'none': return '';
+    case 'sm': return 'max-w-2xl mx-auto';
+    case 'md': return 'max-w-4xl mx-auto';
+    case 'lg': return 'max-w-7xl mx-auto';
+    case 'xl': return 'max-w-screen-2xl mx-auto';
+    case 'full': return 'w-full';
+    default: return 'max-w-7xl mx-auto';
+  }
+};
+
+const bgColorClass = getBgColorClass();
+const paddingClass = getPaddingClass();
+const maxWidthClass = getMaxWidthClass();
+---
+
+<section class={`${bgColorClass} ${paddingClass} ${className}`}>
+  <div class={maxWidthClass}>
+    <slot />
+  </div>
+</section> 

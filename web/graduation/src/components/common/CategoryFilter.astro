@@ -1,0 +1,40 @@
+---
+interface Category {
+  name: string;
+  icon?: string;
+  count?: number;
+  isActive?: boolean;
+}
+
+interface Props {
+  categories: Category[];
+  showAllLabel?: string;
+  allActive?: boolean;
+}
+
+const { 
+  categories, 
+  showAllLabel = "全部", 
+  allActive = true 
+} = Astro.props;
+---
+
+<section class="py-8 bg-white dark:bg-color-dark-surface border-b border-gray-200 dark:border-color-dark-border">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-wrap justify-center gap-4">
+      <button class={`px-4 py-2 rounded-full font-medium transition-colors ${allActive ? 'bg-color-primary-500 text-white dark:bg-color-dark-primary-600 dark:text-white dark:hover:bg-color-dark-primary-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-color-dark-card dark:text-gray-300 dark:hover:bg-color-dark-border'}`}>
+        {showAllLabel}
+      </button>
+      
+      {categories.map(category => (
+        <button class={`px-4 py-2 rounded-full font-medium transition-colors ${category.isActive ? 'bg-color-primary-500 text-white dark:bg-color-dark-primary-600 dark:text-white dark:hover:bg-color-dark-primary-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-color-dark-card dark:text-gray-300 dark:hover:bg-color-dark-border'}`}>
+          {category.icon && <span class="mr-1">{category.icon}</span>}
+          {category.name}
+          {category.count !== undefined && (
+            <span class="ml-1 text-xs opacity-70">{`(${category.count})`}</span>
+          )}
+        </button>
+      ))}
+    </div>
+  </div>
+</section> 

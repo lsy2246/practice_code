@@ -1,0 +1,39 @@
+---
+interface Props {
+  title: string;
+  subtitle?: string;
+  alignment?: 'left' | 'center' | 'right';
+  marginBottom?: string;
+  className?: string;
+}
+
+const { 
+  title, 
+  subtitle, 
+  alignment = 'center',
+  marginBottom = 'mb-8',
+  className = "" 
+} = Astro.props;
+
+// 设置对齐方式
+const getAlignmentClass = () => {
+  switch(alignment) {
+    case 'left': return 'text-left';
+    case 'right': return 'text-right';
+    case 'center': return 'text-center';
+    default: return 'text-center';
+  }
+};
+
+const alignmentClass = getAlignmentClass();
+---
+
+<div class={`${alignmentClass} ${marginBottom} ${className}`}>
+  <h2 class="text-3xl font-bold text-gray-900 dark:text-white">{title}</h2>
+  {subtitle && (
+    <p class="mt-3 text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+      {subtitle}
+    </p>
+  )}
+  <slot />
+</div> 

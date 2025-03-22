@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 背景 -->
+  <rect width="100" height="100" rx="20" fill="#4b6bff"/>
+  
+  <!-- 山水图案 -->
+  <path d="M0,70 L30,40 L45,55 L60,35 L75,50 L100,25 V100 H0 Z" fill="#1a3293"/>
+  
+  <!-- 河字 -->
+  <path d="M50,15 L50,35 M35,25 L65,25" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+  
+  <!-- 北字 -->
+  <path d="M50,45 L50,65 M40,55 L60,55 M40,45 L40,65" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <style>
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #2541b7; }
+      path:first-of-type { fill: #132878; }
+    }
+  </style>
+</svg>

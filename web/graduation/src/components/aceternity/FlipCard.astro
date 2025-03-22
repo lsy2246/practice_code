@@ -1,0 +1,63 @@
+---
+interface Props {
+  frontTitle?: string;
+  backTitle?: string;
+  className?: string;
+}
+
+const { 
+  frontTitle = "正面", 
+  backTitle = "背面",
+  className = "" 
+} = Astro.props;
+---
+
+<div class={`flip-card-container ${className}`}>
+  <div class="flip-card">
+    <div class="flip-card-front p-6 flex flex-col items-center justify-center rounded-xl bg-white dark:bg-color-dark-card shadow-md">
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">{frontTitle}</h3>
+      <div class="front-content">
+        <slot name="front" />
+      </div>
+    </div>
+    <div class="flip-card-back p-6 flex flex-col items-center justify-center rounded-xl bg-color-primary-500 dark:bg-color-dark-primary-600 text-white shadow-md">
+      <h3 class="text-xl font-bold mb-3">{backTitle}</h3>
+      <div class="back-content">
+        <slot name="back" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .flip-card-container {
+    perspective: 1000px;
+    width: 100%;
+    height: 300px;
+  }
+  
+  .flip-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+  
+  .flip-card-container:hover .flip-card {
+    transform: rotateY(180deg);
+  }
+  
+  .flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden; /* Safari */
+    backface-visibility: hidden;
+    overflow: auto;
+  }
+  
+  .flip-card-back {
+    transform: rotateY(180deg);
+  }
+</style> 

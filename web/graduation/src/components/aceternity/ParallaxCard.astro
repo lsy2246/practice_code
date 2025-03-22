@@ -1,0 +1,237 @@
+---
+interface Props {
+  className?: string;
+  glareEnabled?: boolean;
+  maxGlare?: number; // 0-1 之间
+  depth?: number; // 视差深度，1-10之间
+  backgroundImage?: string;
+}
+
+const { 
+  className = "",
+  glareEnabled = true,
+  maxGlare = 0.5,
+  depth = 5,
+  backgroundImage
+} = Astro.props;
+
+const cardId = `parallax-card-${Math.random().toString(36).substring(2, 11)}`;
+---
+
+<div id={cardId} class={`parallax-card ${className}`}>
+  {backgroundImage && (
+    <div class="parallax-card-background absolute inset-0 z-0" style={`background-image: url(${backgroundImage})`}></div>
+  )}
+  <div class="parallax-card-content relative z-10">
+    <slot />
+  </div>
+  {glareEnabled && <div class="parallax-card-glare absolute top-0 left-0 w-full h-full z-20"></div>}
+</div>
+
+<style>
+  .parallax-card {
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 2rem;
+    border-radius: 1rem;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.1);
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.25);
+    transition: transform 0.1s ease, box-shadow 0.3s ease;
+    will-change: transform, box-shadow;
+  }
+  
+  .parallax-card:hover {
+    box-shadow: 0 20px 40px -25px rgba(0, 0, 0, 0.3);
+  }
+  
+  .parallax-card-background {
+    background-size: cover;
+    background-position: center;
+    transform-style: preserve-3d;
+    transition: transform 0.2s ease;
+    filter: blur(0);
+  }
+  
+  .parallax-card-content {
+    transform-style: preserve-3d;
+  }
+  
+  .parallax-card-glare {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(105deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.05) 80%);
+    transform: translateZ(1px);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  [data-theme='dark'] .parallax-card {
+    background-color: rgba(30, 30, 30, 0.5);
+    box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.5);
+  }
+  
+  [data-theme='dark'] .parallax-card:hover {
+    box-shadow: 0 20px 40px -25px rgba(0, 0, 0, 0.7);
+  }
+  
+  [data-theme='dark'] .parallax-card-glare {
+    background: linear-gradient(105deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.03) 80%);
+  }
+</style>
+
+<script define:vars={{ cardId, glareEnabled, maxGlare, depth }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    
+    const contentItems = Array.from(card.querySelectorAll('.parallax-item'));
+    const background = card.querySelector('.parallax-card-background');
+    const glare = card.querySelector('.parallax-card-glare');
+    
+    // 视差灵敏度系数
+    const depthFactor = depth * 0.2;
+    
+    // 是否正在悬停
+    let isHovered = false;
+    
+    // 处理鼠标移动
+    const handleMouseMove = (e) => {
+      if (!isHovered) return;
+      
+      const rect = card.getBoundingClientRect();
+      
+      // 计算鼠标在卡片上的相对位置 (0~1)
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      
+      // 旋转角度（-15 ~ 15度）
+      const rotateX = (0.5 - y) * 30 * depthFactor * 0.1;
+      const rotateY = (x - 0.5) * 30 * depthFactor * 0.1;
+      
+      // 应用旋转
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      
+      // 背景视差效果
+      if (background) {
+        const bgX = (x - 0.5) * 40 * depthFactor;
+        const bgY = (y - 0.5) * 40 * depthFactor;
+        background.style.transform = `translateX(${bgX}px) translateY(${bgY}px) scale(1.05)`;
+      }
+      
+      // 内部元素视差效果
+      contentItems.forEach(item => {
+        const depth = parseInt(item.getAttribute('data-depth') || '5') / 10;
+        const itemX = (x - 0.5) * 30 * depth * depthFactor;
+        const itemY = (y - 0.5) * 30 * depth * depthFactor;
+        item.style.transform = `translateX(${itemX}px) translateY(${itemY}px) translateZ(${depth * 50}px)`;
+      });
+      
+      // 光晕效果
+      if (glare && glareEnabled) {
+        // 调整光晕角度
+        const glareX = x * 100;
+        const glareY = y * 100;
+        
+        // 计算光晕透明度
+        const glareOpacity = Math.min(
+          Math.max(
+            Math.sqrt((x - 0.5) * (x - 0.5) + (y - 0.5) * (y - 0.5)) * 2, 
+            0
+          ), 
+          maxGlare
+        );
+        
+        glare.style.opacity = glareOpacity.toString();
+        glare.style.backgroundImage = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,${glareOpacity}) 0%, rgba(255,255,255,0) 80%)`;
+      }
+    };
+    
+    // 鼠标进入
+    const handleMouseEnter = () => {
+      isHovered = true;
+      
+      // 平滑过渡到3D效果
+      card.style.transition = 'transform 0.3s ease';
+      
+      if (background) {
+        background.style.transition = 'transform 0.3s ease';
+        background.style.transformOrigin = 'center center';
+      }
+      
+      contentItems.forEach(item => {
+        item.style.transition = 'transform 0.3s ease';
+      });
+      
+      // 一定时间后移除过渡效果，实现更流畅的追踪
+      setTimeout(() => {
+        card.style.transition = '';
+        
+        if (background) {
+          background.style.transition = '';
+        }
+        
+        contentItems.forEach(item => {
+          item.style.transition = '';
+        });
+      }, 300);
+    };
+    
+    // 鼠标离开
+    const handleMouseLeave = () => {
+      isHovered = false;
+      
+      // 添加过渡效果
+      card.style.transition = 'transform 0.5s ease';
+      
+      if (background) {
+        background.style.transition = 'transform 0.5s ease';
+      }
+      
+      contentItems.forEach(item => {
+        item.style.transition = 'transform 0.5s ease';
+      });
+      
+      // 重置旋转
+      card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+      
+      if (background) {
+        background.style.transform = 'translateX(0) translateY(0) scale(1)';
+      }
+      
+      contentItems.forEach(item => {
+        item.style.transform = 'translateX(0) translateY(0) translateZ(0)';
+      });
+      
+      if (glare) {
+        glare.style.opacity = '0';
+      }
+    };
+    
+    // 移动端触摸处理
+    const handleTouchMove = (e) => {
+      if (e.touches.length !== 1) return;
+      
+      const touch = e.touches[0];
+      handleMouseMove({
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      });
+    };
+    
+    // 添加事件监听
+    card.addEventListener('mouseenter', handleMouseEnter);
+    card.addEventListener('mousemove', handleMouseMove);
+    card.addEventListener('mouseleave', handleMouseLeave);
+    card.addEventListener('touchmove', handleTouchMove);
+    card.addEventListener('touchstart', handleMouseEnter);
+    card.addEventListener('touchend', handleMouseLeave);
+  });
+</script> 

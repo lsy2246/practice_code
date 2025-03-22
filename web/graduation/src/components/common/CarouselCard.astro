@@ -1,0 +1,117 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  link?: string;
+  linkText?: string;
+  tags?: string[];
+  className?: string;
+}
+
+const { 
+  title, 
+  description, 
+  image, 
+  imageAlt = "", 
+  link, 
+  linkText = "详细信息",
+  tags = [],
+  className = "" 
+} = Astro.props;
+---
+
+<div class={`carousel-card flex-shrink-0 w-full md:w-80 bg-white dark:bg-color-dark-card rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ${className}`}>
+  {image && (
+    <div class="h-48 overflow-hidden relative">
+      <div class="w-full h-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center card-image-container">
+        <span class="text-gray-500 dark:text-gray-400">{imageAlt || title}</span>
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 transition-opacity duration-300 card-overlay"></div>
+    </div>
+  )}
+  
+  <div class="p-5">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1 transition-colors duration-300">{title}</h3>
+    
+    {description && (
+      <p class="text-gray-600 dark:text-gray-400 mb-3 text-sm line-clamp-2">{description}</p>
+    )}
+    
+    {tags.length > 0 && (
+      <div class="flex flex-wrap gap-1 mb-3">
+        {tags.map(tag => (
+          <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full dark:bg-color-dark-surface dark:text-gray-400 transition-colors duration-300 card-tag">
+            {tag}
+          </span>
+        ))}
+      </div>
+    )}
+    
+    <slot />
+    
+    {link && (
+      <a 
+        href={link}
+        class="inline-block mt-2 text-color-primary-600 hover:text-color-primary-700 dark:text-color-primary-400 dark:hover:text-color-primary-300 text-sm font-medium transition-transform duration-300 card-link"
+      >
+        {linkText} &rarr;
+      </a>
+    )}
+  </div>
+</div>
+
+<style>
+  .carousel-card {
+    transform: translateZ(0); /* 启用硬件加速，使动画更流畅 */
+    will-change: transform, opacity; /* 提前告知浏览器哪些属性会变化 */
+    transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid transparent;
+  }
+  
+  .carousel-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  [data-theme='dark'] .carousel-card:hover {
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  }
+  
+  .carousel-card:hover .card-overlay {
+    opacity: 1;
+  }
+  
+  .carousel-card:hover .card-image-container {
+    transform: scale(1.05);
+    transition: transform 0.6s ease;
+  }
+  
+  .card-image-container {
+    transition: transform 0.3s ease;
+    transform-origin: center;
+  }
+  
+  .carousel-card:hover h3 {
+    color: rgb(99, 102, 241);
+  }
+  
+  [data-theme='dark'] .carousel-card:hover h3 {
+    color: rgb(129, 140, 248);
+  }
+  
+  .carousel-card:hover .card-link {
+    transform: translateX(4px);
+  }
+  
+  .carousel-card:hover .card-tag {
+    background-color: rgba(99, 102, 241, 0.1);
+  }
+  
+  [data-theme='dark'] .carousel-card:hover .card-tag {
+    background-color: rgba(99, 102, 241, 0.2);
+  }
+</style> 

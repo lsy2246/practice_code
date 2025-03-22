@@ -1,0 +1,70 @@
+---
+interface Props {
+  color?: string;
+  intensity?: 'subtle' | 'medium' | 'strong';
+  className?: string;
+}
+
+const { 
+  color = "rgba(75, 107, 255, 0.5)", 
+  intensity = 'medium',
+  className = ""
+} = Astro.props;
+
+// 根据强度调整发光范围
+const getGlowSize = () => {
+  switch(intensity) {
+    case 'subtle': return '100px';
+    case 'strong': return '180px';
+    default: return '140px'; // medium
+  }
+};
+
+const glowSize = getGlowSize();
+const id = `hover-glow-${Math.random().toString(36).substring(2, 11)}`;
+---
+
+<div id={id} class={`hover-glow-container relative overflow-hidden ${className}`}>
+  <div class="hover-glow-content relative z-10">
+    <slot />
+  </div>
+  <div class="hover-glow-effect absolute pointer-events-none opacity-0 transition-opacity duration-300"></div>
+</div>
+
+<style define:vars={{ glowColor: color, glowSize: glowSize }}>
+  .hover-glow-effect {
+    background: radial-gradient(
+      circle at var(--x, 50%) var(--y, 50%),
+      var(--glowColor) 0%,
+      transparent calc(var(--glowSize))
+    );
+    inset: -100px;
+  }
+  
+  .hover-glow-container:hover .hover-glow-effect {
+    opacity: 1;
+  }
+</style>
+
+<script define:vars={{ id }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById(id);
+    if (!container) return;
+    
+    const glowEffect = container.querySelector('.hover-glow-effect');
+    if (!glowEffect) return;
+    
+    // 鼠标移动时更新发光位置
+    container.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+      
+      // 计算鼠标在元素内的相对位置（百分比）
+      const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * 100;
+      const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height)) * 100;
+      
+      // 设置自定义属性，用于CSS变量
+      glowEffect.style.setProperty('--x', `${x}%`);
+      glowEffect.style.setProperty('--y', `${y}%`);
+    });
+  });
+</script> 

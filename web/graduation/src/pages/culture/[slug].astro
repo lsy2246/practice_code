@@ -1,0 +1,193 @@
+---
+import { getCollection, getEntry, type CollectionEntry } from "astro:content";
+import MainLayout from "../../layouts/MainLayout.astro";
+import ScrollReveal from "../../components/aceternity/ScrollReveal.astro";
+
+// 定义Props类型
+export interface Props {
+  entry: CollectionEntry<"culture">;
+}
+
+// 生成静态路径
+export async function getStaticPaths() {
+  const cultures = await getCollection("culture");
+  return cultures.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+// 获取当前文化数据
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// 获取相关文化
+const allCultures = await getCollection("culture");
+const relatedCultures = allCultures
+  .filter(
+    (item) => 
+      item.slug !== entry.slug && 
+      item.data.tags.some((tag) => entry.data.tags.includes(tag))
+  )
+  .slice(0, 3);
+---
+
+<MainLayout title={`${entry.data.title} - 河北游礼`}>
+  <!-- 页面标题区域 -->
+  <div class="relative py-16 bg-gradient-to-br from-color-primary-700 via-color-primary-600 to-color-primary-800 text-white dark:from-color-dark-primary-900 dark:via-color-dark-primary-800 dark:to-color-dark-primary-950">
+    <div class="absolute inset-0 bg-black/30"></div>
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="max-w-4xl mx-auto">
+        <ScrollReveal animation="fade">
+          <div class="flex flex-wrap items-center gap-2 mb-4">
+            <a href="/" class="text-white/80 hover:text-white transition-colors">首页</a>
+            <span class="text-white/60">/</span>
+            <a href="/culture" class="text-white/80 hover:text-white transition-colors">文化</a>
+            <span class="text-white/60">/</span>
+            <span class="text-white/60">{entry.data.title}</span>
+          </div>
+          
+          <h1 class="text-4xl md:text-5xl font-bold mb-4">{entry.data.title}</h1>
+          
+          <div class="flex flex-wrap items-center gap-4 mb-4">
+            {entry.data.city && (
+              <div class="flex items-center text-white/90">
+                <span class="mr-1">📍</span> {entry.data.city}
+              </div>
+            )}
+            
+            {entry.data.pubDate && (
+              <div class="flex items-center text-white/90">
+                <span class="mr-1">📅</span> {new Date(entry.data.pubDate).toLocaleDateString('zh-CN')}
+              </div>
+            )}
+            
+            <div class="flex items-center text-white/90">
+              <span class="mr-1">🏷️</span> {entry.data.category}
+            </div>
+          </div>
+          
+          <div class="flex flex-wrap gap-2 mb-6">
+            {entry.data.tags.map((tag) => (
+              <span class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full">
+                {tag}
+              </span>
+            ))}
+          </div>
+          
+          <p class="text-xl text-white/90 max-w-3xl">{entry.data.description}</p>
+        </ScrollReveal>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 主要内容区域 -->
+  <div class="py-12 bg-white dark:bg-color-dark-bg">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- 左侧内容 -->
+        <div class="lg:col-span-2">
+          <ScrollReveal animation="fade">
+            <div class="prose prose-lg dark:prose-invert max-w-none">
+              <Content />
+            </div>
+          </ScrollReveal>
+        </div>
+        
+        <!-- 右侧边栏 -->
+        <div class="space-y-8">
+          <!-- 文化图片 -->
+          <ScrollReveal animation="slide-up">
+            <div class="rounded-lg overflow-hidden shadow-md">
+              <div class="h-64 bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                <span class="text-gray-500 dark:text-gray-400">{entry.data.title} 图片</span>
+              </div>
+            </div>
+          </ScrollReveal>
+          
+          <!-- 文化信息卡片 -->
+          <ScrollReveal animation="slide-up" delay={100}>
+            <div class="bg-gray-50 dark:bg-color-dark-card rounded-lg shadow-md p-6">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">文化信息</h3>
+              
+              <div class="space-y-3">
+                {entry.data.city && (
+                  <div class="flex">
+                    <span class="w-24 flex-shrink-0 text-gray-600 dark:text-gray-400">分布地区:</span>
+                    <span class="text-gray-900 dark:text-white">{entry.data.city}</span>
+                  </div>
+                )}
+                
+                <div class="flex">
+                  <span class="w-24 flex-shrink-0 text-gray-600 dark:text-gray-400">文化类型:</span>
+                  <span class="text-gray-900 dark:text-white">{entry.data.category}</span>
+                </div>
+                
+                <div class="flex">
+                  <span class="w-24 flex-shrink-0 text-gray-600 dark:text-gray-400">特色标签:</span>
+                  <div class="flex flex-wrap gap-1">
+                    {entry.data.tags.map((tag) => (
+                      <span class="px-2 py-0.5 bg-color-primary-100 text-color-primary-800 text-xs rounded-full dark:bg-color-dark-primary-900/70 dark:text-color-primary-300">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                {entry.data.pubDate && (
+                  <div class="flex">
+                    <span class="w-24 flex-shrink-0 text-gray-600 dark:text-gray-400">发布时间:</span>
+                    <span class="text-gray-900 dark:text-white">{new Date(entry.data.pubDate).toLocaleDateString('zh-CN')}</span>
+                  </div>
+                )}
+                
+              </div>
+            </div>
+          </ScrollReveal>
+          
+          <!-- 相关文化 -->
+          {relatedCultures.length > 0 && (
+            <ScrollReveal animation="slide-up" delay={200}>
+              <div class="bg-gray-50 dark:bg-color-dark-card rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">相关文化</h3>
+                
+                <div class="space-y-4">
+                  {relatedCultures.map((culture) => (
+                    <a 
+                      href={`/culture/${culture.slug}`}
+                      class="block group"
+                    >
+                      <div class="flex items-start space-x-3">
+                        <div class="w-16 h-16 flex-shrink-0 bg-gray-300 dark:bg-gray-700 rounded flex items-center justify-center">
+                          <span class="text-xs text-gray-500 dark:text-gray-400">图片</span>
+                        </div>
+                        <div>
+                          <h4 class="text-base font-medium text-gray-900 dark:text-white group-hover:text-color-primary-600 dark:group-hover:text-color-primary-400 transition-colors">
+                            {culture.data.title}
+                          </h4>
+                          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                            {culture.data.description.substring(0, 60)}...
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </ScrollReveal>
+          )}
+          
+          <!-- 返回按钮 -->
+          <ScrollReveal animation="slide-up" delay={300}>
+            <a 
+              href="/culture"
+              class="block w-full py-3 text-center bg-color-primary-600 text-white rounded-md hover:bg-color-primary-700 transition-colors dark:bg-color-dark-primary-600 dark:hover:bg-color-dark-primary-500"
+            >
+              返回所有文化
+            </a>
+          </ScrollReveal>
+        </div>
+      </div>
+    </div>
+  </div>
+</MainLayout> 

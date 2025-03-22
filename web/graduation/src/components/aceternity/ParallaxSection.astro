@@ -1,0 +1,91 @@
+---
+interface Props {
+  images: Array<{
+    src: string;
+    alt: string;
+    speed?: number; // 滚动速度因子，正数向下，负数向上
+  }>;
+  heading: string;
+  subheading?: string;
+  className?: string;
+}
+
+const { images, heading, subheading, className = "" } = Astro.props;
+---
+
+<section class={`relative overflow-hidden ${className}`} id="parallax-section">
+  <!-- 背景图层 -->
+  <div class="absolute inset-0">
+    <div class="absolute inset-0 bg-black/60 z-10"></div>
+    {
+      images.map((image, index) => (
+        <div
+          class="absolute inset-0 parallax-layer transition-transform duration-100"
+          data-speed={image.speed || 0.2}
+          style={{
+            zIndex: index,
+            transform: "translateY(0px)",
+          }}
+        >
+          <div class="absolute inset-0 bg-gray-500 flex items-center justify-center">
+            <span class="text-white text-lg">{image.alt}</span>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <!-- 内容 -->
+  <div class="relative z-20 min-h-[60vh] flex items-center justify-center text-center py-20 px-4">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-3xl sm:text-5xl font-bold text-white mb-4 tracking-tight">
+        {heading}
+      </h2>
+      {
+        subheading && (
+          <p class="text-xl text-gray-200 max-w-2xl mx-auto">{subheading}</p>
+        )
+      }
+      <slot />
+    </div>
+  </div>
+</section>
+
+<script>
+  // 简单的视差滚动效果
+  document.addEventListener('DOMContentLoaded', () => {
+    const parallaxLayers = document.querySelectorAll('.parallax-layer');
+    
+    function updateParallax() {
+      const scrollY = window.scrollY;
+      const section = document.getElementById('parallax-section');
+      
+      if (!section) return;
+      
+      const sectionRect = section.getBoundingClientRect();
+      const sectionTop = sectionRect.top + scrollY;
+      const sectionCenter = sectionTop + sectionRect.height / 2;
+      
+      // 仅当部分在视口中时更新视差效果
+      if (
+        scrollY + window.innerHeight >= sectionTop && 
+        scrollY <= sectionTop + sectionRect.height
+      ) {
+        const relativeScroll = scrollY - sectionTop;
+        
+        parallaxLayers.forEach(layer => {
+          const speed = parseFloat(layer.getAttribute('data-speed') || '0.2');
+          const yOffset = relativeScroll * speed;
+          (layer as HTMLElement).style.transform = `translateY(${yOffset}px)`;
+        });
+      }
+    }
+    
+    // 初始更新
+    updateParallax();
+    
+    // 滚动事件监听
+    window.addEventListener('scroll', updateParallax);
+    window.addEventListener('resize', updateParallax);
+  });
+</script> 

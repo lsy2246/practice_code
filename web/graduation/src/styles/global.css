@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+/* 定义深色模式选择器 */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme {
+  /* 主色调 - 使用琥珀色系为主题色 */
+  --color-primary-50: #fffbeb;
+  --color-primary-100: #fef3c7;
+  --color-primary-200: #fde68a;
+  --color-primary-300: #fcd34d;
+  --color-primary-400: #fbbf24;
+  --color-primary-500: #f59e0b;
+  --color-primary-600: #d97706;
+  --color-primary-700: #b45309;
+  --color-primary-800: #92400e;
+  --color-primary-900: #78350f;
+  --color-primary-950: #451a03;
+
+  /* 辅助色调 - 暖棕色 */
+  --color-secondary-50: #faf5f0;
+  --color-secondary-100: #f8f0e5;
+  --color-secondary-200: #f1e0cb;
+  --color-secondary-300: #e6c9a5;
+  --color-secondary-400: #d9ac7c;
+  --color-secondary-500: #c6915a;
+  --color-secondary-600: #b67d49;
+  --color-secondary-700: #96663d;
+  --color-secondary-800: #7d5636;
+  --color-secondary-900: #67472e;
+  --color-secondary-950: #3a2719;
+
+  /* 强调色调 - 深红褐色 */
+  --color-accent-50: #fdf2f2;
+  --color-accent-100: #f8e1e1;
+  --color-accent-200: #f3c7c7;
+  --color-accent-300: #e89f9f;
+  --color-accent-400: #dc7676;
+  --color-accent-500: #c95252;
+  --color-accent-600: #af3f3f;
+  --color-accent-700: #923636;
+  --color-accent-800: #783333;
+  --color-accent-900: #653131;
+  --color-accent-950: #3b1b1b;
+
+  /* 中性色调 */
+  --color-gray-50: #f8fafc;
+  --color-gray-100: #f1f5f9;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
+  --color-gray-500: #64748b;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #1e293b;
+  --color-gray-900: #0f172a;
+  --color-gray-950: #020617;
+
+  /* 深色模式颜色 */
+  --color-dark-bg: #1a1613;
+  --color-dark-surface: #282420;
+  --color-dark-card: #332f2b;
+  --color-dark-border: #49443d;
+  --color-dark-text: #f1ece4;
+  --color-dark-text-secondary: #c4b9aa;
+
+  /* 特殊主题背景 */
+  --color-paper-light: #f8f5e8;
+  --color-paper-dark: #2d2822;
+  --color-recipe-light: #fdf7ed;
+  --color-recipe-dark: #302a23;
+  --color-scroll-light: #f5f1e6;
+  --color-scroll-dark: #2b2720;
+  --color-travel-light: #fef8e8;
+  --color-travel-dark: #2e2921;
+
+  /* 黑暗模式中的强调色 */
+  --color-dark-primary-50: #362713;
+  --color-dark-primary-100: #453319;
+  --color-dark-primary-200: #604826;
+  --color-dark-primary-300: #7c5d32;
+  --color-dark-primary-400: #9b763d;
+  --color-dark-primary-500: #bd914a;
+  --color-dark-primary-600: #d7ab65;
+  --color-dark-primary-700: #e9c689;
+  --color-dark-primary-800: #f5e0b3;
+  --color-dark-primary-900: #faefdb;
+}
+
+:root {
+  /* 基础色调 */
+  --bg-primary: var(--color-gray-50);
+  --bg-secondary: var(--color-gray-100);
+  --text-primary: var(--color-gray-900);
+  --text-secondary: var(--color-gray-700);
+  --border-color: var(--color-gray-300);
+  
+  /* 主题色调 */
+  --theme-primary: var(--color-primary-500);
+  --theme-primary-light: var(--color-primary-400);
+  --theme-primary-dark: var(--color-primary-600);
+  --theme-primary-bg: var(--color-primary-50);
+  --theme-primary-bg-hover: var(--color-primary-100);
+  
+  /* 页面特殊背景 */
+  --bg-paper: var(--color-paper-light);
+  --bg-recipe: var(--color-recipe-light);
+  --bg-scroll: var(--color-scroll-light);
+  --bg-travel: var(--color-travel-light);
+  
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* 深色模式样式 */
+[data-theme='dark'] {
+  /* 基础色调 */
+  --bg-primary: var(--color-dark-bg);
+  --bg-secondary: var(--color-dark-surface);
+  --text-primary: var(--color-dark-text);
+  --text-secondary: var(--color-dark-text-secondary);
+  --border-color: var(--color-dark-border);
+  
+  /* 主题色调 */
+  --theme-primary: var(--color-dark-primary-500);
+  --theme-primary-light: var(--color-dark-primary-400);
+  --theme-primary-dark: var(--color-dark-primary-600);
+  --theme-primary-bg: var(--color-dark-primary-100);
+  --theme-primary-bg-hover: var(--color-dark-primary-200);
+  
+  /* 页面特殊背景 */
+  --bg-paper: var(--color-paper-dark);
+  --bg-recipe: var(--color-recipe-dark);
+  --bg-scroll: var(--color-scroll-dark);
+  --bg-travel: var(--color-travel-dark);
+  
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* 统一颜色类 */
+.bg-theme-primary { background-color: var(--theme-primary); }
+.bg-theme-primary-light { background-color: var(--theme-primary-light); }
+.bg-theme-primary-dark { background-color: var(--theme-primary-dark); }
+.bg-theme-primary-bg { background-color: var(--theme-primary-bg); }
+
+.text-theme-primary { color: var(--theme-primary); }
+.text-theme-primary-light { color: var(--theme-primary-light); }
+.text-theme-primary-dark { color: var(--theme-primary-dark); }
+
+.border-theme-primary { border-color: var(--theme-primary); }
+.border-theme-primary-light { border-color: var(--theme-primary-light); }
+.border-theme-primary-dark { border-color: var(--theme-primary-dark); }
+
+/* 主题特殊背景 */
+.bg-scroll-bg { background-color: var(--bg-scroll); }
+.bg-scroll-bg-dark { background-color: var(--bg-scroll); }
+.bg-recipe-paper-light { background-color: var(--bg-recipe); }
+.bg-recipe-paper-dark { background-color: var(--bg-recipe); }
+.bg-ancient-paper { background-color: var(--bg-paper); }
+.bg-ancient-paper-dark { background-color: var(--bg-paper); }
+
+/* 黑暗模式下的卡片样式覆盖 */
+[data-theme='dark'] .bg-white {
+  background-color: var(--color-dark-card);
+}
+
+/* 黑暗模式下的文本颜色覆盖 */
+[data-theme='dark'] .text-gray-900 {
+  color: var(--color-dark-text);
+}
+
+[data-theme='dark'] .text-gray-700, 
+[data-theme='dark'] .text-gray-600 {
+  color: var(--color-dark-text-secondary);
+}
+
+/* 兼容性覆盖：琥珀色/棕色 */
+[data-theme='light'] .text-amber-700,
+[data-theme='light'] .text-amber-800,
+[data-theme='light'] .text-brown-700 {
+  color: var(--color-primary-700);
+}
+
+[data-theme='dark'] .text-amber-300,
+[data-theme='dark'] .text-amber-400,
+[data-theme='dark'] .text-brown-300 {
+  color: var(--color-dark-primary-600);
+}
+
+[data-theme='light'] .bg-amber-50,
+[data-theme='light'] .bg-amber-100 {
+  background-color: var(--color-primary-50);
+}
+
+[data-theme='dark'] .bg-amber-900,
+[data-theme='dark'] .bg-slate-900 {
+  background-color: var(--color-dark-bg);
+}
+
+/* 表单元素在黑暗模式下的适配 */
+[data-theme='dark'] input,
+[data-theme='dark'] select,
+[data-theme='dark'] textarea {
+  background-color: var(--color-dark-card);
+  border-color: var(--color-dark-border);
+  color: var(--color-dark-text);
+}
+
+/* 文本和链接颜色在黑暗模式下的调整 */
+[data-theme='dark'] a:not([class]) {
+  color: var(--theme-primary);
+}
+
+[data-theme='dark'] a:not([class]):hover {
+  color: var(--theme-primary-light);
+}
+
+/* 黑暗模式下的阴影调整 */
+[data-theme='dark'] .shadow-md,
+[data-theme='dark'] .shadow-lg {
+  --tw-shadow-color: rgba(0, 0, 0, 0.4);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+/* 黑暗模式下的渐变背景调整 */
+[data-theme='dark'] .bg-gradient-to-r {
+  background-image: linear-gradient(to right, var(--color-dark-primary-200), var(--color-dark-primary-300));
+}

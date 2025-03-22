@@ -1,0 +1,145 @@
+---
+import "../styles/global.css";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import DarkModeTransition from "../components/DarkModeTransition.astro";
+import SmoothScroll from "../components/aceternity/SmoothScroll.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "河北游礼宣传网站 - 探索河北的文化与魅力" } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <DarkModeTransition />
+  </head>
+  <body>
+    <SmoothScroll />
+    
+    <div class="min-h-screen flex flex-col">
+      <header class="sticky top-0 z-50 bg-white border-b border-border-color shadow-sm dark:bg-color-dark-surface">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center h-16">
+            <!-- 网站Logo和名称 -->
+            <div class="flex items-center">
+              <a href="/" class="flex items-center">
+                <span class="text-xl font-bold text-color-primary-600 dark:text-color-primary-400">河北游礼</span>
+              </a>
+            </div>
+            
+            <!-- 导航菜单 -->
+            <nav class="hidden md:flex space-x-8">
+              <a href="/" class="text-gray-700 hover:text-color-primary-600 dark:text-gray-300 dark:hover:text-color-primary-400">首页</a>
+              <a href="/attractions" class="text-gray-700 hover:text-color-primary-600 dark:text-gray-300 dark:hover:text-color-primary-400">景点</a>
+              <a href="/culture" class="text-gray-700 hover:text-color-primary-600 dark:text-gray-300 dark:hover:text-color-primary-400">文化</a>
+              <a href="/cuisine" class="text-gray-700 hover:text-color-primary-600 dark:text-gray-300 dark:hover:text-color-primary-400">美食</a>
+              <a href="/travel" class="text-gray-700 hover:text-color-primary-600 dark:text-gray-300 dark:hover:text-color-primary-400">旅游攻略</a>
+            </nav>
+            
+            <!-- 主题切换按钮 -->
+            <div class="flex items-center">
+              <ThemeToggle />
+              
+              <!-- 移动端菜单按钮 -->
+              <button id="mobileMenuToggle" aria-label="打开菜单" class="md:hidden ml-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-color-dark-card">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <!-- 移动端菜单 -->
+          <div id="mobileMenu" class="md:hidden hidden pb-3">
+            <div class="flex flex-col space-y-2">
+              <a href="/" class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-color-dark-card">首页</a>
+              <a href="/attractions" class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-color-dark-card">景点</a>
+              <a href="/culture" class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-color-dark-card">文化</a>
+              <a href="/cuisine" class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-color-dark-card">美食</a>
+              <a href="/travel" class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-color-dark-card">旅游攻略</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-grow">
+        <slot />
+      </main>
+
+      <footer class="bg-gray-100 dark:bg-color-dark-surface border-t border-border-color">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">关于我们</h3>
+              <p class="text-gray-600 dark:text-gray-400">河北游礼网站致力于宣传河北省的旅游资源、文化遗产和地方特色，为游客提供全面的河北旅游信息。</p>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">快速链接</h3>
+              <ul class="space-y-2">
+                <li><a href="/about" class="text-color-primary-600 hover:text-color-primary-800 dark:text-color-primary-400 dark:hover:text-color-primary-300">关于河北</a></li>
+                <li><a href="/contact" class="text-color-primary-600 hover:text-color-primary-800 dark:text-color-primary-400 dark:hover:text-color-primary-300">联系我们</a></li>
+                <li><a href="/sitemap" class="text-color-primary-600 hover:text-color-primary-800 dark:text-color-primary-400 dark:hover:text-color-primary-300">网站地图</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">关注我们</h3>
+              <div class="flex space-x-4">
+                <a href="#" class="text-gray-600 hover:text-color-primary-600 dark:text-gray-400 dark:hover:text-color-primary-400">
+                  <span class="sr-only">微信</span>
+                  <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                  </svg>
+                </a>
+                <a href="#" class="text-gray-600 hover:text-color-primary-600 dark:text-gray-400 dark:hover:text-color-primary-400">
+                  <span class="sr-only">微博</span>
+                  <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                  </svg>
+                </a>
+                <a href="#" class="text-gray-600 hover:text-color-primary-600 dark:text-gray-400 dark:hover:text-color-primary-400">
+                  <span class="sr-only">抖音</span>
+                  <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="mt-8 pt-8 border-t border-gray-300 dark:border-color-dark-border text-center">
+            <p class="text-gray-600 dark:text-gray-400">&copy; {new Date().getFullYear()} 河北游礼网站. 保留所有权利.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      // 移动端菜单切换逻辑
+      document.addEventListener('DOMContentLoaded', () => {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        // 移动端菜单切换
+        const toggleMobileMenu = () => {
+          if (mobileMenu) {
+            mobileMenu.classList.toggle('hidden');
+          }
+        };
+
+        // 事件监听
+        if (mobileMenuToggle) {
+          mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        }
+      });
+    </script>
+  </body>
+</html> 
