@@ -86,6 +86,17 @@ const relatedCuisines = allCuisines
         <div class="lg:col-span-8">
           <ScrollReveal animation="fade">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+              <!-- 添加城市信息展示 -->
+              {entry.data.city && entry.data.city.length > 0 && (
+                <div class="mb-6 flex flex-wrap gap-2">
+                  <span class="text-gray-600 dark:text-gray-400">地域：</span>
+                  {entry.data.city.map((cityName: string) => (
+                    <span class="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 text-sm rounded-full">
+                      {cityName}
+                    </span>
+                  ))}
+                </div>
+              )}
               <div class="prose prose-lg dark:prose-invert max-w-none">
                 <Content />
               </div>

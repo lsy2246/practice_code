@@ -9,7 +9,7 @@ const { class: className = '' } = Astro.props;
 <button
   id="themeToggle"
   aria-label="切换主题"
-  class={`p-2 rounded-full hover:bg-gray-200 dark:hover:bg-color-dark-card focus:outline-none focus:ring-2 focus:ring-color-primary-400 dark:focus:ring-color-dark-primary-600 ${className}`}
+  class={`p-2 rounded-full hover:bg-gray-200 dark:hover:bg-color-dark-card focus:outline-none ${className}`}
 >
   <!-- 亮色主题图标 -->
   <svg xmlns="http://www.w3.org/2000/svg" class="icon light-icon h-6 w-6 text-gray-800 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -26,43 +26,29 @@ const { class: className = '' } = Astro.props;
   document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('themeToggle');
     
-    // 检查用户之前的主题设置
-    const getStoredTheme = () => {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme) return savedTheme;
-      
-      // 如果没有存储的主题，检查系统偏好
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    };
+    const getTheme = () => localStorage.getItem('theme') || 
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
-    // 应用主题
     const applyTheme = (theme: string) => {
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('theme', theme);
-      
-      // 发送主题变更事件，方便其他组件响应
       window.dispatchEvent(new CustomEvent('theme-change', { detail: { theme } }));
     };
 
-    // 切换主题
-    const toggleTheme = () => {
-      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      applyTheme(newTheme);
-    };
-
     // 初始化主题
-    applyTheme(getStoredTheme());
+    applyTheme(getTheme());
 
-    // 事件监听
+    // 切换主题事件
     if (themeToggle) {
-      themeToggle.addEventListener('click', toggleTheme);
+      themeToggle.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+      });
     }
     
     // 监听系统主题变化
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
       if (!localStorage.getItem('theme')) {
-        // 只有当用户没有手动设置主题时才跟随系统变化
         applyTheme(e.matches ? 'dark' : 'light');
       }
     });

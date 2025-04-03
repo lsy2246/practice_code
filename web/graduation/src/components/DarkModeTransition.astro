@@ -14,25 +14,17 @@
 
   body * {
     transition: background-color var(--transition-duration) ease,
-                border-color var(--transition-duration) ease,
                 color var(--transition-duration) ease,
-                fill var(--transition-duration) ease,
-                stroke var(--transition-duration) ease,
                 box-shadow var(--transition-duration) ease;
   }
   
-  /* 特定元素过渡效果增强 */
-  .card-transition {
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color var(--transition-duration) ease;
-  }
-
-  /* 防止某些元素过渡，如轮播图等需要即时响应的元素 */
+  /* 防止某些元素过渡 */
   .no-transition,
   .no-transition * {
     transition: none !important;
   }
   
-  /* 防止动画闪烁 */
+  /* 响应用户减少动画的设置 */
   @media (prefers-reduced-motion: reduce) {
     html, body * {
       transition: none !important;

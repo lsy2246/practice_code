@@ -10,6 +10,13 @@ interface Props {
 }
 
 const { title, description = "河北游礼宣传网站 - 探索河北的文化与魅力" } = Astro.props;
+
+// 社交媒体数据
+const socialLinks = [
+  { name: "微信", url: "#" },
+  { name: "微博", url: "#" },
+  { name: "抖音", url: "#" }
+];
 ---
 
 <!DOCTYPE html>
@@ -27,7 +34,7 @@ const { title, description = "河北游礼宣传网站 - 探索河北的文化�
     <SmoothScroll />
     
     <div class="min-h-screen flex flex-col">
-      <header class="sticky top-0 z-50 bg-white border-b border-border-color shadow-sm dark:bg-color-dark-surface">
+      <header class="sticky top-0 z-50 bg-white dark:bg-color-dark-surface">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center h-16">
             <!-- 网站Logo和名称 -->
@@ -46,7 +53,7 @@ const { title, description = "河北游礼宣传网站 - 探索河北的文化�
               <a href="/travel" class="text-gray-700 hover:text-color-primary-600 dark:text-gray-300 dark:hover:text-color-primary-400">旅游攻略</a>
             </nav>
             
-            <!-- 主题切换按钮 -->
+            <!-- 主题切换按钮和移动端菜单 -->
             <div class="flex items-center">
               <ThemeToggle />
               
@@ -94,24 +101,14 @@ const { title, description = "河北游礼宣传网站 - 探索河北的文化�
             <div>
               <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">关注我们</h3>
               <div class="flex space-x-4">
-                <a href="#" class="text-gray-600 hover:text-color-primary-600 dark:text-gray-400 dark:hover:text-color-primary-400">
-                  <span class="sr-only">微信</span>
-                  <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                  </svg>
-                </a>
-                <a href="#" class="text-gray-600 hover:text-color-primary-600 dark:text-gray-400 dark:hover:text-color-primary-400">
-                  <span class="sr-only">微博</span>
-                  <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                  </svg>
-                </a>
-                <a href="#" class="text-gray-600 hover:text-color-primary-600 dark:text-gray-400 dark:hover:text-color-primary-400">
-                  <span class="sr-only">抖音</span>
-                  <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                  </svg>
-                </a>
+                {socialLinks.map(({name, url}) => (
+                  <a href={url} class="social-icon text-gray-600 hover:text-color-primary-600 dark:text-gray-400 dark:hover:text-color-primary-400">
+                    <span class="sr-only">{name}</span>
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                    </svg>
+                  </a>
+                ))}
               </div>
             </div>
           </div>
@@ -123,23 +120,28 @@ const { title, description = "河北游礼宣传网站 - 探索河北的文化�
     </div>
 
     <script>
-      // 移动端菜单切换逻辑
+      // 移动端菜单切换
       document.addEventListener('DOMContentLoaded', () => {
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
         const mobileMenu = document.getElementById('mobileMenu');
 
-        // 移动端菜单切换
-        const toggleMobileMenu = () => {
-          if (mobileMenu) {
-            mobileMenu.classList.toggle('hidden');
-          }
-        };
-
-        // 事件监听
-        if (mobileMenuToggle) {
-          mobileMenuToggle.addEventListener('click', toggleMobileMenu);
-        }
+        mobileMenuToggle?.addEventListener('click', () => {
+          mobileMenu?.classList.toggle('hidden');
+        });
       });
     </script>
   </body>
-</html> 
+</html>
+
+<style>
+  .social-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    transition: color 0.3s ease;
+  }
+  
+  .social-icon:hover {
+    color: var(--theme-primary);
+  }
+</style> 

@@ -33,54 +33,73 @@ const relatedAttractions = allAttractions
 ---
 
 <MainLayout title={`${entry.data.title} - 河北游礼`}>
+  <!-- 移动端浮动返回按钮 -->
+  <div class="md:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+    <a 
+      href="/attractions"
+      class="flex items-center space-x-2 px-5 py-3 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-colors"
+      aria-label="返回所有景点"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+      </svg>
+      <span>返回景点列表</span>
+    </a>
+  </div>
+  
   <!-- 页面标题区域 -->
   <div class="relative py-16 bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white dark:from-primary-900 dark:via-primary-800 dark:to-primary-950">
     <div class="absolute inset-0 bg-black/30"></div>
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <div class="max-w-4xl mx-auto">
-        <ScrollReveal animation="fade">
-          <div class="flex flex-wrap items-center gap-2 mb-4">
-            <a href="/" class="text-white/80 hover:text-white transition-colors">首页</a>
-            <span class="text-white/60">/</span>
-            <a href="/attractions" class="text-white/80 hover:text-white transition-colors">景点</a>
-            <span class="text-white/60">/</span>
-            <span class="text-white/60">{entry.data.title}</span>
-          </div>
-          
-          <h1 class="text-4xl md:text-5xl font-bold mb-4">{entry.data.title}</h1>
-          
-          <div class="flex flex-wrap items-center gap-4 mb-4">
-            {entry.data.city && (
-              <div class="flex items-center text-white/90">
-                <span class="mr-1">📍</span> {entry.data.city}
-              </div>
-            )}
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+        <div class="lg:col-span-2">
+          <ScrollReveal animation="fade">
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+              <a href="/" class="text-white/80 hover:text-white transition-colors">首页</a>
+              <span class="text-white/60">/</span>
+              <a href="/attractions" class="text-white/80 hover:text-white transition-colors">景点</a>
+              <span class="text-white/60">/</span>
+              <span class="text-white/60">{entry.data.title}</span>
+            </div>
             
-            {entry.data.pubDate && (
-              <div class="flex items-center text-white/90">
-                <span class="mr-1">📅</span> {new Date(entry.data.pubDate).toLocaleDateString('zh-CN')}
-              </div>
-            )}
-          </div>
-          
-          <div class="flex flex-wrap gap-2 mb-6">
-            {entry.data.tags.map((tag: string) => (
-              <span class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full">
-                {tag}
-              </span>
-            ))}
-          </div>
-          
-          <p class="text-xl text-white/90 max-w-3xl">{entry.data.description}</p>
-        </ScrollReveal>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">{entry.data.title}</h1>
+            
+            <div class="flex flex-wrap items-center gap-4 mb-4">
+              {entry.data.city && (
+                <div class="flex items-center text-white/90">
+                  <span class="mr-1">📍</span> {entry.data.city}
+                </div>
+              )}
+              
+              {entry.data.pubDate && (
+                <div class="flex items-center text-white/90">
+                  <span class="mr-1">📅</span> {new Date(entry.data.pubDate).toLocaleDateString('zh-CN')}
+                </div>
+              )}
+            </div>
+            
+            <div class="flex flex-wrap gap-2 mb-6">
+              {entry.data.tags.map((tag: string) => (
+                <span class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
+            
+            <p class="text-xl text-white/90">{entry.data.description}</p>
+          </ScrollReveal>
+        </div>
+        <div class="hidden lg:block lg:col-span-1">
+          <!-- 与底部边栏对齐的空白区域 -->
+        </div>
       </div>
     </div>
   </div>
   
   <!-- 主要内容区域 -->
-  <div class="py-12 bg-white dark:bg-dark-bg">
+  <div class="py-8 lg:py-12 bg-white dark:bg-dark-bg">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
         <!-- 左侧内容 -->
         <div class="lg:col-span-2">
           <ScrollReveal animation="fade">
@@ -91,19 +110,54 @@ const relatedAttractions = allAttractions
         </div>
         
         <!-- 右侧边栏 -->
-        <div class="space-y-8">
+        <div class="space-y-6 md:space-y-8">
           <!-- 景点图片 -->
           <ScrollReveal animation="slide-up">
             <div class="rounded-lg overflow-hidden shadow-md">
-              <div class="h-64 bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+              <div class="h-48 md:h-64 bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
                 <span class="text-gray-500 dark:text-gray-400">{entry.data.title} 图片</span>
               </div>
             </div>
           </ScrollReveal>
           
+          <!-- 移动端快速信息栏 -->
+          <div class="block md:hidden">
+            <ScrollReveal animation="fade">
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                {entry.data.city && (
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg flex flex-col items-center text-center">
+                    <span class="text-primary-500 dark:text-primary-400 text-xl mb-1">📍</span>
+                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">位置</span>
+                    <span class="text-sm text-gray-900 dark:text-white">{entry.data.city}</span>
+                  </div>
+                )}
+                
+                {entry.data.pubDate && (
+                  <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg flex flex-col items-center text-center">
+                    <span class="text-primary-500 dark:text-primary-400 text-xl mb-1">📅</span>
+                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">发布日期</span>
+                    <span class="text-sm text-gray-900 dark:text-white">{new Date(entry.data.pubDate).toLocaleDateString('zh-CN')}</span>
+                  </div>
+                )}
+                
+                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg flex flex-col items-center text-center">
+                  <span class="text-primary-500 dark:text-primary-400 text-xl mb-1">⏰</span>
+                  <span class="text-sm font-medium text-gray-600 dark:text-gray-400">开放时间</span>
+                  <span class="text-sm text-gray-900 dark:text-white">09:00-17:00</span>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg flex flex-col items-center text-center">
+                  <span class="text-primary-500 dark:text-primary-400 text-xl mb-1">🎫</span>
+                  <span class="text-sm font-medium text-gray-600 dark:text-gray-400">门票</span>
+                  <span class="text-sm text-gray-900 dark:text-white">50元</span>
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+          
           <!-- 景点信息卡片 -->
           <ScrollReveal animation="slide-up" delay={100}>
-            <div class="bg-gray-50 dark:bg-color-dark-card rounded-lg shadow-md p-6">
+            <div class="bg-gray-50 dark:bg-color-dark-card rounded-lg shadow-md p-5">
               <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">景点信息</h3>
               
               <div class="space-y-3">
@@ -114,7 +168,7 @@ const relatedAttractions = allAttractions
                   </div>
                 )}
                 
-                <div class="flex">
+                <div class="flex flex-wrap">
                   <span class="w-24 flex-shrink-0 text-gray-600 dark:text-gray-400">景点类型:</span>
                   <div class="flex flex-wrap gap-1">
                     {entry.data.tags.map((tag: string) => (
@@ -136,63 +190,66 @@ const relatedAttractions = allAttractions
             </div>
           </ScrollReveal>
           
-          <!-- 交通信息 -->
-          <div class="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-6 shadow-sm border border-primary-100 dark:border-primary-800">
-            <h3 class="text-lg font-semibold text-primary-800 dark:text-primary-300 mb-4 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-600 dark:text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
-              交通指南
-            </h3>
-            <ul class="space-y-3 text-gray-700 dark:text-gray-300">
-              <li class="flex items-start">
-                <span class="text-primary-500 dark:text-primary-400 mr-2">🚌</span>
-                <span>公交路线: 10路, 15路, 22路到河北博物馆站下车</span>
-              </li>
-              <li class="flex items-start">
-                <span class="text-primary-500 dark:text-primary-400 mr-2">🚗</span>
-                <span>自驾路线: 导航至"{entry.data.title}"即可</span>
-              </li>
-              <li class="flex items-start">
-                <span class="text-primary-500 dark:text-primary-400 mr-2">🚄</span>
-                <span>高铁/火车: 到达石家庄站后可换乘公交或出租车</span>
-              </li>
-            </ul>
-          </div>
-          
-          <!-- 开放时间和门票 -->
-          <div class="bg-secondary-50 dark:bg-secondary-900/20 rounded-lg p-6 shadow-sm border border-secondary-100 dark:border-secondary-800">
-            <h3 class="text-lg font-semibold text-secondary-800 dark:text-secondary-300 mb-4 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-secondary-600 dark:text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              参观信息
-            </h3>
-            <div class="space-y-3 text-gray-700 dark:text-gray-300">
-              <p class="flex items-center">
-                <span class="text-secondary-500 dark:text-secondary-400 mr-2">⏰</span>
-                <span>开放时间: 09:00-17:00 (周一至周日)</span>
-              </p>
-              <p class="flex items-center">
-                <span class="text-secondary-500 dark:text-secondary-400 mr-2">🎫</span>
-                <span>门票: 成人票50元, 学生票25元</span>
-              </p>
-              <p class="flex items-center">
-                <span class="text-secondary-500 dark:text-secondary-400 mr-2">📞</span>
-                <span>咨询电话: 0311-12345678</span>
-              </p>
+          <!-- 信息卡片组 -->
+          <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+            <!-- 交通信息 -->
+            <div class="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-5 shadow-sm border border-primary-100 dark:border-primary-800">
+              <h3 class="text-lg font-semibold text-primary-800 dark:text-primary-300 mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-primary-600 dark:text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                交通指南
+              </h3>
+              <ul class="space-y-2 text-gray-700 dark:text-gray-300 text-sm md:text-base">
+                <li class="flex items-start">
+                  <span class="text-primary-500 dark:text-primary-400 mr-2">🚌</span>
+                  <span>公交路线: 10路, 15路, 22路到河北博物馆站下车</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="text-primary-500 dark:text-primary-400 mr-2">🚗</span>
+                  <span>自驾路线: 导航至"{entry.data.title}"即可</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="text-primary-500 dark:text-primary-400 mr-2">🚄</span>
+                  <span>高铁/火车: 到达石家庄站后可换乘公交或出租车</span>
+                </li>
+              </ul>
+            </div>
+            
+            <!-- 开放时间和门票 -->
+            <div class="bg-secondary-50 dark:bg-secondary-900/20 rounded-lg p-5 shadow-sm border border-secondary-100 dark:border-secondary-800">
+              <h3 class="text-lg font-semibold text-secondary-800 dark:text-secondary-300 mb-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-secondary-600 dark:text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                参观信息
+              </h3>
+              <div class="space-y-2 text-gray-700 dark:text-gray-300 text-sm md:text-base">
+                <p class="flex items-center">
+                  <span class="text-secondary-500 dark:text-secondary-400 mr-2">⏰</span>
+                  <span>开放时间: 09:00-17:00 (周一至周日)</span>
+                </p>
+                <p class="flex items-center">
+                  <span class="text-secondary-500 dark:text-secondary-400 mr-2">🎫</span>
+                  <span>门票: 成人票50元, 学生票25元</span>
+                </p>
+                <p class="flex items-center">
+                  <span class="text-secondary-500 dark:text-secondary-400 mr-2">📞</span>
+                  <span>咨询电话: 0311-12345678</span>
+                </p>
+              </div>
             </div>
           </div>
           
           <!-- 周边推荐 -->
-          <div class="bg-accent-50 dark:bg-accent-900/20 rounded-lg p-6 shadow-sm border border-accent-100 dark:border-accent-800">
-            <h3 class="text-lg font-semibold text-accent-800 dark:text-accent-300 mb-4 flex items-center">
+          <div class="bg-accent-50 dark:bg-accent-900/20 rounded-lg p-5 shadow-sm border border-accent-100 dark:border-accent-800">
+            <h3 class="text-lg font-semibold text-accent-800 dark:text-accent-300 mb-3 flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-accent-600 dark:text-accent-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
               周边推荐
             </h3>
-            <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+            <ul class="space-y-2 text-gray-700 dark:text-gray-300 text-sm md:text-base">
               <li class="flex items-start">
                 <span class="text-accent-500 dark:text-accent-400 mr-2">🏯</span>
                 <span>历史文化街区 (步行10分钟)</span>
@@ -210,13 +267,13 @@ const relatedAttractions = allAttractions
           
           <!-- 相关景点 -->
           {relatedAttractions.length > 0 && (
-            <div class="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-6 shadow-sm border border-primary-100 dark:border-primary-800 mt-6">
-              <h3 class="text-lg font-semibold text-primary-800 dark:text-primary-300 mb-4">相关景点</h3>
-              <div class="space-y-4">
+            <div class="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-5 shadow-sm border border-primary-100 dark:border-primary-800">
+              <h3 class="text-lg font-semibold text-primary-800 dark:text-primary-300 mb-3">相关景点</h3>
+              <div class="space-y-3">
                 {relatedAttractions.map((attraction: CollectionEntry<"attractions">) => (
                   <a href={`/attractions/${attraction.slug}`} class="block group">
                     <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors">
-                      <div class="w-16 h-16 rounded bg-primary-200 dark:bg-primary-800 flex items-center justify-center text-primary-700 dark:text-primary-300 flex-shrink-0">
+                      <div class="w-12 h-12 md:w-16 md:h-16 rounded bg-primary-200 dark:bg-primary-800 flex items-center justify-center text-primary-700 dark:text-primary-300 flex-shrink-0">
                         {attraction.data.title.substring(0, 1)}
                       </div>
                       <div>
@@ -234,75 +291,19 @@ const relatedAttractions = allAttractions
             </div>
           )}
           
-          <!-- 返回按钮 -->
-          <ScrollReveal animation="slide-up" delay={300}>
-            <a 
-              href="/attractions"
-              class="block w-full py-3 text-center bg-color-primary-600 text-white rounded-md hover:bg-color-primary-700 transition-colors dark:bg-color-dark-primary-600 dark:hover:bg-color-dark-primary-500"
-            >
-              返回所有景点
-            </a>
-          </ScrollReveal>
+          <!-- 返回按钮 - 仅在非移动端显示 -->
+          <div class="hidden md:block">
+            <ScrollReveal animation="slide-up" delay={300}>
+              <a 
+                href="/attractions"
+                class="block w-full py-4 mt-8 mb-4 text-center bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors dark:bg-color-dark-primary-600 dark:hover:bg-color-dark-primary-500 font-bold shadow-lg border-2 border-blue-500 text-lg"
+              >
+                返回所有景点
+              </a>
+            </ScrollReveal>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-  
-  <!-- 相关景点 -->
-  <div class="py-16 bg-gradient-to-b from-white to-primary-50 dark:from-dark-bg dark:to-primary-900/10">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <ScrollReveal animation="fade">
-        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">探索更多河北景点</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {relatedAttractions.map((attraction: CollectionEntry<"attractions">) => (
-            <a href={`/attractions/${attraction.slug}`} class="group">
-              <div class="bg-white dark:bg-dark-surface rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg border border-primary-100 dark:border-primary-900/50 h-full flex flex-col">
-                <div class="h-48 bg-primary-100 dark:bg-primary-900/30 relative overflow-hidden">
-                  <div class="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-accent-500/30 group-hover:opacity-70 opacity-0 transition-opacity duration-300"></div>
-                  <div class="flex items-center justify-center h-full text-primary-700 dark:text-primary-300">
-                    {attraction.data.title}
-                  </div>
-                </div>
-                
-                <div class="p-4 flex-grow">
-                  <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                    {attraction.data.title}
-                  </h3>
-                  
-                  <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                    {attraction.data.description}
-                  </p>
-                  
-                  <div class="flex flex-wrap gap-2">
-                    {attraction.data.tags.slice(0, 3).map((tag: string) => (
-                      <span class="text-xs px-2 py-1 bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded-full">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                
-                <div class="p-4 border-t border-primary-100 dark:border-primary-800/50 flex justify-between items-center">
-                  <span class="text-sm text-primary-600 dark:text-primary-400 font-medium">查看详情</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary-500 dark:text-primary-400 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </div>
-              </div>
-            </a>
-          ))}
-        </div>
-        
-        <div class="text-center mt-12">
-          <a href="/attractions" class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
-            <span>浏览全部景点</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </a>
-        </div>
-      </ScrollReveal>
     </div>
   </div>
 </MainLayout> 

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./content-styles.css";
 
 /* 定义深色模式选择器 */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
@@ -64,15 +65,17 @@
   --color-dark-text: #f1ece4;
   --color-dark-text-secondary: #c4b9aa;
 
-  /* 特殊主题背景 */
-  --color-paper-light: #f8f5e8;
-  --color-paper-dark: #2d2822;
-  --color-recipe-light: #fdf7ed;
-  --color-recipe-dark: #302a23;
-  --color-scroll-light: #f5f1e6;
-  --color-scroll-dark: #2b2720;
-  --color-travel-light: #fef8e8;
-  --color-travel-dark: #2e2921;
+  /* 特殊主题背景 - 统一亮色和暗色变量 */
+  --color-paper: #f8f5e8;
+  --color-recipe: #fdf7ed;
+  --color-scroll: #f5f1e6;
+  --color-travel: #fef8e8;
+  
+  /* 黑暗模式中的特殊主题背景 */
+  --color-dark-paper: #2d2822;
+  --color-dark-recipe: #302a23;
+  --color-dark-scroll: #2b2720;
+  --color-dark-travel: #2e2921;
 
   /* 黑暗模式中的强调色 */
   --color-dark-primary-50: #362713;
@@ -102,11 +105,11 @@
   --theme-primary-bg: var(--color-primary-50);
   --theme-primary-bg-hover: var(--color-primary-100);
   
-  /* 页面特殊背景 */
-  --bg-paper: var(--color-paper-light);
-  --bg-recipe: var(--color-recipe-light);
-  --bg-scroll: var(--color-scroll-light);
-  --bg-travel: var(--color-travel-light);
+  /* 页面特殊背景 - 使用统一的变量 */
+  --bg-paper: var(--color-paper);
+  --bg-recipe: var(--color-recipe);
+  --bg-scroll: var(--color-scroll);
+  --bg-travel: var(--color-travel);
   
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -129,13 +132,101 @@
   --theme-primary-bg-hover: var(--color-dark-primary-200);
   
   /* 页面特殊背景 */
-  --bg-paper: var(--color-paper-dark);
-  --bg-recipe: var(--color-recipe-dark);
-  --bg-scroll: var(--color-scroll-dark);
-  --bg-travel: var(--color-travel-dark);
-  
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  --bg-paper: var(--color-dark-paper);
+  --bg-recipe: var(--color-dark-recipe);
+  --bg-scroll: var(--color-dark-scroll);
+  --bg-travel: var(--color-dark-travel);
+
+  /* 元素背景色覆盖 */
+  .bg-white {
+    background-color: var(--color-dark-card);
+  }
+
+  /* 文本颜色覆盖 */
+  .text-gray-900 {
+    color: var(--color-dark-text);
+  }
+
+  .text-gray-700, 
+  .text-gray-600 {
+    color: var(--color-dark-text-secondary);
+  }
+
+  /* 对卡片背景色的改进 */
+  .ancient-card, 
+  .spotlight-card,
+  .bg-gray-900\/95,
+  [class*="bg-gray-900"] {
+    background-color: var(--color-dark-card);
+  }
+
+  /* 对话框和弹出层背景 */
+  .bg-gray-800 {
+    background-color: var(--color-dark-surface);
+  }
+
+  /* 琥珀色/棕色兼容性覆盖 */
+  .text-amber-300,
+  .text-amber-400,
+  .text-brown-300 {
+    color: var(--color-dark-primary-600);
+  }
+
+  .bg-amber-900,
+  .bg-slate-900 {
+    background-color: var(--color-dark-bg);
+  }
+
+  /* 表单元素适配 */
+  input,
+  select,
+  textarea {
+    background-color: var(--color-dark-card);
+    border-color: var(--color-dark-border);
+    color: var(--color-dark-text);
+  }
+
+  /* 链接颜色调整 */
+  a:not([class]) {
+    color: var(--theme-primary);
+    
+    &:hover {
+      color: var(--theme-primary-light);
+    }
+  }
+
+  /* 阴影调整 */
+  .shadow-md,
+  .shadow-lg {
+    --tw-shadow-color: rgba(0, 0, 0, 0.4);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  }
+
+  /* 渐变背景调整 */
+  .bg-gradient-to-r {
+    background-image: linear-gradient(to right, var(--color-dark-primary-200), var(--color-dark-primary-300));
+  }
+}
+
+/* 亮色模式特定覆盖 */
+[data-theme='light'] {
+  .text-amber-700,
+  .text-amber-800,
+  .text-brown-700 {
+    color: var(--color-primary-700);
+  }
+
+  .bg-amber-50,
+  .bg-amber-100 {
+    background-color: var(--color-primary-50);
+  }
+}
+
+/* 背景渐变动画 */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* 统一颜色类 */
@@ -152,78 +243,7 @@
 .border-theme-primary-light { border-color: var(--theme-primary-light); }
 .border-theme-primary-dark { border-color: var(--theme-primary-dark); }
 
-/* 主题特殊背景 */
+/* 主题特殊背景 - 使用统一命名并移除重复定义 */
 .bg-scroll-bg { background-color: var(--bg-scroll); }
-.bg-scroll-bg-dark { background-color: var(--bg-scroll); }
-.bg-recipe-paper-light { background-color: var(--bg-recipe); }
-.bg-recipe-paper-dark { background-color: var(--bg-recipe); }
+.bg-recipe-paper { background-color: var(--bg-recipe); }
 .bg-ancient-paper { background-color: var(--bg-paper); }
-.bg-ancient-paper-dark { background-color: var(--bg-paper); }
-
-/* 黑暗模式下的卡片样式覆盖 */
-[data-theme='dark'] .bg-white {
-  background-color: var(--color-dark-card);
-}
-
-/* 黑暗模式下的文本颜色覆盖 */
-[data-theme='dark'] .text-gray-900 {
-  color: var(--color-dark-text);
-}
-
-[data-theme='dark'] .text-gray-700, 
-[data-theme='dark'] .text-gray-600 {
-  color: var(--color-dark-text-secondary);
-}
-
-/* 兼容性覆盖：琥珀色/棕色 */
-[data-theme='light'] .text-amber-700,
-[data-theme='light'] .text-amber-800,
-[data-theme='light'] .text-brown-700 {
-  color: var(--color-primary-700);
-}
-
-[data-theme='dark'] .text-amber-300,
-[data-theme='dark'] .text-amber-400,
-[data-theme='dark'] .text-brown-300 {
-  color: var(--color-dark-primary-600);
-}
-
-[data-theme='light'] .bg-amber-50,
-[data-theme='light'] .bg-amber-100 {
-  background-color: var(--color-primary-50);
-}
-
-[data-theme='dark'] .bg-amber-900,
-[data-theme='dark'] .bg-slate-900 {
-  background-color: var(--color-dark-bg);
-}
-
-/* 表单元素在黑暗模式下的适配 */
-[data-theme='dark'] input,
-[data-theme='dark'] select,
-[data-theme='dark'] textarea {
-  background-color: var(--color-dark-card);
-  border-color: var(--color-dark-border);
-  color: var(--color-dark-text);
-}
-
-/* 文本和链接颜色在黑暗模式下的调整 */
-[data-theme='dark'] a:not([class]) {
-  color: var(--theme-primary);
-}
-
-[data-theme='dark'] a:not([class]):hover {
-  color: var(--theme-primary-light);
-}
-
-/* 黑暗模式下的阴影调整 */
-[data-theme='dark'] .shadow-md,
-[data-theme='dark'] .shadow-lg {
-  --tw-shadow-color: rgba(0, 0, 0, 0.4);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-/* 黑暗模式下的渐变背景调整 */
-[data-theme='dark'] .bg-gradient-to-r {
-  background-image: linear-gradient(to right, var(--color-dark-primary-200), var(--color-dark-primary-300));
-}

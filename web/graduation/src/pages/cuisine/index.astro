@@ -15,6 +15,61 @@ const sortByDate = <T extends { data: { pubDate?: Date | string, updatedDate?: D
 // 按发布日期排序
 const sortedCuisines = [...cuisines].sort(sortByDate);
 
+// 从URL参数获取筛选条件
+const url = new URL(Astro.request.url);
+const searchParam = url.searchParams.get('search');
+const categoryParam = url.searchParams.get('category');
+const cityParam = url.searchParams.get('city');
+const tasteParam = url.searchParams.get('taste');
+const tagParam = url.searchParams.get('tag');
+const ingredientParam = url.searchParams.get('ingredient');
+const page = parseInt(url.searchParams.get('page') || '1');
+
+// 服务端筛选数据
+let filteredCuisines = sortedCuisines;
+
+// 根据搜索参数筛选
+if (searchParam) {
+  const searchValue = searchParam.toLowerCase();
+  filteredCuisines = filteredCuisines.filter(cuisine => {
+    const titleMatch = cuisine.data.title.toLowerCase().includes(searchValue);
+    const descriptionMatch = cuisine.data.description && cuisine.data.description.toLowerCase().includes(searchValue);
+    const tagMatch = cuisine.data.tags && cuisine.data.tags.some(tag => tag.toLowerCase().includes(searchValue));
+    const cityMatch = cuisine.data.city && cuisine.data.city.some(city => city.toLowerCase().includes(searchValue));
+    const ingredientMatch = cuisine.data.ingredients && cuisine.data.ingredients.some(ing => ing.toLowerCase().includes(searchValue));
+    
+    return titleMatch || descriptionMatch || tagMatch || cityMatch || ingredientMatch;
+  });
+}
+
+// 根据标签筛选
+if (tagParam) {
+  filteredCuisines = filteredCuisines.filter(cuisine => 
+    cuisine.data.tags.some(tag => tag.toLowerCase() === tagParam.toLowerCase())
+  );
+}
+
+// 根据分类筛选
+if (categoryParam) {
+  filteredCuisines = filteredCuisines.filter(cuisine => 
+    cuisine.data.category && cuisine.data.category.toLowerCase() === categoryParam.toLowerCase()
+  );
+}
+
+// 根据城市筛选
+if (cityParam) {
+  filteredCuisines = filteredCuisines.filter(cuisine => 
+    cuisine.data.city && cuisine.data.city.some(city => city.toLowerCase() === cityParam.toLowerCase())
+  );
+}
+
+// 根据口味筛选
+if (tasteParam) {
+  filteredCuisines = filteredCuisines.filter(cuisine => 
+    cuisine.data.taste && cuisine.data.taste.toLowerCase() === tasteParam.toLowerCase()
+  );
+}
+
 // 提取所有标签
 const allTags: {name: string, count: number}[] = [];
 sortedCuisines.forEach((cuisine: CollectionEntry<"cuisine">) => {
@@ -50,13 +105,16 @@ categories.sort((a, b) => b.count - a.count);
 // 获取所有产地并计数
 const citys: {name: string, count: number}[] = [];
 sortedCuisines.forEach((cuisine: CollectionEntry<"cuisine">) => {
-  if (cuisine.data.city) {
-    const existingcity = citys.find(o => o.name === cuisine.data.city);
-    if (existingcity) {
-      existingcity.count++;
-    } else {
-      citys.push({ name: cuisine.data.city, count: 1 });
-    }
+  if (cuisine.data.city && cuisine.data.city.length > 0) {
+    // 遍历每个城市数组
+    cuisine.data.city.forEach(cityName => {
+      const existingcity = citys.find(o => o.name === cityName);
+      if (existingcity) {
+        existingcity.count++;
+      } else {
+        citys.push({ name: cityName, count: 1 });
+      }
+    });
   }
 });
 
@@ -79,24 +137,49 @@ sortedCuisines.forEach((cuisine: CollectionEntry<"cuisine">) => {
 // 按照口味出现次数排序
 tastes.sort((a, b) => b.count - a.count);
 
+// 获取所有主要食材并计数
+const mainIngredients: {name: string, count: number}[] = [];
+sortedCuisines.forEach((cuisine: CollectionEntry<"cuisine">) => {
+  if (cuisine.data.ingredients && cuisine.data.ingredients.length > 0) {
+    // 遍历所有食材
+    cuisine.data.ingredients.forEach(ingredient => {
+      const ingredientName = ingredient.trim();
+      if (ingredientName) {
+        const existingIngredient = mainIngredients.find(i => i.name === ingredientName);
+        if (existingIngredient) {
+          existingIngredient.count++;
+        } else {
+          mainIngredients.push({ name: ingredientName, count: 1 });
+        }
+      }
+    });
+  }
+});
+
+// 按照主要食材出现次数排序
+mainIngredients.sort((a, b) => b.count - a.count);
+
+// 如果食材太多，可以只显示前N个最常用的
+const topIngredients = mainIngredients.slice(0, 30); // 显示前30个最常用的食材
+
+// 检查是否有筛选条件
+const hasFilters = !!searchParam || !!categoryParam || !!cityParam || !!tasteParam || !!tagParam || !!ingredientParam;
+
 // 分页逻辑
 const itemsPerPage = 9;
-// 从URL参数获取当前页码
-const url = new URL(Astro.request.url);
-const page = parseInt(url.searchParams.get('page') || '1');
-const totalPages = Math.ceil(sortedCuisines.length / itemsPerPage);
-const currentPageCuisines = sortedCuisines.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+const totalPages = Math.ceil(filteredCuisines.length / itemsPerPage);
+const currentPageCuisines = filteredCuisines.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-// 搜索和筛选逻辑（实际应用中应该根据查询参数来筛选）
-const searchQuery = '';
-const selectedCategory = '';
-const selectedcity = '';
-const selectedTaste = '';
-const selectedTags: string[] = [];
-const sortBy: 'date' | 'name' = 'date';
-
-// 分页参数
-const queryParams = '';  // 在实际应用中，这里应该是基于筛选条件构建的查询字符串
+// 构建查询参数字符串（用于分页）
+let queryParams = '';
+if (searchParam) queryParams += `&search=${encodeURIComponent(searchParam)}`;
+if (categoryParam) queryParams += `&category=${encodeURIComponent(categoryParam)}`;
+if (cityParam) queryParams += `&city=${encodeURIComponent(cityParam)}`;
+if (tasteParam) queryParams += `&taste=${encodeURIComponent(tasteParam)}`;
+if (tagParam) queryParams += `&tag=${encodeURIComponent(tagParam)}`;
+if (ingredientParam) queryParams += `&ingredient=${encodeURIComponent(ingredientParam)}`;
+// 如果有查询参数，确保第一个字符是?而不是&
+if (queryParams) queryParams = '?' + queryParams.substring(1);
 ---
 
 <MainLayout title="河北美食食谱 - 河北游礼">
@@ -149,27 +232,7 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
           </div>
         </div>
         
-        <!-- 食谱快速搜索 -->
-        <div class="recipe-search relative max-w-lg mx-auto mb-6">
-          <input 
-            type="text" 
-            placeholder="搜索菜名、食材或地区..." 
-            class="w-full px-4 py-3 border-2 border-secondary-300 dark:border-secondary-700 bg-recipe-paper/80 dark:bg-recipe-paper-dark/90 rounded-md font-recipe-body text-secondary-900 dark:text-secondary-200 placeholder-secondary-500 dark:placeholder-secondary-400 focus:outline-none focus:border-primary-500 dark:focus:border-primary-400"
-          />
-          <button class="absolute right-3 top-3 text-secondary-500 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-300">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
-        </div>
-        
-        <!-- 食谱标签 -->
-        <div class="recipe-tags flex flex-wrap justify-center gap-2">
-          <a href="#" class="px-3 py-1 bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-200 text-sm rounded-full font-recipe-body hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors">家常菜</a>
-          <a href="#" class="px-3 py-1 bg-accent-100 dark:bg-accent-900/50 text-accent-800 dark:text-accent-200 text-sm rounded-full font-recipe-body hover:bg-accent-200 dark:hover:bg-accent-800 transition-colors">传统名菜</a>
-          <a href="#" class="px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 text-sm rounded-full font-recipe-body hover:bg-green-200 dark:hover:bg-green-800 transition-colors">地方特色</a>
-          <a href="#" class="px-3 py-1 bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200 text-sm rounded-full font-recipe-body hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors">小吃点心</a>
-        </div>
+
       </div>
     </div>
     
@@ -189,97 +252,121 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
             <div class="recipe-card-item p-6">
               <!-- 搜索筛选框 -->
               <div class="mb-8">
-                <h3 class="text-base font-recipe mb-4 text-brown-800 dark:text-brown-200 flex items-center">
-                  <svg class="w-4 h-4 mr-2 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <h3 class="text-base font-recipe mb-2 text-brown-800 dark:text-brown-200 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-amber-600 dark:text-amber-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
-                  食谱检索
+                  <span class="inline-block">食谱检索</span>
                 </h3>
-                <div class="relative">
+                <form action="/cuisine" method="get" class="relative">
                   <input
                     type="text"
+                    id="search-input"
+                    name="search"
                     placeholder="输入菜名或食材..."
+                    value={searchParam || ''}
                     class="w-full bg-amber-50/50 dark:bg-amber-900/20 border border-brown-300 dark:border-brown-700 px-4 py-2 text-brown-800 dark:text-brown-200 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400 focus:ring-2 focus:ring-amber-200 dark:focus:ring-amber-800/50 rounded-md font-recipe-body text-sm"
                   />
-                  <div class="absolute right-3 top-2 text-brown-500 dark:text-brown-400">
+                  {/* 保留当前的其他筛选参数 */}
+                  {categoryParam && <input type="hidden" name="category" value={categoryParam} />}
+                  {cityParam && <input type="hidden" name="city" value={cityParam} />}
+                  {tasteParam && <input type="hidden" name="taste" value={tasteParam} />}
+                  {tagParam && <input type="hidden" name="tag" value={tagParam} />}
+                  {ingredientParam && <input type="hidden" name="ingredient" value={ingredientParam} />}
+                  <button
+                    type="submit"
+                    class="absolute right-0 top-0 h-full px-3 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors"
+                  >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                  </div>
-                </div>
+                  </button>
+                </form>
               </div>
                 
               <!-- 菜系筛选 -->
               <div class="mb-8">
-                <h3 class="text-base font-recipe mb-4 text-brown-800 dark:text-brown-200 flex items-center">
-                  <svg class="w-4 h-4 mr-2 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <h3 class="text-base font-recipe mb-2 text-brown-800 dark:text-brown-200 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-red-600 dark:text-red-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z" />
                   </svg>
-                  菜系
-              </h3>
+                  <span class="inline-block">菜系</span>
+                </h3>
               <div class="space-y-3">
-                  {categories.map((category, index) => (
-                    <label class="flex items-center group cursor-pointer font-recipe-body">
-                      <div class="w-4 h-4 border border-brown-400 dark:border-brown-600 mr-3 group-hover:border-amber-500 dark:group-hover:border-amber-400 transition-colors"></div>
-                      <div class="font-light text-brown-700 dark:text-brown-300 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors flex items-center justify-between w-full">
+                  {categories.map((category, index) => {
+                    const isSelected = categoryParam && categoryParam.toLowerCase() === category.name.toLowerCase();
+                    return (
+                      <a href={isSelected ? `/cuisine${queryParams.replace(new RegExp(`[&?]category=${encodeURIComponent(categoryParam)}`, 'i'), '')}` : `/cuisine?category=${encodeURIComponent(category.name)}${queryParams.replace(/^\?/, '&')}`} 
+                         class="flex items-center group cursor-pointer font-recipe-body">
+                        <div class={`w-4 h-4 mr-3 transition-colors ${isSelected ? 'bg-red-500 dark:bg-red-500' : 'border border-red-400 dark:border-red-600'}`}></div>
+                      <div class="font-light text-brown-700 dark:text-brown-300 flex items-center justify-between w-full">
                         <span>{category.name}</span>
                         <span class="text-amber-600/70 dark:text-amber-500/50 bg-amber-50/80 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-full text-xs">{category.count}</span>
                       </div>
-                  </label>
-                ))}
+                      </a>
+                    )
+                  })}
               </div>
             </div>
             
               <!-- 地域筛选 -->
               <div class="mb-8">
-                <h3 class="text-base font-recipe mb-4 text-brown-800 dark:text-brown-200 flex items-center">
-                  <svg class="w-4 h-4 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <h3 class="text-base font-recipe mb-2 text-brown-800 dark:text-brown-200 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-green-600 dark:text-green-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  地域特色
-              </h3>
+                  <span class="inline-block">地域特色</span>
+                </h3>
                 <div class="grid grid-cols-2 gap-3">
-                {citys.map((city) => (
-                    <label class="flex items-center group cursor-pointer font-recipe-body">
-                      <div class="w-4 h-4 border border-brown-400 dark:border-brown-600 mr-2 group-hover:border-green-500 dark:group-hover:border-green-400 transition-colors"></div>
-                      <div class="font-light text-brown-700 dark:text-brown-300 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors text-sm truncate">
+                  {citys.map((city) => {
+                    const isSelected = cityParam && cityParam.toLowerCase() === city.name.toLowerCase();
+                    return (
+                      <a href={isSelected ? `/cuisine${queryParams.replace(new RegExp(`[&?]city=${encodeURIComponent(cityParam)}`, 'i'), '')}` : `/cuisine?city=${encodeURIComponent(city.name)}${queryParams.replace(/^\?/, '&')}`} 
+                         class="flex items-center group cursor-pointer font-recipe-body">
+                        <div class={`w-4 h-4 mr-2 transition-colors ${isSelected ? 'bg-green-500 dark:bg-green-500' : 'border border-brown-400 dark:border-brown-600'}`}></div>
+                      <div class="font-light text-brown-700 dark:text-brown-300 text-sm truncate">
                         <span>{city.name}</span> <span class="text-green-600/70 dark:text-green-500/50 text-xs">({city.count})</span>
                       </div>
-                  </label>
-                ))}
+                      </a>
+                    );
+                  })}
               </div>
             </div>
             
             <!-- 口味筛选 -->
               <div class="mb-8">
-                <h3 class="text-base font-recipe mb-4 text-brown-800 dark:text-brown-200 flex items-center">
-                  <svg class="w-4 h-4 mr-2 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <h3 class="text-base font-recipe mb-2 text-brown-800 dark:text-brown-200 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-orange-600 dark:text-orange-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
-                  味道特点
-              </h3>
+                  <span class="inline-block">味道特点</span>
+                </h3>
                 <div class="flex flex-wrap gap-2">
-                {tastes.map((taste) => (
-                    <label class="inline-flex items-center group cursor-pointer px-3 py-1 bg-orange-50/70 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-full font-recipe-body">
-                      <div class="w-3 h-3 border border-orange-400 dark:border-orange-500 mr-2 rounded-full group-hover:bg-orange-400 dark:group-hover:bg-orange-500 transition-colors"></div>
+                  {tastes.map((taste) => {
+                    const isSelected = tasteParam && tasteParam.toLowerCase() === taste.name.toLowerCase();
+                    return (
+                      <a href={isSelected ? `/cuisine${queryParams.replace(new RegExp(`[&?]taste=${encodeURIComponent(tasteParam)}`, 'i'), '')}` : `/cuisine?taste=${encodeURIComponent(taste.name)}${queryParams.replace(/^\?/, '&')}`} 
+                         class="inline-flex items-center group cursor-pointer px-3 py-1 bg-orange-50/70 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-full font-recipe-body">
+                        <div class={`w-3 h-3 mr-2 rounded-full transition-colors ${isSelected ? 'bg-orange-400 dark:bg-orange-500' : 'border border-orange-400 dark:border-orange-500'}`}></div>
                       <div class="font-light text-orange-800 dark:text-orange-300 text-xs">
                         {taste.name} <span class="text-orange-600/70 dark:text-orange-500/50">({taste.count})</span>
                       </div>
-                  </label>
-                ))}
+                      </a>
+                    );
+                  })}
               </div>
             </div>
-            
-              <!-- 食材筛选 -->
-              <div>
-                <h3 class="text-base font-recipe mb-4 text-brown-800 dark:text-brown-200 flex items-center">
-                  <svg class="w-4 h-4 mr-2 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              
+              <!-- 食谱标签 -->
+              <div class="mb-8">
+                <h3 class="text-base font-recipe mb-2 text-brown-800 dark:text-brown-200 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-red-600 dark:text-red-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
-                  主要食材
-              </h3>
-              <div class="flex flex-wrap gap-2">
+                  <span class="inline-block">食谱标签</span>
+                </h3>
+                <div class="flex flex-wrap gap-2">
                   {allTags.map((tag, i) => {
                     // 为标签生成不同的颜色
                     const colors = ['amber', 'red', 'green', 'orange', 'amber', 'red'];
@@ -290,10 +377,40 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
                       'orange': 'border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 hover:text-orange-900 dark:hover:text-orange-200 hover:border-orange-400 dark:hover:border-orange-700 bg-orange-50/50 dark:bg-orange-900/20'
                     };
                     const color = colors[i % colors.length] as keyof typeof colorClasses;
+                    // 判断当前标签是否被选中
+                    const isSelected = tagParam && tagParam.toLowerCase() === tag.name.toLowerCase();
+                    const selectedClass = isSelected ? 'ring-2 ring-amber-500 dark:ring-amber-400 shadow-md' : '';
+                    
                     return (
-                      <div class={`inline-block px-3 py-1 text-xs border rounded-full cursor-pointer transition-colors font-recipe-body ${colorClasses[color]}`}>
-                    {tag.name}
+                      <a href={`/cuisine?tag=${encodeURIComponent(tag.name)}`} class={`inline-block px-3 py-1 text-xs border rounded-full transition-colors font-recipe-body ${colorClasses[color]} ${selectedClass}`}>
+                        {tag.name}
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              <!-- 主食材筛选 -->
+              <div>
+                <h3 class="text-base font-recipe mb-2 text-brown-800 dark:text-brown-200 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-green-600 dark:text-green-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  <span class="inline-block">主要食材</span>
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  {topIngredients.map((ingredient) => {
+                    const isSelected = ingredientParam && ingredientParam.split(',').some(ing => ing.toLowerCase() === ingredient.name.toLowerCase());
+                    return (
+                      <a href={isSelected 
+                        ? `/cuisine${queryParams.replace(new RegExp(`[&?]ingredient=${encodeURIComponent(ingredientParam)}`, 'i'), '')}`
+                        : `/cuisine?ingredient=${encodeURIComponent(ingredient.name)}${queryParams.replace(/^\?/, '&')}`} 
+                        class="inline-flex items-center group cursor-pointer px-3 py-1 bg-green-50/70 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-full font-recipe-body">
+                        <div class={`w-3 h-3 mr-2 rounded-full transition-colors ${isSelected ? 'bg-green-400 dark:bg-green-500' : 'border border-green-400 dark:border-green-500 group-hover:bg-green-400 dark:group-hover:bg-green-500'}`}></div>
+                      <div class="font-light text-green-800 dark:text-green-300 text-xs">
+                        {ingredient.name} <span class="text-green-600/70 dark:text-green-500/50">({ingredient.count})</span>
                       </div>
+                      </a>
                     );
                   })}
                 </div>
@@ -322,26 +439,80 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
         <!-- 右侧食谱展示区 -->
         <div class="lg:col-span-9">
           <!-- 筛选状态 -->
-          {(searchQuery || selectedCategory || selectedcity || selectedTaste || selectedTags.length > 0) && (
+          {hasFilters && (
             <div class="mb-8 bg-amber-50/50 dark:bg-amber-900/20 p-4 border-l-4 border-amber-300 dark:border-amber-700 rounded-r-lg">
               <div class="flex flex-wrap items-center gap-3 text-sm text-brown-700 dark:text-brown-300">
                 <div class="font-recipe text-xs tracking-wider text-amber-700 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-900/50 px-2 py-1 rounded">筛选条件</div>
                   
-                {/* 筛选条件显示 */}
-                  
-                <button class="ml-auto text-red-600 hover:text-red-800 dark:hover:text-red-300 text-sm flex items-center space-x-1 bg-white/80 dark:bg-black/30 px-3 py-1 rounded-full font-recipe-body">
+                {searchParam && (
+                  <div class="px-3 py-1 bg-amber-100/70 dark:bg-amber-900/30 rounded-full text-sm flex items-center space-x-1 font-recipe-body">
+                    <svg class="w-4 h-4 mr-1 text-amber-700 dark:text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <span>搜索: {searchParam}</span>
+                  </div>
+                )}
+                
+                {categoryParam && (
+                  <div class="px-3 py-1 bg-red-100/70 dark:bg-red-900/30 rounded-full text-sm flex items-center space-x-1 font-recipe-body">
+                    <svg class="w-4 h-4 mr-1 text-red-700 dark:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>类别: {categoryParam}</span>
+                  </div>
+                )}
+                
+                {cityParam && (
+                  <div class="px-3 py-1 bg-green-100/70 dark:bg-green-900/30 rounded-full text-sm flex items-center space-x-1 font-recipe-body">
+                    <svg class="w-4 h-4 mr-1 text-green-700 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>地域: {cityParam}</span>
+                  </div>
+                )}
+                
+                {tasteParam && (
+                  <div class="px-3 py-1 bg-orange-100/70 dark:bg-orange-900/30 rounded-full text-sm flex items-center space-x-1 font-recipe-body">
+                    <svg class="w-4 h-4 mr-1 text-orange-700 dark:text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    <span>口味: {tasteParam}</span>
+                  </div>
+                )}
+                
+                {tagParam && (
+                  <div class="px-3 py-1 bg-brown-100/70 dark:bg-brown-900/30 rounded-full text-sm flex items-center space-x-1 font-recipe-body">
+                    <svg class="w-4 h-4 mr-1 text-brown-700 dark:text-brown-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    <span>标签: {tagParam}</span>
+                  </div>
+                )}
+                
+                {ingredientParam && (
+                  <div class="px-3 py-1 bg-green-100/70 dark:bg-green-900/30 rounded-full text-sm flex items-center space-x-1 font-recipe-body">
+                    <svg class="w-4 h-4 mr-1 text-green-700 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    <span>主食材: {ingredientParam}</span>
+                  </div>
+                )}
+                
+                <a href="/cuisine" class="ml-auto text-red-600 hover:text-red-800 dark:hover:text-red-300 text-sm flex items-center space-x-1 bg-white/80 dark:bg-black/30 px-3 py-1 rounded-full font-recipe-body">
                   <span>重置</span>
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                </button>
+                </a>
               </div>
             </div>
           )}
           
           <!-- 食谱卡片列表 -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {filteredCuisines.length > 0 ? (
+          <div id="cuisine-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {currentPageCuisines.map((cuisine, index) => {
+              
               // 随机食谱纸张背景颜色
               const paperColors = [
                 'bg-amber-50/80 border-amber-200 dark:bg-amber-900/30 dark:border-amber-800',
@@ -354,7 +525,10 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
               return (
               <ScrollReveal animation="fade">
                 <a href={`/cuisine/${cuisine.slug}`} class="block group">
-                    <div class={`recipe-card-item border transition-all duration-300 ${paperColor}`}>
+                    <div class={`recipe-card-item border transition-all duration-300 ${paperColor}`}
+                         data-ingredients={cuisine.data.ingredients && cuisine.data.ingredients.length > 0 ? 
+                           JSON.stringify(cuisine.data.ingredients.map(ing => ing.toLowerCase().trim())) : '[]'}
+                         data-tags={JSON.stringify(cuisine.data.tags.map(tag => tag.toLowerCase().trim()))}>
                       <!-- 食谱卡片头部 -->
                       <div class="aspect-[4/3] relative overflow-hidden">
                         <div class={`absolute inset-0 bg-recipe-paper dark:bg-recipe-paper-dark flex items-center justify-center`}>
@@ -371,14 +545,6 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
                           </div>
                         )}
                         
-                        <!-- 推荐标记 -->
-                        {Math.random() > 0.7 && (
-                          <div class="absolute -top-1 -left-1 rotate-12">
-                            <div class="bg-red-600 text-white px-6 py-1 text-xs font-recipe transform -rotate-45 shadow-md">
-                              推荐
-                            </div>
-                          </div>
-                        )}
                       </div>
                       
                       <!-- 食谱内容 -->
@@ -389,11 +555,11 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
                         
                         <!-- 食谱元数据 -->
                         <div class="flex flex-wrap gap-3 text-sm mb-3">
-                          {cuisine.data.city && (
+                          {cuisine.data.city && cuisine.data.city.length > 0 && cuisine.data.city.map((cityName: string) => (
                             <div class="flex items-center px-2 py-0.5 bg-amber-50/80 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-full">
-                              <span class="text-amber-800 dark:text-amber-300 text-xs font-recipe-body">{cuisine.data.city}</span>
+                              <span class="text-amber-800 dark:text-amber-300 text-xs font-recipe-body">{cityName}</span>
                             </div>
-                          )}
+                          ))}
                           {cuisine.data.taste && (
                             <div class="flex items-center px-2 py-0.5 bg-red-50/80 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-full">
                               <span class="text-red-800 dark:text-red-300 text-xs font-recipe-body">{cuisine.data.taste}</span>
@@ -406,7 +572,7 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
                         {cuisine.data.description}
                       </p>
                       
-                        <!-- 食材标签 -->
+                        <!-- 食谱标签 -->
                       <div class="flex flex-wrap gap-2 mb-4">
                           {cuisine.data.tags.slice(0, 3).map((tag: string, i: number) => (
                             <span class="px-2 py-0.5 text-xs font-recipe-body bg-brown-100/80 dark:bg-brown-900/30 text-brown-800 dark:text-brown-200 border border-brown-200 dark:border-brown-800 rounded-full">
@@ -419,24 +585,16 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
                           </span>
                         )}
                       </div>
-                      
-                        <!-- 查看详情 -->
-                        <div class="flex justify-between items-center">
+                        
+                      <!-- 查看详情 -->
+                      <div class="flex justify-between items-center">
                           <div class="text-sm text-amber-700 dark:text-amber-300 flex items-center group-hover:translate-x-1 transition-transform font-recipe-body">
                             查看详细食谱
                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
+                            </svg>
                           </div>
-                          
-                          <!-- 食谱标记 -->
-                          {Math.random() > 0.5 && (
-                            <span class="text-xs px-2 py-0.5 bg-orange-100/80 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border border-orange-200 dark:border-orange-800 rounded-full font-recipe-body">传统</span>
-                          )}
-                          {Math.random() > 0.7 && (
-                            <span class="text-xs px-2 py-0.5 bg-green-100/80 dark:bg-green-900/30 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800 rounded-full font-recipe-body">家常</span>
-                          )}
-                        </div>
+                      </div>
                     </div>
                   </div>
                 </a>
@@ -444,14 +602,36 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
               );
             })}
           </div>
+          ) : (
+            <!-- 无搜索结果提示 - 服务端渲染 -->
+            <div class="bg-white dark:bg-slate-800 p-8 text-center rounded-sm border border-amber-200 dark:border-amber-700 shadow-md mb-10 relative transform rotate-1">
+            <div class="absolute -top-3 right-5 w-12 h-12 bg-[url('/images/tape-piece.png')] bg-contain bg-no-repeat opacity-70"></div>
+            
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            
+            <h3 class="mt-4 text-xl font-recipe text-brown-800 dark:text-brown-200">美食食谱缺失</h3>
+              <p class="mt-2 font-recipe-body text-brown-600 dark:text-brown-400">
+                {searchParam ? `抱歉，未找到与"${searchParam}"相关的美食食谱。` : '抱歉，未找到相关美食食谱。'}
+                请尝试其他筛选条件或浏览所有食谱。
+            </p>
+            
+            <div class="mt-6">
+              <a href="/cuisine" class="inline-flex items-center text-amber-700 dark:text-amber-500 font-recipe-body hover:underline">
+                查看所有美食食谱 &rarr;
+              </a>
+            </div>
+          </div>
+          )}
           
           <!-- 分页控件 - 食谱风格分页 -->
           <div class="flex justify-center items-center space-x-2 mt-12">
-          {totalPages > 1 && (
+          {filteredCuisines.length > 0 && totalPages > 1 && (
               <div class="flex flex-wrap gap-2 items-center bg-recipe-paper-light dark:bg-recipe-paper-dark p-4 rounded-lg border border-amber-200 dark:border-amber-800 shadow-md">
                 <!-- 上一页按钮 -->
                 <a 
-                  href={page > 1 ? `?page=${page - 1}${queryParams}` : '#'} 
+                  href={page > 1 ? `?page=${page - 1}${queryParams.replace(/^\?/, '&')}` : '#'} 
                   class={`flex items-center px-3 py-1.5 ${
                     page === 1 
                       ? 'text-brown-400 dark:text-brown-600 cursor-not-allowed' 
@@ -467,7 +647,7 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
                 <!-- 页码 -->
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
                   <a 
-                    href={`?page=${pageNum}${queryParams}`} 
+                    href={`?page=${pageNum}${queryParams.replace(/^\?/, '&')}`} 
                     class={`px-3 py-1.5 font-recipe ${
                       page === pageNum 
                         ? 'bg-amber-600 text-white dark:bg-amber-700' 
@@ -480,7 +660,7 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
                 
                 <!-- 下一页按钮 -->
                 <a 
-                  href={page < totalPages ? `?page=${page + 1}${queryParams}` : '#'} 
+                  href={page < totalPages ? `?page=${page + 1}${queryParams.replace(/^\?/, '&')}` : '#'} 
                   class={`flex items-center px-3 py-1.5 ${
                     page === totalPages 
                       ? 'text-brown-400 dark:text-brown-600 cursor-not-allowed' 
@@ -499,9 +679,6 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
           <!-- 食谱主题页脚 -->
           <div class="mt-16 text-center">
             <div class="flex flex-col items-center">
-              <div class="text-amber-600 dark:text-amber-400 mb-3">
-                <img src="/images/cuisine/chef-hat.svg" alt="Chef Hat" class="w-12 h-12 mx-auto opacity-80" />
-              </div>
               <p class="text-brown-700 dark:text-brown-300 font-recipe max-w-2xl mx-auto">
                 河北美食宝库收录了<span class="text-amber-600 dark:text-amber-400 mx-1">{cuisines.length}+</span>种传统佳肴与地方特色小吃。
                 每一道食谱都承载着我们的文化记忆和烹饪智慧。尽情探索，找到属于你的美食灵感！
@@ -526,19 +703,7 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
 
   .bg-recipe-paper-light {
     background-color: var(--color-primary-50);
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23f59e0b' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
-  }
-
-  .bg-wood-texture {
-    background-color: var(--color-secondary-300);
-    background-image: url('/images/wood-texture.png');
-    background-blend-mode: multiply;
-  }
-
-  .bg-wood-texture-dark {
-    background-color: var(--color-secondary-900);
-    background-image: url('/images/wood-texture.png');
-    background-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23f59e0b' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
   }
 
   .text-brown-900 {
@@ -664,16 +829,6 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
     background-size: 200px 200px;
   }
 
-  /* 装饰性图案旋转动画 */
-  @keyframes slowRotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  .recipe-decoration {
-    animation: slowRotate 120s linear infinite;
-  }
-
   /* 食谱卡片悬停效果 */
   .recipe-card-item:hover {
     transform: translateY(-4px);
@@ -684,210 +839,513 @@ const queryParams = '';  // 在实际应用中，这里应该是基于筛选条�
   :root.dark .recipe-card-item:hover {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   }
+
+  /* 在现有的 <style> 标签内添加以下样式 */
+  .recipe-card-item {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .recipe-card-item > div:last-child {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .recipe-card-item h3 {
+    min-height: 3rem; /* 为标题预留固定高度 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .recipe-card-item p.text-brown-700 {
+    flex-grow: 1;
+    min-height: 4.5rem; /* 为描述文本预留固定高度 */
+  }
+
+  .recipe-card-item .flex.flex-wrap.gap-2.mb-4 {
+    min-height: 2rem; /* 为标签区域预留固定高度 */
+  }
+
+  /* 修改标签区域的样式 */
+  .recipe-card-item .flex.flex-wrap.gap-2.mb-4 {
+    min-height: auto; /* 移除固定最小高度 */
+    margin-top: auto; /* 将标签区域推到底部 */
+    padding-top: 0.75rem; /* 添加上方间距 */
+  }
+
+  /* 优化标签样式 */
+  .recipe-card-item .flex.flex-wrap.gap-2.mb-4 span {
+    display: inline-flex;
+    align-items: center;
+    height: 1.5rem; /* 统一标签高度 */
+    max-width: 100%; /* 防止标签溢出 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 确保卡片内容区域有足够的高度 */
+  .recipe-card-item > div:last-child {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* 更好地分配空间 */
+    min-height: 14rem; /* 确保内容区域有最小高度 */
+  }
+
+  /* 优化描述文本区域 */
+  .recipe-card-item p.text-brown-700 {
+    flex-grow: 0; /* 不再自动扩展 */
+    min-height: 3.6rem; /* 减小最小高度 */
+    margin-bottom: 0.5rem; /* 添加下方间距 */
+  }
 </style>
 
 <script>
-  // 页面加载完成后执行
   document.addEventListener('DOMContentLoaded', () => {
-    // 检测当前颜色模式
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    
-    // 获取元素
-    const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-    const categoryLabels = document.querySelectorAll('.font-recipe-body');
-    const resetButton = document.querySelector('button');
-    const recipeCards = document.querySelectorAll('.recipe-card-item');
-    const paperBg = document.querySelector('.bg-recipe-paper');
-    
-    // 食谱卡片初始样式
-    recipeCards.forEach((card, index) => {
-      // 设置初始状态
-      (card as HTMLElement).style.opacity = '0';
-      (card as HTMLElement).style.transform = 'translateY(20px)';
-      (card as HTMLElement).style.transition = 'all 0.4s ease-out';
-    });
-    
-    // 为食谱卡片添加进场动画
-    setTimeout(() => {
-      recipeCards.forEach((card, index) => {
-        setTimeout(() => {
-          (card as HTMLElement).style.opacity = '1';
-          (card as HTMLElement).style.transform = 'translateY(0)';
-        }, 100 + (index * 50));
-      });
-    }, 200);
-    
-    // 食谱卡片悬停效果
-    recipeCards.forEach(card => {
-      card.addEventListener('mouseenter', () => {
-        (card as HTMLElement).style.transform = 'translateY(-5px)';
-        (card as HTMLElement).style.boxShadow = isDarkMode 
-          ? '0 10px 15px -3px rgba(0, 0, 0, 0.4)' 
-          : '0 10px 15px -3px rgba(251, 191, 36, 0.1), 0 4px 6px -2px rgba(251, 191, 36, 0.05)';
-      });
-      
-      card.addEventListener('mouseleave', () => {
-        (card as HTMLElement).style.transform = 'translateY(0)';
-        (card as HTMLElement).style.boxShadow = isDarkMode 
-          ? '0 4px 8px rgba(0, 0, 0, 0.2)' 
-          : '0 4px 8px rgba(0, 0, 0, 0.05)';
-      });
-    });
-    
-    // 搜索框交互效果
-    if (searchInput) {
-      searchInput.addEventListener('focus', () => {
-        if (searchInput.parentElement) {
-          searchInput.parentElement.classList.add('ring-2', 'ring-amber-200');
-          if (isDarkMode) {
-            searchInput.parentElement.classList.add('ring-amber-800/50');
-          }
-        }
-      });
-      
-      searchInput.addEventListener('blur', () => {
-        if (searchInput.parentElement) {
-          searchInput.parentElement.classList.remove('ring-2', 'ring-amber-200', 'ring-amber-800/50');
-        }
-      });
-      
-      // 搜索功能
-      searchInput.addEventListener('keyup', (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          const searchValue = searchInput.value.trim();
-          if (searchValue) {
-            // 构建搜索URL并跳转
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('search', searchValue);
-            currentUrl.searchParams.delete('page'); // 重置页码
-            window.location.href = currentUrl.toString();
-          }
+    // 搜索表单功能增强 - 允许按钮点击提交
+    const searchButton = document.getElementById('search-button');
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    if (searchButton && searchInput && searchInput.form) {
+      searchButton.addEventListener('click', (e) => {
+          e.preventDefault();
+        const form = searchInput.form;
+        if (form) {
+          form.submit();
         }
       });
     }
     
-    // 筛选标签点击效果
-    const filterLabels = document.querySelectorAll('.recipe-card-item label');
+    // 食谱卡片悬停效果增强
+    const recipeCards = document.querySelectorAll('.recipe-card-item');
+    recipeCards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.classList.add('shadow-lg');
+      });
+      card.addEventListener('mouseleave', () => {
+        card.classList.remove('shadow-lg');
+      });
+    });
+    
+    // 筛选标签悬停效果增强 - 只对食谱标签和食材标签应用阴影
+    const filterLabels = document.querySelectorAll('a[href*="?tag"], a[href*="?ingredient"]');
     filterLabels.forEach(label => {
-      label.addEventListener('click', () => {
-        const checkbox = label.querySelector('div:first-child');
-        if (checkbox) {
-          // 切换选中状态
-          if (checkbox.classList.contains('bg-amber-500') || 
-              checkbox.classList.contains('bg-red-500') || 
-              checkbox.classList.contains('bg-green-500') || 
-              checkbox.classList.contains('bg-orange-500')) {
-            checkbox.classList.remove('bg-amber-500', 'bg-red-500', 'bg-green-500', 'bg-orange-500');
-          } else {
-            const labelText = label.textContent || '';
-            if (labelText.includes('菜系')) {
-              checkbox.classList.add('bg-amber-500');
-            } else if (labelText.includes('地域')) {
-              checkbox.classList.add('bg-green-500');
-            } else if (labelText.includes('味道')) {
-              checkbox.classList.add('bg-orange-500');
+      label.addEventListener('mouseenter', () => {
+        label.classList.add('shadow-sm');
+      });
+      label.addEventListener('mouseleave', () => {
+        label.classList.remove('shadow-sm');
+      });
+    });
+
+    // ==== 以下是新增的客户端筛选功能 ====
+    // 获取各种筛选项和展示元素
+    const cuisineCards = document.querySelectorAll('.recipe-card-item');
+    const cuisineGrid = document.getElementById('cuisine-list');
+    const noResultsMessage = document.querySelector('.bg-white.dark\\:bg-slate-800.p-8.text-center');
+
+    // 从URL获取当前筛选参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParamFromUrl = urlParams.get('search') || '';
+    const categoryParamFromUrl = urlParams.get('category') || '';
+    const cityParamFromUrl = urlParams.get('city') || '';
+    const tasteParamFromUrl = urlParams.get('taste') || '';
+    const tagParamFromUrl = urlParams.get('tag') || '';
+    const ingredientParamFromUrl = urlParams.get('ingredient') || '';
+
+    // 当前筛选状态
+    let currentSearch = searchParamFromUrl;
+    let currentCategory = categoryParamFromUrl;
+    let currentCity = cityParamFromUrl;
+    let currentTaste = tasteParamFromUrl;
+    let currentTag = tagParamFromUrl;
+    let currentIngredient = ingredientParamFromUrl;
+
+    // 更新浏览器历史记录但不刷新页面
+    function updateHistory() {
+      const params = new URLSearchParams();
+      if (currentSearch) params.set('search', currentSearch);
+      if (currentCategory) params.set('category', currentCategory);
+      if (currentCity) params.set('city', currentCity);
+      if (currentTaste) params.set('taste', currentTaste);
+      if (currentTag) params.set('tag', currentTag);
+      if (currentIngredient) params.set('ingredient', currentIngredient);
+      
+      const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+      window.history.pushState({
+        search: currentSearch,
+        category: currentCategory,
+        city: currentCity,
+        taste: currentTaste,
+        tag: currentTag,
+        ingredient: currentIngredient
+      }, '', newUrl);
+    }
+    
+    // 客户端筛选函数
+    function filterCuisines() {
+      const searchValue = currentSearch.toLowerCase();
+      const filterCategory = currentCategory.toLowerCase();
+      const filterCity = currentCity.toLowerCase();
+      const filterTaste = currentTaste.toLowerCase();
+      const filterTag = currentTag.toLowerCase();
+      const filterIngredient = currentIngredient.toLowerCase();
+      
+      let matchCount = 0;
+      
+      // 如果没有筛选条件，显示所有卡片
+      if (!searchValue && !filterCategory && !filterCity && !filterTaste && !filterTag && !filterIngredient) {
+        cuisineCards.forEach(card => {
+          // 只获取卡片的直接父元素（ScrollReveal组件）
+          const anchor = card.closest('a');
+          if (anchor && anchor.parentElement) {
+            (anchor.parentElement as HTMLElement).style.display = '';
+          }
+        });
+        
+        // 显示结果列表，隐藏无结果消息
+        if (cuisineGrid) (cuisineGrid as HTMLElement).style.display = '';
+        if (noResultsMessage) (noResultsMessage as HTMLElement).style.display = 'none';
+        
+        return cuisineCards.length;
+      }
+      
+      // 遍历所有美食卡片筛选
+      cuisineCards.forEach(card => {
+        const cardTitle = card.querySelector('h3')?.textContent?.toLowerCase() || '';
+        const cardDesc = card.querySelector('p.text-brown-700.dark\\:text-brown-300')?.textContent?.toLowerCase() || '';
+        
+        // 标签匹配 - 从数据属性获取标签，而不是从DOM中获取
+        let hasMatchingTag = !filterTag;
+        // 使用自定义数据属性存储所有标签
+        const tagsData = card.getAttribute('data-tags');
+        if (tagsData && filterTag) {
+          try {
+            const tags = JSON.parse(tagsData) as string[];
+            if (tags.some((tag: string) => tag.toLowerCase() === filterTag)) {
+              hasMatchingTag = true;
+            }
+          } catch (e) {
+            console.error('解析标签数据失败', e);
+          }
+        }
+        
+        // 分类匹配
+        let hasMatchingCategory = !filterCategory;
+        const categoryElem = card.querySelector('.absolute.bottom-3.right-3');
+        const cardCategory = categoryElem?.textContent?.trim().toLowerCase() || '';
+        if (filterCategory && cardCategory === filterCategory) {
+          hasMatchingCategory = true;
+        }
+        
+        // 城市匹配
+        let hasMatchingCity = !filterCity;
+        const cityElems = card.querySelectorAll('.flex.items-center.px-2.py-0\\.5.bg-amber-50\\/80');
+        const cityTexts = Array.from(cityElems).map(
+          cityElem => cityElem.textContent?.trim().toLowerCase() || ''
+        );
+        if (filterCity && cityTexts.some(city => city === filterCity)) {
+          hasMatchingCity = true;
+        }
+        
+        // 口味匹配
+        let hasMatchingTaste = !filterTaste;
+        const tasteElems = card.querySelectorAll('.flex.items-center.px-2.py-0\\.5.bg-red-50\\/80');
+        const tasteTexts = Array.from(tasteElems).map(
+          tasteElem => tasteElem.textContent?.trim().toLowerCase() || ''
+        );
+        if (filterTaste && tasteTexts.some(taste => taste === filterTaste)) {
+          hasMatchingTaste = true;
+        }
+        
+        // 食材匹配
+        let hasMatchingIngredient = !filterIngredient;
+        // 获取食材数据（从data属性）
+        const ingredientsData = card.getAttribute('data-ingredients');
+        if (ingredientsData) {
+          try {
+            const ingredients = JSON.parse(ingredientsData);
+            if (filterIngredient && ingredients.includes(filterIngredient.toLowerCase())) {
+              hasMatchingIngredient = true;
+            }
+          } catch (e) {
+            console.error('解析食材数据失败', e);
+          }
+        }
+        
+        // 搜索词匹配
+        let matchesSearch = !searchValue;
+        if (searchValue) {
+          const tagsData = card.getAttribute('data-tags');
+          let tags: string[] = [];
+          
+          if (tagsData) {
+            try {
+              tags = JSON.parse(tagsData);
+            } catch (e) {
+              console.error('解析标签数据失败', e);
+            }
+          }
+          
+          if (
+            cardTitle.includes(searchValue) || 
+            cardDesc.includes(searchValue) || 
+            tags.some((tag: string) => tag.includes(searchValue)) ||
+            cityTexts.some(city => city.includes(searchValue)) ||
+            tasteTexts.some(taste => taste.includes(searchValue))
+          ) {
+            matchesSearch = true;
+          }
+        }
+        
+        // 所有条件匹配才显示
+        const isMatch = matchesSearch && hasMatchingCategory && hasMatchingCity && hasMatchingTaste && hasMatchingTag && hasMatchingIngredient;
+        
+        // 更新卡片显示状态 - 只修改卡片容器，不影响筛选区域
+        // 获取卡片的直接父元素（ScrollReveal组件）
+        const anchor = card.closest('a');
+        if (anchor && anchor.parentElement) {
+        if (isMatch) {
+          matchCount++;
+            (anchor.parentElement as HTMLElement).style.display = '';
+        } else {
+            (anchor.parentElement as HTMLElement).style.display = 'none';
+          }
+        }
+      });
+      
+      // 根据匹配结果更新UI
+      if (matchCount === 0) {
+        // 没有匹配结果，显示无结果消息
+        if (cuisineGrid) (cuisineGrid as HTMLElement).style.display = 'none';
+        if (noResultsMessage) {
+          (noResultsMessage as HTMLElement).style.display = 'block';
+          // 更新无结果消息的内容
+          const messageText = noResultsMessage.querySelector('p.mt-2');
+          if (messageText) {
+            if (currentSearch) {
+              messageText.textContent = `抱歉，未找到与"${currentSearch}"相关的美食食谱。请尝试其他筛选条件或浏览所有食谱。`;
+            } else if (currentTag) {
+              messageText.textContent = `抱歉，未找到标签为"${currentTag}"的美食食谱。请尝试其他筛选条件或浏览所有食谱。`;
+            } else if (currentCategory) {
+              messageText.textContent = `抱歉，未找到分类为"${currentCategory}"的美食食谱。请尝试其他筛选条件或浏览所有食谱。`;
+            } else if (currentCity) {
+              messageText.textContent = `抱歉，未找到地域为"${currentCity}"的美食食谱。请尝试其他筛选条件或浏览所有食谱。`;
+            } else if (currentTaste) {
+              messageText.textContent = `抱歉，未找到口味为"${currentTaste}"的美食食谱。请尝试其他筛选条件或浏览所有食谱。`;
+            } else if (currentIngredient) {
+              messageText.textContent = `抱歉，未找到含有"${currentIngredient}"的美食食谱。请尝试其他筛选条件或浏览所有食谱。`;
+      } else {
+              messageText.textContent = `抱歉，未找到符合当前筛选条件的美食食谱。请尝试调整筛选条件或浏览所有食谱。`;
+            }
+          }
+          }
+        } else {
+        // 有匹配结果，显示结果列表
+        if (cuisineGrid) (cuisineGrid as HTMLElement).style.display = '';
+        if (noResultsMessage) (noResultsMessage as HTMLElement).style.display = 'none';
+      }
+      
+      return matchCount;
+    }
+
+    // 拦截所有筛选链接点击，实现不刷新页面的筛选
+    document.querySelectorAll('a[href*="?category"], a[href*="?city"], a[href*="?taste"], a[href*="?tag"], a[href*="?ingredient"]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const href = (link as HTMLAnchorElement).href;
+        const url = new URL(href);
+        
+        // 获取链接中的筛选参数
+        const linkCategory = url.searchParams.get('category');
+        const linkCity = url.searchParams.get('city');
+        const linkTaste = url.searchParams.get('taste');
+        const linkTag = url.searchParams.get('tag');
+        const linkIngredient = url.searchParams.get('ingredient');
+        
+        // 如果点击的是重置链接
+        if (href.includes('/cuisine') && !href.includes('?')) {
+    // 重置所有筛选条件
+      currentSearch = '';
+      currentCategory = '';
+      currentCity = '';
+      currentTaste = '';
+      currentTag = '';
+          currentIngredient = '';
+      
+          // 清空搜索框
+      if (searchInput) searchInput.value = '';
+        } else {
+          // 根据链接中的参数更新筛选状态
+          if (linkCategory) {
+            // 如果已经选中了这个分类，则取消选择
+            if (currentCategory.toLowerCase() === linkCategory.toLowerCase()) {
+              currentCategory = '';
             } else {
-              checkbox.classList.add('bg-red-500');
+              currentCategory = linkCategory;
+              // 不再清除其他筛选条件
+            }
+          } else if (linkCity) {
+            if (currentCity.toLowerCase() === linkCity.toLowerCase()) {
+              currentCity = '';
+            } else {
+              currentCity = linkCity;
+              // 不再清除其他筛选条件
+            }
+          } else if (linkTaste) {
+            if (currentTaste.toLowerCase() === linkTaste.toLowerCase()) {
+              currentTaste = '';
+            } else {
+              currentTaste = linkTaste;
+              // 不再清除其他筛选条件
+            }
+          } else if (linkTag) {
+            if (currentTag.toLowerCase() === linkTag.toLowerCase()) {
+              currentTag = '';
+            } else {
+              currentTag = linkTag;
+              // 不再清除其他筛选条件
+            }
+          } else if (linkIngredient) {
+            if (currentIngredient.toLowerCase() === linkIngredient.toLowerCase()) {
+              currentIngredient = '';
+            } else {
+              currentIngredient = linkIngredient;
+              // 不再清除其他筛选条件
             }
           }
         }
         
-        // 注意：实际筛选逻辑需要后端支持，这里只是添加视觉反馈
-      });
-    });
-    
-    // 美食标签点击事件
-    const tagButtons = document.querySelectorAll('.flex-wrap .inline-block');
-    tagButtons.forEach(tag => {
-      tag.addEventListener('click', () => {
-        // 为标签添加选中效果
-        tag.classList.toggle('ring-2');
-        tag.classList.toggle('ring-amber-400');
-        tag.classList.toggle('dark:ring-amber-600');
+        // 更新UI标志当前选中的筛选项
+        updateSelectedFiltersUI();
         
-        // 注意：实际筛选逻辑需要后端支持，这里只是添加视觉反馈
+        // 执行筛选
+        filterCuisines();
+        
+        // 更新URL但不刷新页面
+        updateHistory();
       });
     });
     
-    // 重置按钮效果
-    if (resetButton) {
-      resetButton.addEventListener('mouseenter', () => {
-        resetButton.classList.add('bg-red-50', 'dark:bg-red-900/30');
-      });
-      
-      resetButton.addEventListener('mouseleave', () => {
-        resetButton.classList.remove('bg-red-50', 'dark:bg-red-900/30');
-      });
-      
-      resetButton.addEventListener('click', () => {
-        // 重置所有筛选条件
-        window.location.href = window.location.pathname;
-      });
-    }
-    
-    // 添加页面滚动动画效果
-    const addScrollAnimation = () => {
-      const elements = document.querySelectorAll('.recipe-card-item');
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-fade-in');
-            observer.unobserve(entry.target);
+    // 更新UI以显示当前选中的筛选项
+    function updateSelectedFiltersUI() {
+      // 更新分类筛选UI
+      document.querySelectorAll('a[href*="?category"]').forEach(categoryLink => {
+        const href = (categoryLink as HTMLAnchorElement).href;
+        const url = new URL(href);
+        const linkCategory = url.searchParams.get('category');
+        const isSelected = linkCategory && currentCategory.toLowerCase() === linkCategory.toLowerCase();
+        
+        // 获取复选框元素
+        const checkboxDiv = categoryLink.querySelector('div.w-4.h-4');
+        if (checkboxDiv) {
+          if (isSelected) {
+            checkboxDiv.className = 'w-4 h-4 mr-3 transition-colors bg-red-500 dark:bg-red-500';
+        } else {
+            checkboxDiv.className = 'w-4 h-4 mr-3 transition-colors border border-red-400 dark:border-red-600';
           }
-        });
-      }, { threshold: 0.1 });
-      
-      elements.forEach(el => {
-        observer.observe(el);
+        }
       });
-    };
-    
-    // 如果浏览器支持IntersectionObserver，添加滚动动画
-    if ('IntersectionObserver' in window) {
-      addScrollAnimation();
+      
+      // 更新城市筛选UI
+      document.querySelectorAll('a[href*="?city"]').forEach(cityLink => {
+        const href = (cityLink as HTMLAnchorElement).href;
+        const url = new URL(href);
+        const linkCity = url.searchParams.get('city');
+        const isSelected = linkCity && currentCity.toLowerCase() === linkCity.toLowerCase();
+        
+        // 获取复选框元素
+        const checkboxDiv = cityLink.querySelector('div.w-4.h-4');
+        if (checkboxDiv) {
+          if (isSelected) {
+            checkboxDiv.className = 'w-4 h-4 mr-2 transition-colors bg-green-500 dark:bg-green-500';
+        } else {
+            checkboxDiv.className = 'w-4 h-4 mr-2 transition-colors border border-brown-400 dark:border-brown-600';
+          }
+        }
+      });
+      
+      // 更新口味筛选UI
+      document.querySelectorAll('a[href*="?taste"]').forEach(tasteLink => {
+        const href = (tasteLink as HTMLAnchorElement).href;
+        const url = new URL(href);
+        const linkTaste = url.searchParams.get('taste');
+        const isSelected = linkTaste && currentTaste.toLowerCase() === linkTaste.toLowerCase();
+        
+        // 获取小圆点元素
+        const dotDiv = tasteLink.querySelector('div.w-3.h-3');
+        if (dotDiv) {
+          if (isSelected) {
+            dotDiv.className = 'w-3 h-3 mr-2 rounded-full transition-colors bg-orange-400 dark:bg-orange-500';
+        } else {
+            dotDiv.className = 'w-3 h-3 mr-2 rounded-full transition-colors border border-orange-400 dark:border-orange-500';
+          }
+        }
+      });
+      
+      // 更新标签筛选UI
+      document.querySelectorAll('a[href*="?tag"]').forEach(tagLink => {
+        const href = (tagLink as HTMLAnchorElement).href;
+        const url = new URL(href);
+        const linkTag = url.searchParams.get('tag');
+        const isSelected = linkTag && currentTag.toLowerCase() === linkTag.toLowerCase();
+        
+        if (isSelected) {
+          tagLink.classList.add('ring-2', 'ring-amber-500', 'dark:ring-amber-400', 'shadow-md');
+        } else {
+          tagLink.classList.remove('ring-2', 'ring-amber-500', 'dark:ring-amber-400', 'shadow-md');
+        }
+      });
+      
+      // 更新食材筛选UI
+      document.querySelectorAll('a[href*="?ingredient"]').forEach(ingredientLink => {
+        const href = (ingredientLink as HTMLAnchorElement).href;
+        const url = new URL(href);
+        const linkIngredient = url.searchParams.get('ingredient');
+        const isSelected = linkIngredient && currentIngredient.toLowerCase() === linkIngredient.toLowerCase();
+        
+        // 获取小圆点元素
+        const dotDiv = ingredientLink.querySelector('div.w-3.h-3');
+        if (dotDiv) {
+          if (isSelected) {
+            dotDiv.className = 'w-3 h-3 mr-2 rounded-full transition-colors bg-green-400 dark:bg-green-500';
+        } else {
+            dotDiv.className = 'w-3 h-3 mr-2 rounded-full transition-colors border border-green-400 dark:border-green-500 group-hover:bg-green-400 dark:group-hover:bg-green-500';
+          }
+        }
+      });
     }
     
-    // 添加食谱纸张效果装饰元素
-    if (paperBg) {
-      // 创建随机装饰元素
-      const createDecorElement = (className: string, icon: string) => {
-        const element = document.createElement('div');
-        element.className = className;
-        element.innerHTML = icon;
-        element.style.position = 'absolute';
-        element.style.opacity = '0.15';
-        element.style.zIndex = '1';
-        return element;
-      };
-      
-      // 添加食谱装饰
-      const decorations = [
-        { icon: '🍴', className: 'recipe-decor text-2xl' },
-        { icon: '🥄', className: 'recipe-decor text-2xl' },
-        { icon: '🍽️', className: 'recipe-decor text-2xl' },
-        { icon: '📝', className: 'recipe-decor text-2xl' },
-        { icon: '⭐', className: 'recipe-decor text-2xl' }
-      ];
-      
-      decorations.forEach((decor) => {
-        const el = createDecorElement(decor.className, decor.icon);
-        el.style.left = `${Math.random() * 90}%`;
-        el.style.top = `${Math.random() * 90}%`;
-        el.style.transform = `rotate(${Math.random() * 360}deg)`;
-        (paperBg as HTMLElement).appendChild(el);
+    // 处理搜索表单提交
+    if (searchInput && searchInput.form) {
+      searchInput.form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        currentSearch = searchInput.value;
+        
+        // 不再重置其他筛选条件，允许搜索词与其他筛选条件共存
+        
+        // 更新UI
+        updateSelectedFiltersUI();
+        
+        // 执行筛选
+        filterCuisines();
+        
+        // 更新URL但不刷新页面
+        updateHistory();
       });
     }
-  });
-  
-  // 添加键盘快捷键支持
-  document.addEventListener('keydown', (e: KeyboardEvent) => {
-    // Alt + S 聚焦搜索框
-    if (e.altKey && e.key === 's') {
-      e.preventDefault();
-      const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-      if (searchInput) {
-        searchInput.focus();
-      }
+    
+    // 初始化：如果URL中有筛选参数，应用筛选
+    if (currentSearch || currentCategory || currentCity || currentTaste || currentTag || currentIngredient) {
+      // 更新UI
+      updateSelectedFiltersUI();
+      
+      // 执行筛选
+      setTimeout(filterCuisines, 100);
     }
   });
 </script> 

@@ -50,9 +50,15 @@ const relatedCultures = allCultures
           <h1 class="text-4xl md:text-5xl font-bold mb-4">{entry.data.title}</h1>
           
           <div class="flex flex-wrap items-center gap-4 mb-4">
-            {entry.data.city && (
+            {entry.data.city && entry.data.city.length > 0 && (
               <div class="flex items-center text-white/90">
-                <span class="mr-1">📍</span> {entry.data.city}
+                <span class="mr-1">📍</span> 
+                {entry.data.city.map((cityName, index) => (
+                  <>
+                    <span>{cityName}</span>
+                    {index < entry.data.city.length - 1 && <span>, </span>}
+                  </>
+                ))}
               </div>
             )}
             
@@ -111,10 +117,17 @@ const relatedCultures = allCultures
               <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">文化信息</h3>
               
               <div class="space-y-3">
-                {entry.data.city && (
+                {entry.data.city && entry.data.city.length > 0 && (
                   <div class="flex">
                     <span class="w-24 flex-shrink-0 text-gray-600 dark:text-gray-400">分布地区:</span>
-                    <span class="text-gray-900 dark:text-white">{entry.data.city}</span>
+                    <div class="text-gray-900 dark:text-white">
+                      {entry.data.city.map((cityName, index) => (
+                        <>
+                          <span>{cityName}</span>
+                          {index < entry.data.city.length - 1 && <span>, </span>}
+                        </>
+                      ))}
+                    </div>
                   </div>
                 )}
                 

@@ -14,6 +14,9 @@ function sortByDate<T extends { data: { pubDate?: Date | string, updatedDate?: D
 
 const sortedTravels = [...travels].sort(sortByDate);
 
+// 检查是否有旅行攻略内容
+const hasTravels = travels.length > 0;
+
 // 提取所有标签并按数量排序
 const allTags: {name: string, count: number}[] = [];
 travels.forEach((travel) => {
@@ -59,13 +62,16 @@ const difficulties = Array.from(allDifficulties);
 // 提取所有城市
 const cities: {name: string, count: number}[] = [];
 travels.forEach((travel) => {
-  if (travel.data.city) {
-    const existingCity = cities.find(c => c.name === travel.data.city);
-    if (existingCity) {
-      existingCity.count++;
-    } else {
-      cities.push({ name: travel.data.city, count: 1 });
-    }
+  if (travel.data.city && travel.data.city.length > 0) {
+    // 遍历每个城市数组
+    travel.data.city.forEach(cityName => {
+      const existingCity = cities.find(c => c.name === cityName);
+      if (existingCity) {
+        existingCity.count++;
+      } else {
+        cities.push({ name: cityName, count: 1 });
+      }
+    });
   }
 });
 
@@ -170,7 +176,9 @@ const visibleTravels = sortedTravels.slice(
                 <label class="block font-handwriting text-lg text-slate-700 dark:text-slate-300 mb-2">查找旅程</label>
                 <div class="relative">
                   <input
+                    id="search-input"
                     type="text"
+                    name="search"
                     placeholder="输入关键词..."
                     class="w-full px-4 py-2 bg-theme-primary-bg dark:bg-slate-700/50 border-b-2 border-slate-300 dark:border-slate-600 font-handwriting text-slate-800 dark:text-slate-200 focus:outline-none focus:border-theme-primary dark:focus:border-theme-primary placeholder-slate-400"
                   />
@@ -180,6 +188,12 @@ const visibleTravels = sortedTravels.slice(
                     </svg>
                   </div>
                 </div>
+                <button
+                  id="search-button"
+                  class="mt-2 w-full py-2 px-4 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-400 font-handwriting text-sm border border-primary-200 dark:border-primary-800/40 hover:bg-primary-200 dark:hover:bg-primary-800/40 transition-colors"
+                >
+                  开始搜索
+                </button>
               </div>
               
               <!-- 季节关联 -->
@@ -275,123 +289,163 @@ const visibleTravels = sortedTravels.slice(
             </p>
           </div>
           
+          <!-- 无搜索结果提示 - 在客户端控制显示 -->
+          <div id="no-results-message" class="hidden bg-white dark:bg-slate-800 p-8 text-center rounded-sm border border-slate-200 dark:border-slate-700 shadow-md mb-10 relative transform rotate-1">
+            <div class="absolute -top-3 right-5 w-12 h-12 bg-[url('/images/tape-piece.png')] bg-contain bg-no-repeat opacity-70"></div>
+            
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            
+            <h3 class="mt-4 text-xl font-handwriting text-slate-800 dark:text-slate-200">旅行笔记缺失</h3>
+            <p id="search-term-message" class="mt-2 font-handwriting text-slate-600 dark:text-slate-400">
+              抱歉，未找到相关旅行笔记。请尝试其他关键词或浏览所有旅行记录。
+            </p>
+            
+            <div class="mt-6">
+              <a href="/travel" class="inline-flex items-center text-primary-700 dark:text-primary-500 font-handwriting hover:underline">
+                查看所有旅行笔记
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </a>
+            </div>
+          </div>
+          
           <!-- 旅行笔记列表 -->
-          <div class="space-y-10">
-            {visibleTravels.map((travel, index) => (
-              <ScrollReveal animation={index % 2 === 0 ? "slide-right" : "slide-left"}>
-                <a 
-                  href={`/travel/${travel.slug}`}
-                  class="block group"
-                >
-                  <div class={`bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden shadow-md transform ${index % 2 === 0 ? 'rotate-1' : '-rotate-1'} hover:shadow-lg transition-shadow relative`}>
-                    <!-- 装饰性元素 -->
-                    <div class="absolute top-3 right-3 w-16 h-16 bg-[url('/images/polaroid-corner.png')] bg-contain bg-no-repeat opacity-20"></div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
-                      <div class="md:col-span-1 h-full">
-                        <div class="h-48 md:h-full bg-primary-100 dark:bg-slate-700 relative border-b md:border-r border-slate-200 dark:border-slate-700">
-                          <div class="flex items-center justify-center h-full font-handwriting italic text-slate-500 dark:text-slate-400">
-                            {travel.data.title} 照片
+          <div id="travel-list" class="space-y-10">
+            {hasTravels ? (
+              visibleTravels.map((travel, index) => (
+                <ScrollReveal animation={index % 2 === 0 ? "slide-right" : "slide-left"}>
+                  <a 
+                    href={`/travel/${travel.slug}`}
+                    class="block group"
+                  >
+                    <div class={`bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden shadow-md transform ${index % 2 === 0 ? 'rotate-1' : '-rotate-1'} hover:shadow-lg transition-shadow relative`}>
+                      <!-- 装饰性元素 -->
+                      <div class="absolute top-3 right-3 w-16 h-16 bg-[url('/images/polaroid-corner.png')] bg-contain bg-no-repeat opacity-20"></div>
+                      
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
+                        <div class="md:col-span-1 h-full">
+                          <div class="h-48 md:h-full bg-primary-100 dark:bg-slate-700 relative border-b md:border-r border-slate-200 dark:border-slate-700">
+                            <div class="flex items-center justify-center h-full font-handwriting italic text-slate-500 dark:text-slate-400">
+                              {travel.data.title} 照片
+                            </div>
+                            {travel.data.featured && (
+                              <div class="absolute top-3 left-3 px-3 py-1 bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-400 text-xs font-handwriting border border-primary-200 dark:border-primary-800/50 transform -rotate-3 shadow-sm">
+                                ★ 私藏路线
+                              </div>
+                            )}
                           </div>
-                          {travel.data.featured && (
-                            <div class="absolute top-3 left-3 px-3 py-1 bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-400 text-xs font-handwriting border border-primary-200 dark:border-primary-800/50 transform -rotate-3 shadow-sm">
-                              ★ 私藏路线
-                            </div>
-                          )}
                         </div>
-                      </div>
-                      <div class="md:col-span-2 p-6">
-                        <h3 class="text-2xl font-handwriting text-slate-800 dark:text-primary-100 mb-3 group-hover:text-primary-800 dark:group-hover:text-primary-400 transition-colors">
-                          {travel.data.title}
-                        </h3>
-                        
-                        <div class="flex flex-wrap gap-4 mb-4 text-sm font-handwriting text-slate-600 dark:text-slate-400">
-                          {travel.data.season && (
-                            <div class="flex items-center">
-                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/season-small.png')] bg-contain bg-no-repeat"></span>
-                              {travel.data.season}
-                            </div>
-                          )}
+                        <div class="md:col-span-2 p-6">
+                          <h3 class="text-2xl font-handwriting text-slate-800 dark:text-primary-100 mb-3 group-hover:text-primary-800 dark:group-hover:text-primary-400 transition-colors">
+                            {travel.data.title}
+                          </h3>
                           
-                          {travel.data.type && (
-                            <div class="flex items-center">
-                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/type-small.png')] bg-contain bg-no-repeat"></span>
-                              {travel.data.type}
-                            </div>
-                          )}
+                          <div class="flex flex-wrap gap-4 mb-4 text-sm font-handwriting text-slate-600 dark:text-slate-400">
+                            {travel.data.season && (
+                              <div class="flex items-center">
+                                <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/season-small.png')] bg-contain bg-no-repeat"></span>
+                                {travel.data.season}
+                              </div>
+                            )}
+                            
+                            {travel.data.type && (
+                              <div class="flex items-center">
+                                <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/type-small.png')] bg-contain bg-no-repeat"></span>
+                                {travel.data.type}
+                              </div>
+                            )}
+                            
+                            {travel.data.days && (
+                              <div class="flex items-center">
+                                <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/days-small.png')] bg-contain bg-no-repeat"></span>
+                                {travel.data.days}天
+                              </div>
+                            )}
+                            
+                            {travel.data.difficulty && (
+                              <div class="flex items-center">
+                                <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/difficulty-small.png')] bg-contain bg-no-repeat"></span>
+                                难度: {travel.data.difficulty}
+                              </div>
+                            )}
+                          </div>
                           
-                          {travel.data.days && (
-                            <div class="flex items-center">
-                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/days-small.png')] bg-contain bg-no-repeat"></span>
-                              {travel.data.days}天
-                            </div>
-                          )}
+                          <p class="font-handwriting text-slate-600 dark:text-slate-400 leading-relaxed mb-4 line-clamp-3">
+                            {travel.data.description}
+                          </p>
                           
-                          {travel.data.difficulty && (
-                            <div class="flex items-center">
-                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/difficulty-small.png')] bg-contain bg-no-repeat"></span>
-                              难度: {travel.data.difficulty}
-                            </div>
-                          )}
-                        </div>
-                        
-                        <p class="font-handwriting text-slate-600 dark:text-slate-400 leading-relaxed mb-4 line-clamp-3">
-                          {travel.data.description}
-                        </p>
-                        
-                        <div class="flex flex-wrap gap-2 mb-3">
-                          {travel.data.tags.slice(0, 3).map((tag: string) => (
-                            <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
-                              #{tag}
-                            </span>
-                          ))}
-                          {travel.data.tags.length > 3 && (
-                            <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
-                              +{travel.data.tags.length - 3}
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div class="text-primary-700 dark:text-primary-500 text-sm font-handwriting group-hover:underline mt-2 flex items-center">
-                          阅读完整笔记
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                          </svg>
+                          <div class="flex flex-wrap gap-2 mb-3">
+                            {travel.data.tags.slice(0, 3).map((tag: string) => (
+                              <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                                #{tag}
+                              </span>
+                            ))}
+                            {travel.data.tags.length > 3 && (
+                              <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                                +{travel.data.tags.length - 3}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div class="text-primary-700 dark:text-primary-500 text-sm font-handwriting group-hover:underline mt-2 flex items-center">
+                            阅读完整笔记
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </a>
-              </ScrollReveal>
-            ))}
+                  </a>
+                </ScrollReveal>
+              ))
+            ) : (
+              <div class="bg-white dark:bg-slate-800 p-8 text-center rounded-sm border border-slate-200 dark:border-slate-700 shadow-md mb-10 relative transform rotate-1">
+                <div class="absolute -top-3 right-5 w-12 h-12 bg-[url('/images/tape-piece.png')] bg-contain bg-no-repeat opacity-70"></div>
+                
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                
+                <h3 class="mt-4 text-xl font-handwriting text-slate-800 dark:text-slate-200">暂无旅行笔记</h3>
+                <p class="mt-2 font-handwriting text-slate-600 dark:text-slate-400">
+                  目前还没有发布任何旅行笔记。请稍后再来查看，或探索网站的其他内容。
+                </p>
+              </div>
+            )}
           </div>
           
           <!-- 分页 - 手绘风格 -->
-          <div class="mt-12 flex justify-center">
-            <div class="inline-flex border border-slate-300 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800">
-              <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
-                上一页
-              </button>
-              <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-white bg-primary-600 dark:bg-primary-700">
-                1
-              </button>
-              {totalPages > 1 && (
+          {hasTravels && totalPages > 1 && (
+            <div class="mt-12 flex justify-center">
+              <div class="inline-flex border border-slate-300 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800">
                 <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
-                  2
+                  上一页
                 </button>
-              )}
-              {totalPages > 2 && (
-                <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
-                  3
+                <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-white bg-primary-600 dark:bg-primary-700">
+                  1
                 </button>
-              )}
-              {totalPages > 1 && (
-                <button class="px-4 py-2 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
-                  下一页
-                </button>
-              )}
+                {totalPages > 1 && (
+                  <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
+                    2
+                  </button>
+                )}
+                {totalPages > 2 && (
+                  <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
+                    3
+                  </button>
+                )}
+                {totalPages > 1 && (
+                  <button class="px-4 py-2 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
+                    下一页
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
           
           <!-- 底部引言 - 旅行者的话 -->
           <div class="mt-16 text-center max-w-2xl mx-auto">
@@ -432,6 +486,343 @@ const visibleTravels = sortedTravels.slice(
 <script>
   // 客户端交互逻辑
   document.addEventListener('DOMContentLoaded', () => {
+    // 基础元素
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const searchButton = document.getElementById('search-button');
+    const testNoResultsBtn = document.getElementById('test-no-results-btn');
+    const travelCards = document.querySelectorAll('.space-y-10 a');
+    const noResultsMessage = document.getElementById('no-results-message');
+    const searchTermMessage = document.getElementById('search-term-message');
+    const travelList = document.getElementById('travel-list');
+    
+    // 复选框元素
+    const seasonCheckboxes = document.querySelectorAll('.grid.grid-cols-2.gap-2 input[type="checkbox"]');
+    const typeCheckboxes = document.querySelectorAll('.space-y-2 input[type="checkbox"]');
+    const cityCheckboxes = document.querySelectorAll('.mb-8:nth-of-type(4) input[type="checkbox"]');
+    
+    // 标签元素
+    const tagElements = document.querySelectorAll('.flex.flex-wrap.gap-2 span');
+    
+    console.log('客户端: 搜索输入框存在:', !!searchInput);
+    console.log('客户端: 找到旅行卡片数量:', travelCards.length);
+    console.log('客户端: 无结果提示元素存在:', !!noResultsMessage);
+    
+    // 客户端解析URL查询参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParamFromUrl = urlParams.get('search');
+    const seasonParam = urlParams.get('season');
+    const typeParam = urlParams.get('type');
+    const cityParam = urlParams.get('city');
+    const tagParam = urlParams.get('tag');
+    
+    console.log('客户端: URL中的搜索参数:', searchParamFromUrl);
+    
+    // 客户端筛选函数
+    function filterTravels() {
+      // 获取当前搜索词
+      const searchValue = searchInput?.value.trim().toLowerCase() || '';
+      const selectedSeasons: string[] = [];
+      const selectedTypes: string[] = [];
+      const selectedCities: string[] = [];
+      
+      // 获取选中的季节
+      seasonCheckboxes.forEach((checkbox: Element) => {
+        if ((checkbox as HTMLInputElement).checked) {
+          const seasonText = checkbox.parentElement?.nextElementSibling?.textContent?.trim().toLowerCase() || '';
+          if (seasonText) selectedSeasons.push(seasonText);
+        }
+      });
+      
+      // 获取选中的旅行类型
+      typeCheckboxes.forEach((checkbox: Element) => {
+        if ((checkbox as HTMLInputElement).checked) {
+          const typeText = checkbox.parentElement?.nextElementSibling?.textContent?.trim().toLowerCase() || '';
+          if (typeText) selectedTypes.push(typeText);
+        }
+      });
+      
+      // 获取选中的城市
+      cityCheckboxes.forEach((checkbox: Element) => {
+        if ((checkbox as HTMLInputElement).checked) {
+          const cityText = checkbox.parentElement?.nextElementSibling?.textContent?.trim().toLowerCase() || '';
+          if (cityText) {
+            // 去除计数信息，仅保留城市名
+            const cityName = cityText.split('(')[0].trim();
+            selectedCities.push(cityName);
+          }
+        }
+      });
+      
+      console.log('客户端: 正在筛选旅行卡片, 搜索词:', searchValue);
+      console.log('客户端: 选中的季节:', selectedSeasons);
+      console.log('客户端: 选中的旅行类型:', selectedTypes);
+      console.log('客户端: 选中的城市:', selectedCities);
+      
+      let matchCount = 0;
+      
+      // 处理标签搜索 - 如果搜索词与URL中的tag参数匹配，就把它当作标签搜索
+      const isTagSearch = tagParam && searchValue.toLowerCase() === tagParam.toLowerCase();
+      
+      // 如果没有筛选条件，显示所有卡片
+      if (!searchValue && selectedSeasons.length === 0 && selectedTypes.length === 0 && selectedCities.length === 0) {
+        console.log('客户端: 没有筛选条件，显示所有旅行卡片');
+        if (noResultsMessage) {
+          noResultsMessage.classList.add('hidden');
+        }
+        if (travelList) {
+          travelList.classList.remove('hidden');
+        }
+        
+        travelCards.forEach((card) => {
+          card.classList.remove('hidden');
+        });
+        
+        return travelCards.length;
+      }
+      
+      // 遍历所有旅行卡片进行筛选
+      travelCards.forEach((card) => {
+        const cardTitle = card.querySelector('h3')?.textContent?.toLowerCase() || '';
+        const cardDesc = card.querySelector('p.font-handwriting.text-slate-600')?.textContent?.toLowerCase() || '';
+        const cardTags = card.querySelectorAll('span.px-2.py-0\\.5.text-xs');
+        const cardInfo = card.querySelectorAll('.flex.flex-wrap.gap-4 .flex.items-center');
+        
+        // 获取卡片的季节、类型和城市信息
+        let cardSeason = '';
+        let cardType = '';
+        let cardCities: string[] = [];
+        let tagsText = '';
+        
+        cardInfo.forEach(info => {
+          const infoText = info.textContent?.toLowerCase() || '';
+          if (infoText.includes('难度')) {
+            // 跳过难度信息
+          } else if (infoText.includes('天')) {
+            // 跳过天数信息
+          } else if (cardSeason === '') {
+            cardSeason = infoText;
+          } else if (cardType === '') {
+            cardType = infoText;
+          }
+        });
+        
+        // 提取卡片标签文本
+        cardTags.forEach(tag => {
+          tagsText += (tag.textContent?.toLowerCase() || '') + ' ';
+        });
+        
+        // 寻找城市信息 - 从DOM中寻找城市标签
+        // 首先尝试查找城市专用标签
+        const cityElements = card.querySelectorAll('.city-tag, .location-tag');
+        if (cityElements && cityElements.length > 0) {
+          cityElements.forEach(cityElem => {
+            const cityText = cityElem.textContent?.toLowerCase().trim() || '';
+            if (cityText) {
+              cardCities.push(cityText);
+            }
+          });
+        } 
+        
+        // 如果没有找到专用城市标签，尝试从cardInfo中提取
+        if (cardCities.length === 0) {
+          // 检查是否有标记了城市信息的元素
+          const cityInfoElements = card.querySelectorAll('[data-city], .city-info');
+          if (cityInfoElements && cityInfoElements.length > 0) {
+            cityInfoElements.forEach(cityElem => {
+              const cityText = cityElem.textContent?.toLowerCase().trim() || '';
+              cardCities.push(cityText);
+            });
+          }
+        }
+        
+        // 如果依然没有找到，尝试从描述和标题中提取
+        if (cardCities.length === 0) {
+          // 检查标题和描述中是否包含已知城市
+          selectedCities.forEach(city => {
+            if (cardTitle.includes(city) || cardDesc.includes(city)) {
+              cardCities.push(city);
+            }
+          });
+        }
+        
+        // 匹配条件
+        const matchesSearch = !searchValue || 
+          cardTitle.includes(searchValue) || 
+          cardDesc.includes(searchValue) ||
+          tagsText.includes(searchValue);
+          
+        const matchesSeasons = selectedSeasons.length === 0 || selectedSeasons.some(season => cardSeason.includes(season));
+        const matchesTypes = selectedTypes.length === 0 || selectedTypes.some(type => cardType.includes(type));
+        
+        // 检查是否有任何选中的城市存在于卡片城市中
+        // 如果没有找到城市标签，但存在城市筛选条件，尝试在标题和描述中寻找
+        let matchesCities = selectedCities.length === 0;
+        if (!matchesCities) {
+          if (cardCities.length > 0) {
+            // 如果找到了城市标签，检查是否匹配
+            matchesCities = cardCities.some(cardCity => 
+              selectedCities.some(selectedCity => cardCity.includes(selectedCity))
+            );
+          } else {
+            // 如果没有找到城市标签，尝试在标题和描述中寻找
+            matchesCities = selectedCities.some(city => 
+              cardTitle.includes(city) || cardDesc.includes(city)
+            );
+          }
+        }
+        
+        // 所有条件都匹配才显示
+        const isMatch = matchesSearch && matchesSeasons && matchesTypes && matchesCities;
+        
+        if (isMatch) {
+          matchCount++;
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+      
+      console.log('客户端: 筛选后匹配旅行卡片数:', matchCount);
+      
+      // 更新无结果提示显示
+      if (matchCount === 0) {
+        console.log('客户端: 没有匹配结果，显示无结果提示');
+        if (noResultsMessage) {
+          noResultsMessage.classList.remove('hidden');
+          
+          // 更新无结果消息中的搜索词
+          if (searchTermMessage) {
+            if (isTagSearch) {
+              searchTermMessage.textContent = `抱歉，未找到标签为 "${searchValue}" 的旅行笔记。请尝试其他标签或浏览所有旅行记录。`;
+            } else if (searchValue) {
+              searchTermMessage.textContent = `抱歉，未找到与 "${searchValue}" 相关的旅行笔记。请尝试其他关键词或浏览所有旅行记录。`;
+            } else if (selectedSeasons.length > 0 || selectedTypes.length > 0 || selectedCities.length > 0) {
+              searchTermMessage.textContent = `抱歉，未找到符合当前筛选条件的旅行笔记。请尝试调整筛选条件或浏览所有旅行记录。`;
+            } else {
+              searchTermMessage.textContent = `抱歉，未找到相关旅行笔记。请尝试其他关键词或浏览所有旅行记录。`;
+            }
+          }
+        }
+        
+        // 隐藏旅行列表
+        if (travelList) {
+          travelList.classList.add('hidden');
+        }
+      } else {
+        // 隐藏无结果提示
+        if (noResultsMessage) {
+          noResultsMessage.classList.add('hidden');
+        }
+        // 显示旅行列表
+        if (travelList) {
+          travelList.classList.remove('hidden');
+        }
+      }
+      
+      return matchCount;
+    }
+    
+    // 初始化筛选状态
+    if (searchInput && searchParamFromUrl) {
+      console.log('客户端: 从URL设置搜索框值为:', searchParamFromUrl);
+      searchInput.value = searchParamFromUrl;
+      // 触发筛选
+      setTimeout(filterTravels, 100);
+    } else if (tagParam || seasonParam || typeParam || cityParam) {
+      // 如果URL中包含标签或其他筛选参数，也执行筛选
+      
+      // 如果有标签参数，先在搜索框中设置它，这样筛选函数可以找到它
+      if (tagParam && searchInput) {
+        searchInput.value = tagParam;
+      }
+      
+      // 如果有季节参数，选中对应的复选框
+      if (seasonParam) {
+        seasonCheckboxes.forEach((checkbox: Element) => {
+          const seasonText = checkbox.parentElement?.nextElementSibling?.textContent?.trim().toLowerCase() || '';
+          if (seasonText.toLowerCase() === seasonParam.toLowerCase()) {
+            (checkbox as HTMLInputElement).checked = true;
+          }
+        });
+      }
+      
+      // 如果有类型参数，选中对应的复选框
+      if (typeParam) {
+        typeCheckboxes.forEach((checkbox: Element) => {
+          const typeText = checkbox.parentElement?.nextElementSibling?.textContent?.trim().toLowerCase() || '';
+          if (typeText.toLowerCase() === typeParam.toLowerCase()) {
+            (checkbox as HTMLInputElement).checked = true;
+          }
+        });
+      }
+      
+      // 如果有城市参数，选中对应的复选框
+      if (cityParam) {
+        cityCheckboxes.forEach((checkbox: Element) => {
+          const cityText = checkbox.parentElement?.nextElementSibling?.textContent?.trim().toLowerCase() || '';
+          const cityName = cityText.split('(')[0].trim().toLowerCase();
+          if (cityName === cityParam.toLowerCase()) {
+            (checkbox as HTMLInputElement).checked = true;
+          }
+        });
+      }
+      
+      // 触发筛选
+      setTimeout(filterTravels, 100);
+    }
+    
+    // 绑定搜索按钮点击事件
+    if (searchButton) {
+      searchButton.addEventListener('click', () => {
+        const query = searchInput?.value.trim() || '';
+        if (query) {
+          window.location.href = `/travel?search=${encodeURIComponent(query)}`;
+        } else {
+          filterTravels();
+        }
+      });
+    }
+    
+    // 绑定搜索输入框回车事件
+    if (searchInput) {
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const query = searchInput.value.trim();
+          if (query) {
+            window.location.href = `/travel?search=${encodeURIComponent(query)}`;
+          } else {
+            filterTravels();
+          }
+        }
+      });
+    }
+    
+    // 测试按钮事件
+    if (testNoResultsBtn) {
+      testNoResultsBtn.addEventListener('click', () => {
+        if (searchInput) {
+          searchInput.value = 'xyzabcdefghijklmn123456789'; // 使用一个几乎不可能匹配的查询词
+          filterTravels();
+        }
+      });
+    }
+    
+    // 为复选框添加事件监听
+    const allCheckboxes = [...Array.from(seasonCheckboxes), ...Array.from(typeCheckboxes), ...Array.from(cityCheckboxes)];
+    allCheckboxes.forEach((checkbox: Element) => {
+      (checkbox as HTMLInputElement).addEventListener('change', filterTravels);
+    });
+    
+    // 为标签添加点击事件
+    tagElements.forEach((tag) => {
+      tag.addEventListener('click', () => {
+        const tagText = tag.textContent?.trim().replace('#', '').trim() || '';
+        if (tagText) {
+          window.location.href = `/travel?tag=${encodeURIComponent(tagText)}`;
+        }
+      });
+    });
+    
     // 选项卡切换
     const tabLinks = document.querySelectorAll('.container .whitespace-nowrap');
     

@@ -1,7 +1,6 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
 import { getCollection, type CollectionEntry } from "astro:content";
-import ScrollReveal from "../../components/aceternity/ScrollReveal.astro";
 
 // 获取景点内容集合
 const attractions = await getCollection("attractions");
@@ -35,7 +34,7 @@ allTags.sort((a, b) => b.count - a.count);
 const categories: {name: string, count: number}[] = [];
 sortedAttractions.forEach((attraction: CollectionEntry<"attractions">) => {
   // 从city或title中提取分类信息（因为原数据模型似乎没有category字段）
-  const category = attraction.data.city?.split(',')[0] || '其他景点';
+  const category = attraction.data.city && attraction.data.city.length > 0 ? attraction.data.city[0] : '其他景点';
   const existingCategory = categories.find(c => c.name === category);
   if (existingCategory) {
     existingCategory.count++;
@@ -50,8 +49,9 @@ categories.sort((a, b) => b.count - a.count);
 // 获取所有城市并计数 (从city中提取城市信息)
 const cities: {name: string, count: number}[] = [];
 sortedAttractions.forEach((attraction: CollectionEntry<"attractions">) => {
-  if (attraction.data.city) {
-    const city = attraction.data.city.split(',').pop()?.trim() || '其他地区';
+  if (attraction.data.city && attraction.data.city.length > 0) {
+    // 直接使用数组中的第一个城市，或默认值
+    const city = attraction.data.city[0] || '其他地区';
     const existingCity = cities.find(c => c.name === city);
     if (existingCity) {
       existingCity.count++;
@@ -64,27 +64,36 @@ sortedAttractions.forEach((attraction: CollectionEntry<"attractions">) => {
 // 按照城市出现次数排序
 cities.sort((a, b) => b.count - a.count);
 
+// 从URL获取查询参数 - 在静态站点中只用于预填充输入框
+const searchQuery = '';  // 对于静态生成的站点，我们在客户端处理搜索
+const tagQuery = '';     // 标签筛选参数
+const cityQuery = '';    // 城市筛选参数
+
 // 分页逻辑
 const itemsPerPage = 9;
-const page = 1; // 当前页码，实际应用中应该从查询参数获取
-const totalPages = Math.ceil(sortedAttractions.length / itemsPerPage);
-const currentPageAttractions = sortedAttractions.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+const page = 1; // 对于静态生成的页面，我们默认显示第一页，客户端再处理分页
 
-// 搜索和筛选逻辑（实际应用中应该根据查询参数来筛选）
-const searchQuery = '';
+// 搜索和筛选逻辑 - 在静态站点中，所有筛选都在客户端完成
 const selectedCategory = '';
 const selectedCity = '';
 const selectedTags: string[] = [];
 const sortBy: 'date' | 'name' = 'date';
 
+// 对于静态生成的页面，我们提供所有景点数据，客户端再进行筛选
+let filteredAttractions = sortedAttractions;
+
+const totalPages = Math.ceil(filteredAttractions.length / itemsPerPage);
+const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
 // 辅助函数，用于获取景点的分类（从city提取或默认值）
 const getCategory = (attraction: CollectionEntry<"attractions">) => {
-  return attraction.data.city?.split(',')[0] || '其他景点';
+  return attraction.data.city && attraction.data.city.length > 0 ? attraction.data.city[0] : '其他景点';
 };
 
 // 辅助函数，用于获取景点的城市（从city提取或默认值）
 const getCity = (attraction: CollectionEntry<"attractions">) => {
-  return attraction.data.city?.split(',').pop()?.trim() || '其他地区';
+  return attraction.data.city && attraction.data.city.length > 0 ? 
+    attraction.data.city[attraction.data.city.length - 1] : '其他地区';
 };
 ---
 
@@ -103,32 +112,32 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
           <div class="absolute -inset-3 border border-accent-400/30 dark:border-accent-500/30 rounded-sm"></div>
           <div class="absolute -inset-5 border border-secondary-400/20 dark:border-secondary-500/20 rounded-sm"></div>
           
-          <h1 class="text-6xl sm:text-7xl font-serif font-light tracking-tight text-slate-800 dark:text-white leading-none mb-6">
+          <h1 class="text-4xl xs:text-5xl sm:text-6xl md:text-7xl font-serif font-light tracking-tight text-slate-800 dark:text-white leading-none mb-4 sm:mb-6">
             <span class="inline-block transform -rotate-1 text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-primary-600 dark:from-primary-400 dark:to-primary-400">河北</span>
-            <span class="inline-block mx-2 text-5xl opacity-70 text-amber-500 dark:text-amber-400">·</span>
+            <span class="inline-block mx-1 sm:mx-2 text-3xl xs:text-4xl sm:text-5xl opacity-70 text-amber-500 dark:text-amber-400">·</span>
             <span class="inline-block transform rotate-1 text-transparent bg-clip-text bg-gradient-to-r from-accent-600 to-accent-600 dark:from-accent-400 dark:to-accent-400">景观</span>
           </h1>
           
           <!-- 彩色相机参数显示 -->
-          <div class="flex justify-center items-center mt-4 mb-6 text-xs tracking-widest font-mono bg-white/30 dark:bg-black/30 backdrop-blur-sm px-4 py-1 rounded-full text-slate-700 dark:text-slate-300">
+          <div class="flex flex-wrap justify-center items-center mt-4 mb-4 sm:mb-6 text-[10px] xs:text-xs tracking-widest font-mono bg-white/30 dark:bg-black/30 backdrop-blur-sm px-3 sm:px-4 py-1 rounded-full text-slate-700 dark:text-slate-300">
             <span class="text-primary-600 dark:text-primary-400">ISO 100</span>
-            <span class="mx-3 text-slate-500">|</span>
+            <span class="mx-2 sm:mx-3 text-slate-500">|</span>
             <span class="text-secondary-600 dark:text-secondary-400">f/2.8</span>
-            <span class="mx-3 text-slate-500">|</span>
+            <span class="mx-2 sm:mx-3 text-slate-500">|</span>
             <span class="text-primary-600 dark:text-primary-400">1/250s</span>
-            <span class="mx-3 text-slate-500">|</span>
+            <span class="mx-2 sm:mx-3 text-slate-500">|</span>
             <span class="text-accent-600 dark:text-accent-400">24-70mm</span>
           </div>
         </div>
         
-        <p class="text-lg text-slate-700 dark:text-slate-200 max-w-2xl mx-auto font-light leading-relaxed mt-4 drop-shadow-sm">
+        <p class="text-base sm:text-lg text-slate-700 dark:text-slate-200 max-w-2xl mx-auto font-light leading-relaxed mt-3 sm:mt-4 px-3 drop-shadow-sm">
           通过镜头捕捉河北的自然与人文之美，每一处景点都是一幅值得细细品味的画作
         </p>
         
         <!-- 彩色取景器元素 -->
-        <div class="mt-12 mb-2 flex justify-center">
-          <div class="px-5 py-2 bg-gradient-to-r from-primary-500/80 to-accent-500/80 dark:from-primary-700/80 dark:to-accent-700/80 text-white rounded-full text-sm tracking-wider font-mono inline-flex items-center space-x-2 shadow-lg shadow-primary-500/20 dark:shadow-primary-700/20">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="mt-8 sm:mt-12 mb-2 flex justify-center">
+          <div class="px-4 sm:px-5 py-1.5 sm:py-2 bg-gradient-to-r from-primary-500/80 to-accent-500/80 dark:from-primary-700/80 dark:to-accent-700/80 text-white rounded-full text-xs sm:text-sm tracking-wider font-mono inline-flex items-center space-x-1 sm:space-x-2 shadow-md sm:shadow-lg shadow-primary-500/20 dark:shadow-primary-700/20">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
@@ -139,90 +148,117 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
     </div>
   </div>
   
-  <!-- 相册风格景点概览 - 彩色版本 -->
-  <div class="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black py-12">
-    <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {sortedAttractions.slice(0, 3).map((attraction, index) => (
-          <div class={`relative ${index === 0 ? 'md:col-span-3' : ''}`}>
-            <a href={`/attractions/${attraction.slug}`} class="block group">
-              <div class={`aspect-[${index === 0 ? '21/9' : '3/4'}] relative overflow-hidden transform ${index % 2 === 0 ? 'rotate-1' : '-rotate-1'} shadow-lg dark:shadow-none`}>
-                <div class="absolute inset-0 bg-gradient-to-br from-primary-100 via-primary-100 to-secondary-100 dark:from-primary-900/30 dark:via-primary-900/30 dark:to-secondary-900/30 flex items-center justify-center">
-                  <span class="text-primary-400 dark:text-primary-500">{attraction.data.title}</span>
-                </div>
-                
-                <div class="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-secondary-500/30 dark:from-primary-500/40 dark:to-secondary-500/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                
-                <!-- 类似照片信息的标题 -->
-                <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-primary-900/80 via-primary-900/60 to-transparent">
-                  <div class="transform group-hover:translate-y-0 translate-y-2 transition-transform duration-300">
-                    <h3 class="text-xl text-white font-light">{attraction.data.title}</h3>
-                    <p class="text-sm text-primary-100 flex items-center mt-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 opacity-70 text-accent-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      {getCategory(attraction)} · {getCity(attraction)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-  
+
   
   <!-- 主内容区 - 摄影展览风格 -->
-  <div class="bg-gradient-to-b from-white to-primary-50 dark:from-black dark:to-primary-950/30 text-gray-900 dark:text-white py-16">
+  <div class="bg-gradient-to-b from-white to-primary-50 dark:from-black dark:to-primary-950/30 text-gray-900 dark:text-white py-6 sm:py-10">
     <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <!-- 左侧滤镜区域 - 彩色摄影参数风格 -->
-        <div class="lg:col-span-3">
-          <div class="sticky top-20 space-y-8">
-            <div class="bg-white/80 dark:bg-primary-950/40 backdrop-blur-sm p-6 border border-primary-100 dark:border-primary-800/50 rounded-lg shadow-xl shadow-primary-100/50 dark:shadow-primary-900/20">
+      <!-- 移动端筛选按钮 -->
+      <div class="lg:hidden mb-4 flex justify-between items-center">
+        <button id="mobile-filter-toggle" class="bg-primary-500 text-white px-4 py-2 rounded-full inline-flex items-center space-x-2 shadow-md active:shadow-sm transition-shadow">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <span>筛选</span>
+        </button>
+        
+        <!-- 移动端搜索框 -->
+        <form id="search-form-mobile" class="relative flex-grow mx-3" method="get" action="/attractions">
+          <input 
+            type="text" 
+            name="search" 
+            placeholder="搜索景点..." 
+            class="w-full text-slate-700 dark:text-gray-200 bg-white/90 dark:bg-primary-900/50 border border-primary-300 dark:border-primary-700 rounded-full py-2 pl-3 pr-10 focus:outline-none focus:border-primary-500 placeholder-gray-400/80 dark:placeholder-gray-500/80 text-sm"
+          />
+          <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </form>
+      </div>
+      
+      <!-- 移动端筛选抽屉 - 默认隐藏 -->
+      <div id="mobile-filter-drawer" class="lg:hidden fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="mobile-filter-backdrop"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-4/5 max-w-sm bg-white dark:bg-gray-900 shadow-xl overflow-y-auto">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+            <h3 class="text-lg font-medium text-gray-800 dark:text-white">筛选</h3>
+            <button id="mobile-filter-close" class="rounded-full p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div class="p-3 space-y-4">
+            <!-- 城市筛选 - 移动端 -->
+            <div>
+              <h3 class="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">按城市浏览</h3>
+              <div class="flex flex-wrap gap-2">
+                {cities.slice(0, 8).map(city => (
+                  <div class="mobile-city-tag px-3 py-2 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-800 dark:text-secondary-200 text-sm rounded-full cursor-pointer hover:bg-secondary-200 dark:hover:bg-secondary-800/50 transition-colors">
+                    {city.name}
+                    <span class="ml-1 text-xs text-secondary-500 dark:text-secondary-400">({city.count})</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <!-- 标签筛选 - 移动端 -->
+            <div>
+              <h3 class="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">特色标签</h3>
+              <div class="flex flex-wrap gap-2">
+                {allTags.slice(0, 15).map(tag => (
+                  <div class="mobile-tag-item px-3 py-2 bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-200 text-sm rounded-full cursor-pointer hover:bg-accent-200 dark:hover:bg-accent-800/50 transition-colors">
+                    #{tag.name}
+                    <span class="ml-1 text-xs text-accent-500 dark:text-accent-400">({tag.count})</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <!-- 底部应用按钮 -->
+            <div class="border-t border-gray-200 dark:border-gray-800 pt-3 flex justify-end">
+              <button id="mobile-filter-apply" class="bg-primary-500 text-white px-6 py-2 rounded-full shadow-md">
+                应用筛选
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
+        <!-- 左侧滤镜区域 - 彩色摄影参数风格 - 在桌面端显示 -->
+        <div class="hidden lg:block lg:col-span-3">
+          <div class="sticky top-16 space-y-3 sm:space-y-6">
+            <div class="bg-white/80 dark:bg-primary-950/40 backdrop-blur-sm p-4 sm:p-5 border border-primary-100 dark:border-primary-800/50 rounded-lg shadow-lg sm:shadow-xl shadow-primary-100/50 dark:shadow-primary-900/20">
               <!-- 彩色搜索框 -->
-              <div class="flex items-center mb-10 max-w-xl mx-auto">
-                <div class="relative flex-grow">
-                  <input 
-                    type="text" 
-                    placeholder="输入关键词..." 
-                    class="w-full px-4 py-2 pl-10 border border-primary-200 dark:border-primary-800 bg-white dark:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200 focus:outline-none focus:border-primary-500 dark:focus:border-primary-400 focus:ring-1 focus:ring-primary-500 dark:focus:ring-primary-400"
-                  />
-                  <div class="absolute left-3 top-2.5 text-primary-400 dark:text-primary-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+              <form id="search-form" class="mb-4 sm:mb-6 max-w-xl mx-auto" method="get" action="/attractions">
+                <div class="flex items-center">
+                  <div class="relative flex-grow">
+                    <input 
+                      type="text" 
+                      name="search" 
+                      placeholder="搜索景点名称、描述、标签..." 
+                      class="block w-full text-slate-700 dark:text-gray-200 bg-white/90 dark:bg-primary-900/50 border border-primary-300 dark:border-primary-700 rounded-full py-1.5 sm:py-2 pl-3 sm:pl-4 pr-10 focus:outline-none focus:border-primary-500 placeholder-gray-400/80 dark:placeholder-gray-500/80 text-sm"
+                    />
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
-                <button class="ml-2 px-4 py-2 bg-primary-500 dark:bg-primary-600 text-white rounded-lg hover:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
-                  搜索
-                </button>
-              </div>
-                
-              <!-- 景点类型筛选 - 彩色曝光设置 -->
-              <div class="mt-8">
-                <!-- 分类标签 -->
-                <h3 class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-3">按分类浏览</h3>
-                <div class="flex flex-wrap gap-2">
-                  {categories.slice(0, 8).map(category => (
-                    <div class="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-200 text-sm rounded-full cursor-pointer hover:bg-primary-200 dark:hover:bg-primary-800/50 transition-colors">
-                      {category.name}
-                      <span class="ml-1 text-xs text-primary-500 dark:text-primary-400">({category.count})</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-                
+              </form>
+              
               <!-- 城市筛选 - 彩色光圈设置 -->
-              <div class="mt-8">
+              <div class="mt-4 sm:mt-6">
                 <!-- 城市标签 -->
-                <h3 class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-3">按城市浏览</h3>
+                <h3 class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">按城市浏览</h3>
                 <div class="flex flex-wrap gap-2">
                   {cities.slice(0, 6).map(city => (
-                    <div class="px-3 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-800 dark:text-secondary-200 text-sm rounded-full cursor-pointer hover:bg-secondary-200 dark:hover:bg-secondary-800/50 transition-colors">
+                    <div class="desktop-city-tag px-3 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-800 dark:text-secondary-200 text-sm rounded-full cursor-pointer hover:bg-secondary-200 dark:hover:bg-secondary-800/50 transition-colors">
                       {city.name}
                       <span class="ml-1 text-xs text-secondary-500 dark:text-secondary-400">({city.count})</span>
                     </div>
@@ -231,12 +267,12 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
               </div>
                 
               <!-- 标签筛选 - 彩色胶片风格 -->
-              <div class="mt-8">
+              <div class="mt-4 sm:mt-6">
                 <!-- 标签云 -->
-                <h3 class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-3">特色标签</h3>
+                <h3 class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">特色标签</h3>
                 <div class="flex flex-wrap gap-2">
                   {allTags.slice(0, 12).map(tag => (
-                    <div class="px-3 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-200 text-sm rounded-full cursor-pointer hover:bg-accent-200 dark:hover:bg-accent-800/50 transition-colors">
+                    <div class="desktop-tag-item px-3 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-800 dark:text-accent-200 text-sm rounded-full cursor-pointer hover:bg-accent-200 dark:hover:bg-accent-800/50 transition-colors">
                       #{tag.name}
                       <span class="ml-1 text-xs text-accent-500 dark:text-accent-400">({tag.count})</span>
                     </div>
@@ -246,7 +282,7 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
             </div>
               
             <!-- 自定义筛选器提示 - 彩色相机操作引导 -->
-            <div class="p-5 border border-primary-100 dark:border-primary-900/50 bg-gradient-to-br from-white to-primary-50 dark:from-primary-950/20 dark:to-primary-950/20 mt-6 rounded-lg">
+            <div class="p-4 border border-primary-100 dark:border-primary-900/50 bg-gradient-to-br from-white to-primary-50 dark:from-primary-950/20 dark:to-primary-950/20 mt-4 rounded-lg">
               <div class="flex items-start space-x-3">
                 <div class="text-primary-500 dark:text-primary-400">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -264,25 +300,49 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
         <!-- 右侧景点展示区 - 彩色摄影展览风格 -->
         <div class="lg:col-span-9">
           <!-- 当前筛选状态 - 彩色胶片信息风格 -->
-          {(searchQuery || selectedCategory || selectedCity || selectedTags.length > 0) && (
-            <div class="mb-8 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-950/30 dark:to-secondary-950/30 p-4 border-l-4 border-primary-300 dark:border-primary-700 rounded-r-lg">
-              <div class="flex flex-wrap items-center gap-3 text-sm text-primary-700 dark:text-primary-300">
-                <div class="font-mono text-xs tracking-wider text-primary-500 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/50 px-2 py-1 rounded">FILTER</div>
-                  
-                {/* 这里显示筛选条件 */}
-                  
-                <button class="ml-auto text-primary-500 hover:text-primary-700 dark:hover:text-primary-300 text-sm flex items-center space-x-1 bg-white/80 dark:bg-black/30 px-3 py-1 rounded-full">
-                  <span>重置</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+          <div id="filter-status" class="mb-4 sm:mb-8 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-950/30 dark:to-secondary-950/30 p-3 sm:p-4 border-l-4 border-primary-300 dark:border-primary-700 rounded-r-lg hidden">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-primary-700 dark:text-primary-300">
+              <div class="font-mono text-[10px] xs:text-xs tracking-wider text-primary-500 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">FILTER</div>
+                
+              {/* 搜索查询 - 客户端处理 */}
+              <div id="search-filter" class="px-2 sm:px-3 py-0.5 sm:py-1 bg-primary-100 dark:bg-primary-800/30 rounded-full text-xs sm:text-sm flex items-center space-x-1 hidden truncate max-w-[40%] sm:max-w-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-primary-500 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span id="search-filter-text" class="truncate">搜索: </span>
               </div>
+
+              {/* 标签筛选 - 客户端处理 */}
+              <div id="tag-filter" class="px-2 sm:px-3 py-0.5 sm:py-1 bg-accent-100 dark:bg-accent-800/30 rounded-full text-xs sm:text-sm flex items-center space-x-1 hidden truncate max-w-[40%] sm:max-w-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-accent-500 dark:text-accent-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <span id="tag-filter-text" class="truncate">标签: </span>
+              </div>
+
+              {/* 城市筛选 - 客户端处理 */}
+              <div id="city-filter" class="px-2 sm:px-3 py-0.5 sm:py-1 bg-secondary-100 dark:bg-secondary-800/30 rounded-full text-xs sm:text-sm flex items-center space-x-1 hidden truncate max-w-[40%] sm:max-w-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 text-secondary-500 dark:text-secondary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span id="city-filter-text" class="truncate">城市: </span>
+              </div>
+                
+              <button 
+                id="reset-filters"
+                class="ml-auto text-primary-500 hover:text-primary-700 dark:hover:text-primary-300 text-xs sm:text-sm flex items-center space-x-0.5 sm:space-x-1 bg-white/80 dark:bg-black/30 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full"
+              >
+                <span>重置</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-          )}
+          </div>
             
           <!-- 景点展示 - 彩色摄影展览风格 -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="flex flex-wrap gap-3 sm:gap-4 md:gap-6" id="attractions-grid">
             {currentPageAttractions.map((attraction, index) => {
               // 为每个卡片生成不同的颜色方案
               const colorSchemes = [
@@ -293,9 +353,9 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
               const colorScheme = colorSchemes[index % colorSchemes.length];
               
               return (
-                <ScrollReveal animation="fade" delay={index * 100}>
+                <div class="w-full sm:w-[calc(50%-8px)] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
                   <a href={`/attractions/${attraction.slug}`} class="group">
-                    <div class={`relative bg-white dark:bg-gray-900 overflow-hidden border ${colorScheme.border} ${colorScheme.hover} transition-all duration-300 h-full shadow-lg hover:shadow-xl dark:shadow-none rounded-lg`}>
+                    <div class={`attraction-card relative bg-white dark:bg-gray-900 overflow-hidden border ${colorScheme.border} ${colorScheme.hover} transition-all duration-300 h-full shadow-lg hover:shadow-xl dark:shadow-none rounded-lg`}>
                       <!-- 景点图片 - 彩色摄影展览风格 -->
                       <div class="aspect-[4/5] relative overflow-hidden rounded-t-lg">
                         <div class="absolute inset-0 bg-gradient-to-br from-primary-100 via-primary-100 to-secondary-100 dark:from-primary-900/30 dark:via-primary-900/30 dark:to-secondary-900/30 flex items-center justify-center">
@@ -308,32 +368,25 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
                             <div class="space-y-2">
                               <!-- 类别标签 -->
                               <div class="flex items-center space-x-2 text-xs text-white">
-                                <div class={`px-2 py-1 ${colorScheme.badges} backdrop-blur-sm inline-flex items-center space-x-1 rounded-full`}>
-                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                  </svg>
-                                  <span>{getCategory(attraction)}</span>
-                                </div>
-                                  
-                                <div class={`px-2 py-1 ${colorScheme.badges} backdrop-blur-sm inline-flex items-center space-x-1 rounded-full`}>
+                                <div class={`attraction-city px-2 py-1 ${colorScheme.badges} backdrop-blur-sm inline-flex items-center space-x-1 rounded-full`}>
                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                   </svg>
-                                  <span>{getCity(attraction)}</span>
+                                  <span>{attraction.data.city || '其他地区'}</span>
                                 </div>
                               </div>
                                 
                               <!-- 景点名称 -->
-                              <h3 class="text-white text-lg font-light leading-tight drop-shadow-md">{attraction.data.title}</h3>
+                              <h3 class="attraction-title text-white text-base sm:text-lg font-light leading-tight drop-shadow-md">{attraction.data.title}</h3>
                                 
                               <!-- 景点描述 - 悬停时显示 -->
-                              <p class="text-primary-100 dark:text-primary-100 text-sm line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                              <p class="attraction-desc text-primary-100 dark:text-primary-100 text-xs sm:text-sm line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
                                 {attraction.data.description}
                               </p>
                                 
                               <!-- 标签 - 彩色快速信息 -->
-                              <div class="flex flex-wrap gap-1 pt-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                              <div class="attraction-tags flex flex-wrap gap-0.5 sm:gap-1 pt-1 opacity-80 group-hover:opacity-100 transition-opacity">
                                 {attraction.data.tags.slice(0, 3).map((tag: string, i: number) => {
                                   const tagColors = ['bg-primary-500/40', 'bg-secondary-500/40', 'bg-accent-500/40'];
                                   return (
@@ -365,24 +418,42 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
                       </div>
                     </div>
                   </a>
-                </ScrollReveal>
+                </div>
               );
             })}
           </div>
             
+          <!-- 无搜索结果提示 - 独立放置，由JS控制显示 -->
+          <div id="no-results-message" class="hidden container mx-auto p-8 text-center">
+            <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 border border-gray-100 dark:border-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <h3 class="mt-4 text-xl font-semibold text-gray-800 dark:text-white">未找到匹配结果</h3>
+              <p id="search-term-message" class="mt-2 text-gray-600 dark:text-gray-300">
+                抱歉，未找到相关景点。请尝试其他关键词或浏览所有景点。
+              </p>
+              <div class="mt-6">
+                <a href="/attractions" class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium transition-colors">
+                  查看所有景点 &rarr;
+                </a>
+              </div>
+            </div>
+          </div>
+            
           <!-- 分页控件 - 彩色胶片编号风格 -->
           {totalPages > 1 && (
-            <div class="mt-16 flex justify-center">
-              <div class="inline-flex bg-white dark:bg-primary-950/30 border border-primary-200 dark:border-primary-800 shadow-lg dark:shadow-primary-900/20 rounded-xl overflow-hidden">
+            <div class="mt-8 sm:mt-12 md:mt-16 flex justify-center">
+              <div class="inline-flex bg-white dark:bg-primary-950/30 border border-primary-200 dark:border-primary-800 shadow-md sm:shadow-lg dark:shadow-primary-900/20 rounded-xl overflow-hidden text-xs sm:text-sm">
                 <a
                   href={page > 1 ? `/attractions?page=${page - 1}` : '#'}
-                  class={`px-4 py-2 border-r border-primary-200 dark:border-primary-800 flex items-center space-x-1 ${
+                  class={`px-2 sm:px-4 py-1.5 sm:py-2 border-r border-primary-200 dark:border-primary-800 flex items-center space-x-0.5 sm:space-x-1 ${
                     page > 1
                       ? 'text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-200 hover:bg-primary-50 dark:hover:bg-primary-900/30'
                       : 'text-primary-300 dark:text-primary-700 cursor-not-allowed'
                   }`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                   </svg>
                   <span>上一页</span>
@@ -393,7 +464,7 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
                   return (
                     <a
                       href={`/attractions?page=${pageNum}`}
-                      class={`w-10 flex items-center justify-center border-r border-primary-200 dark:border-primary-800 ${
+                      class={`w-8 sm:w-10 flex items-center justify-center border-r border-primary-200 dark:border-primary-800 ${
                         pageNum === page
                           ? 'bg-gradient-to-br from-primary-500 to-secondary-500 dark:from-primary-600 dark:to-secondary-600 text-white font-medium'
                           : 'text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 hover:bg-primary-50 dark:hover:bg-primary-900/30'
@@ -405,13 +476,13 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
                 })}
                   
                 {totalPages > 5 && (
-                  <span class="w-10 flex items-center justify-center border-r border-primary-200 dark:border-primary-800 text-primary-400 dark:text-primary-600">...</span>
+                  <span class="w-6 sm:w-10 flex items-center justify-center border-r border-primary-200 dark:border-primary-800 text-primary-400 dark:text-primary-600">...</span>
                 )}
                   
                 {totalPages > 5 && (
                   <a
                     href={`/attractions?page=${totalPages}`}
-                    class="w-10 flex items-center justify-center border-r border-primary-200 dark:border-primary-800 text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 hover:bg-primary-50 dark:hover:bg-primary-900/30"
+                    class="w-8 sm:w-10 flex items-center justify-center border-r border-primary-200 dark:border-primary-800 text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 hover:bg-primary-50 dark:hover:bg-primary-900/30"
                   >
                     {totalPages}
                   </a>
@@ -419,14 +490,14 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
                   
                 <a
                   href={page < totalPages ? `/attractions?page=${page + 1}` : '#'}
-                  class={`px-4 py-2 flex items-center space-x-1 ${
+                  class={`px-2 sm:px-4 py-1.5 sm:py-2 flex items-center space-x-0.5 sm:space-x-1 ${
                     page < totalPages
                       ? 'text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-200 hover:bg-primary-50 dark:hover:bg-primary-900/30'
                       : 'text-primary-300 dark:text-primary-700 cursor-not-allowed'
                   }`}
                 >
                   <span>下一页</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </a>
@@ -435,12 +506,12 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
           )}
             
           <!-- 页脚引言 - 彩色摄影师语录风格 -->
-          <div class="mt-16 text-center">
-            <div class="inline-block max-w-xl bg-gradient-to-br from-white via-primary-50 to-secondary-50 dark:from-primary-950/20 dark:via-secondary-950/20 dark:to-black p-5 transform -rotate-1 border border-primary-200 dark:border-primary-800 shadow-lg shadow-primary-200/30 dark:shadow-none rounded-lg">
-              <blockquote class="text-lg text-primary-700 dark:text-primary-300 italic">
+          <div class="mt-8 sm:mt-12 md:mt-16 text-center px-3">
+            <div class="inline-block max-w-xl bg-gradient-to-br from-white via-primary-50 to-secondary-50 dark:from-primary-950/20 dark:via-secondary-950/20 dark:to-black p-4 sm:p-5 transform -rotate-1 border border-primary-200 dark:border-primary-800 shadow-md sm:shadow-lg shadow-primary-200/30 dark:shadow-none rounded-lg">
+              <blockquote class="text-base sm:text-lg text-primary-700 dark:text-primary-300 italic">
                 "最美的景观并非仅存于远方，而在于观察者如何用心去发现"
               </blockquote>
-              <div class="mt-3 text-xs text-accent-500 dark:text-accent-400 tracking-wider font-mono bg-white/80 dark:bg-black/50 py-1 rounded-full">
+              <div class="mt-3 text-[10px] sm:text-xs text-accent-500 dark:text-accent-400 tracking-wider font-mono bg-white/80 dark:bg-black/50 py-0.5 sm:py-1 rounded-full">
                 — 河北风光摄影集 —
               </div>
             </div>
@@ -506,15 +577,625 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
   .dark .tag-hover:hover {
     box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
   }
+  
+  /* Flexbox排序支持 */
+  #attractions-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 1.5rem;
+  }
+  
+  #attractions-grid > div {
+    order: 0;
+  }
+  
+  #attractions-grid > div.hidden-card {
+    display: none !important;
+  }
+  
+  /* 为筛选中的卡片移除过渡效果 */
+  .attraction-card {
+    transition: none;
+  }
+  
+  /* 移动端触摸友好样式 */
+  @media (max-width: 640px) {
+    .tag-hover:active {
+      transform: scale(0.95);
+      opacity: 0.8;
+    }
+    
+    .card-glow:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+    
+    /* 提高移动端按钮触摸区域 */
+    button, 
+    a[href], 
+    input[type="submit"],
+    input[type="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* 改善移动端文字间距 */
+    p, h1, h2, h3, h4, h5, h6 {
+      letter-spacing: -0.01em;
+    }
+  }
+  
+  /* 移动端筛选抽屉样式 */
+  body.overflow-hidden {
+    overflow: hidden;
+  }
+  
+  #mobile-filter-drawer {
+    will-change: transform;
+  }
+  
+  @keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+  
+  .mobile-tag-item,
+  .mobile-city-tag {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .mobile-tag-item::after,
+  .mobile-city-tag::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(100%);
+    transition: transform 0.3s;
+  }
+  
+  .mobile-tag-item:active::after,
+  .mobile-city-tag:active::after {
+    transform: translateY(0);
+  }
+  
+  /* 确保移动端搜索框在不同屏幕尺寸下都能正常显示 */
+  @media (max-width: 480px) {
+    #search-form-mobile input {
+      font-size: 14px;
+      padding-left: 10px;
+      padding-right: 30px;
+    }
+    
+    #mobile-filter-toggle {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    
+    #mobile-filter-toggle svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
 </style>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     // 客户端交互逻辑
-    const searchInput = document.querySelector('input[placeholder="输入关键词..."]') as HTMLInputElement;
-    const tagElements = document.querySelectorAll('.flex-wrap.gap-2 div');
-    const tabLinks = document.querySelectorAll('.space-x-6 a');
-    const attractionCards = document.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.gap-6 > div > a > div');
+    const searchForm = document.getElementById('search-form');
+    const searchFormMobile = document.getElementById('search-form-mobile');
+    const searchInput = document.querySelector('#search-form input[name="search"]') as HTMLInputElement;
+    const searchInputMobile = document.querySelector('#search-form-mobile input[name="search"]') as HTMLInputElement;
+    const desktopTagElements = document.querySelectorAll('.desktop-tag-item, .desktop-city-tag');
+    const mobileTagElements = document.querySelectorAll('.mobile-tag-item, .mobile-city-tag');
+    const attractionCards = document.querySelectorAll('.attraction-card');
+    const noResultsMessage = document.getElementById('no-results-message');
+    const searchTermMessage = document.getElementById('search-term-message');
+    const attractionsGrid = document.getElementById('attractions-grid');
+    
+    // 移动端筛选抽屉元素
+    const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
+    const mobileFilterDrawer = document.getElementById('mobile-filter-drawer');
+    const mobileFilterBackdrop = document.getElementById('mobile-filter-backdrop');
+    const mobileFilterClose = document.getElementById('mobile-filter-close');
+    const mobileFilterApply = document.getElementById('mobile-filter-apply');
+    
+    // 打开移动端筛选抽屉
+    if (mobileFilterToggle && mobileFilterDrawer) {
+      mobileFilterToggle.addEventListener('click', () => {
+        mobileFilterDrawer.classList.remove('translate-x-full');
+        document.body.classList.add('overflow-hidden'); // 防止背景滚动
+      });
+    }
+    
+    // 关闭移动端筛选抽屉
+    const closeFilterDrawer = () => {
+      if (mobileFilterDrawer) {
+        mobileFilterDrawer.classList.add('translate-x-full');
+        document.body.classList.remove('overflow-hidden');
+      }
+    };
+    
+    // 点击背景关闭抽屉
+    if (mobileFilterBackdrop) {
+      mobileFilterBackdrop.addEventListener('click', closeFilterDrawer);
+    }
+    
+    // 点击关闭按钮关闭抽屉
+    if (mobileFilterClose) {
+      mobileFilterClose.addEventListener('click', closeFilterDrawer);
+    }
+    
+    // 点击应用按钮关闭抽屉并应用筛选
+    if (mobileFilterApply) {
+      mobileFilterApply.addEventListener('click', () => {
+        closeFilterDrawer();
+        // 筛选逻辑已经在标签点击时处理
+      });
+    }
+    
+    // 同步桌面端和移动端的搜索内容
+    const syncSearchInputs = (from: HTMLInputElement, to: HTMLInputElement) => {
+      if (from && to) {
+        to.value = from.value;
+      }
+    };
+    
+    // 筛选状态UI元素
+    const filterStatus = document.getElementById('filter-status');
+    const searchFilter = document.getElementById('search-filter');
+    const tagFilter = document.getElementById('tag-filter');
+    const cityFilter = document.getElementById('city-filter');
+    const searchFilterText = document.getElementById('search-filter-text');
+    const tagFilterText = document.getElementById('tag-filter-text');
+    const cityFilterText = document.getElementById('city-filter-text');
+    const resetFiltersBtn = document.getElementById('reset-filters');
+    
+    // 客户端解析URL查询参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParamFromUrl = urlParams.get('search');
+    const tagParamFromUrl = urlParams.get('tag');
+    const cityParamFromUrl = urlParams.get('city');
+    const pageParam = urlParams.get('page');
+    const currentPage = pageParam ? parseInt(pageParam) : 1;
+    
+    // 当前筛选状态
+    let currentTag = tagParamFromUrl || '';
+    let currentCity = cityParamFromUrl || '';
+    let currentSearch = searchParamFromUrl || '';
+    
+    // 更新浏览器历史记录，不刷新页面
+    function updateHistory() {
+      const params = new URLSearchParams();
+      if (currentSearch) params.set('search', currentSearch);
+      if (currentTag) params.set('tag', currentTag);
+      if (currentCity) params.set('city', currentCity);
+      
+      const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+      window.history.pushState({ search: currentSearch, tag: currentTag, city: currentCity }, '', newUrl);
+    }
+    
+    // 显示当前筛选状态
+    function updateFilterStatusUI() {
+      let hasFilters = false;
+      
+      // 处理搜索筛选
+      if (currentSearch && searchFilter && searchFilterText) {
+        searchFilterText.textContent = `搜索: ${currentSearch}`;
+        searchFilter.classList.remove('hidden');
+        hasFilters = true;
+      } else if (searchFilter) {
+        searchFilter.classList.add('hidden');
+      }
+      
+      // 处理标签筛选
+      if (currentTag && tagFilter && tagFilterText) {
+        tagFilterText.textContent = `标签: ${currentTag}`;
+        tagFilter.classList.remove('hidden');
+        hasFilters = true;
+      } else if (tagFilter) {
+        tagFilter.classList.add('hidden');
+      }
+      
+      // 处理城市筛选
+      if (currentCity && cityFilter && cityFilterText) {
+        cityFilterText.textContent = `城市: ${currentCity}`;
+        cityFilter.classList.remove('hidden');
+        hasFilters = true;
+      } else if (cityFilter) {
+        cityFilter.classList.add('hidden');
+      }
+      
+      // 显示或隐藏整个筛选状态区域
+      if (hasFilters && filterStatus) {
+        filterStatus.classList.remove('hidden');
+      } else if (filterStatus) {
+        filterStatus.classList.add('hidden');
+      }
+    }
+    
+    // 客户端筛选函数
+    function filterAttractions() {
+      const searchValue = currentSearch.toLowerCase();
+      const tagValue = currentTag.toLowerCase();
+      const cityValue = currentCity.toLowerCase();
+      
+      let matchCount = 0;
+      const matchedCards: HTMLElement[] = [];
+      
+      // 获取所有卡片容器
+      const cardContainers = attractionsGrid ? Array.from(attractionsGrid.children) as HTMLElement[] : [];
+      
+      // 如果没有筛选条件，显示所有卡片
+      if (!searchValue && !tagValue && !cityValue) {
+        if (noResultsMessage) {
+          noResultsMessage.classList.add('hidden');
+        }
+        if (attractionsGrid) {
+          attractionsGrid.classList.remove('hidden');
+        }
+        
+        // 显示所有卡片并重置排序
+        cardContainers.forEach((container) => {
+          container.classList.remove('hidden-card');
+          container.style.order = '';
+        });
+        
+        return cardContainers.length;
+      }
+      
+      // 遍历所有景点卡片进行筛选
+      cardContainers.forEach((container) => {
+        const cardTitle = container.querySelector('.attraction-title')?.textContent?.toLowerCase() || '';
+        const cardDesc = container.querySelector('.attraction-desc')?.textContent?.toLowerCase() || '';
+        const cardTags = container.querySelector('.attraction-tags')?.textContent?.toLowerCase() || '';
+        
+        // 获取所有城市标签（现在city是数组）
+        const cityElements = container.querySelectorAll('.attraction-city');
+        let cardCities: string[] = [];
+        
+        cityElements.forEach((element) => {
+          const cityText = element?.textContent?.toLowerCase() || '';
+          if (cityText) {
+            cardCities.push(cityText);
+          }
+        });
+        
+        // 如果没有找到城市元素，使用旧的单一城市元素方式作为兼容
+        if (cardCities.length === 0) {
+          const singleCityText = container.querySelector('.attraction-city')?.textContent?.toLowerCase() || '';
+          if (singleCityText) {
+            cardCities.push(singleCityText);
+          }
+        }
+        
+        // 匹配逻辑：满足所有已提供的筛选条件
+        let isMatch = true;
+        
+        // 搜索词筛选
+        if (searchValue && !(
+          cardTitle.includes(searchValue) ||
+          cardDesc.includes(searchValue) ||
+          cardTags.includes(searchValue) ||
+          cardCities.some(city => city.includes(searchValue))
+        )) {
+          isMatch = false;
+        }
+        
+        // 标签筛选
+        if (tagValue && !cardTags.includes(tagValue)) {
+          isMatch = false;
+        }
+        
+        // 城市筛选 - 检查cityValue是否包含在任何一个城市中
+        if (cityValue && !cardCities.some(city => city.includes(cityValue))) {
+          isMatch = false;
+        }
+        
+        if (isMatch) {
+          matchCount++;
+          matchedCards.push(container);
+          container.classList.remove('hidden-card');
+        } else {
+          container.classList.add('hidden-card');
+        }
+      });
+      
+      // 重新排序匹配的卡片，使它们从第一个位置开始依次排列
+      matchedCards.forEach((container, index) => {
+        container.style.order = index.toString();
+      });
+      
+      // 更新无结果消息显示
+      if (matchCount === 0) {
+        // 显示无结果消息
+        if (noResultsMessage) {
+          noResultsMessage.classList.remove('hidden');
+          // 更新无结果消息中的搜索词
+          if (searchTermMessage) {
+            let messageText = '抱歉，未找到相关景点。';
+            
+            if (searchValue) {
+              messageText += ` 搜索词: "${searchValue}"`;
+            }
+            if (tagValue) {
+              messageText += ` 标签: "${tagValue}"`;
+            }
+            if (cityValue) {
+              messageText += ` 城市: "${cityValue}"`;
+            }
+            
+            messageText += '。请尝试其他条件或浏览所有景点。';
+            searchTermMessage.textContent = messageText;
+          }
+        }
+        
+        // 隐藏景点网格
+        if (attractionsGrid) {
+          attractionsGrid.classList.add('hidden');
+        }
+      } else {
+        // 隐藏无结果消息
+        if (noResultsMessage) {
+          noResultsMessage.classList.add('hidden');
+        }
+        // 显示景点网格
+        if (attractionsGrid) {
+          attractionsGrid.classList.remove('hidden');
+        }
+      }
+      
+      return matchCount;
+    }
+    
+    // 处理点击标签/城市筛选的函数
+    function handleFilterClick(type: 'tag' | 'city', value: string) {
+      // 如果点击了已选中的标签/城市，则取消选择
+      if ((type === 'tag' && value === currentTag) || (type === 'city' && value === currentCity)) {
+        if (type === 'tag') {
+          currentTag = '';
+        } else {
+          currentCity = '';
+        }
+      } else {
+        // 否则，选择新标签/城市
+        if (type === 'tag') {
+          currentTag = value;
+        } else {
+          currentCity = value;
+        }
+      }
+      
+      // 更新UI和执行筛选
+      updateFilterStatusUI();
+      updateTagsHighlight(); // 更新标签高亮状态
+      filterAttractions();
+      updateHistory();
+    }
+    
+    // 新增：更新标签和城市的高亮状态
+    function updateTagsHighlight() {
+      // 处理桌面端标签
+      if (desktopTagElements) {
+        updateElementsHighlight(desktopTagElements);
+      }
+      
+      // 处理移动端标签
+      if (mobileTagElements) {
+        updateElementsHighlight(mobileTagElements);
+      }
+    }
+    
+    // 辅助函数：为给定元素集合更新高亮状态
+    function updateElementsHighlight(elements: NodeListOf<Element>) {
+      elements.forEach((tag) => {
+        // 找出是城市还是标签
+        const isTag = tag.textContent?.includes('#');
+        
+        // 提取文本内容，并移除计数部分和#号
+        let tagText = tag.textContent?.trim() || '';
+        tagText = tagText.replace(/\(\d+\)$/, '').trim();
+        
+        if (isTag) {
+          tagText = tagText.replace(/^#/, '');
+          
+          // 处理标签高亮
+          if (tagText === currentTag) {
+            // 添加高亮样式
+            tag.classList.add('bg-accent-500/70', 'dark:bg-accent-500/50', 'text-white', 'dark:text-white', 'shadow-md');
+            tag.classList.remove('bg-accent-100', 'dark:bg-accent-900/30', 'text-accent-800', 'dark:text-accent-200');
+          } else {
+            // 移除高亮样式
+            tag.classList.remove('bg-accent-500/70', 'dark:bg-accent-500/50', 'text-white', 'dark:text-white', 'shadow-md');
+            tag.classList.add('bg-accent-100', 'dark:bg-accent-900/30', 'text-accent-800', 'dark:text-accent-200');
+          }
+        } else {
+          // 处理城市高亮
+          if (tagText === currentCity) {
+            // 添加高亮样式
+            tag.classList.add('bg-secondary-500/70', 'dark:bg-secondary-500/50', 'text-white', 'dark:text-white', 'shadow-md');
+            tag.classList.remove('bg-secondary-100', 'dark:bg-secondary-900/30', 'text-secondary-800', 'dark:text-secondary-200');
+          } else {
+            // 移除高亮样式
+            tag.classList.remove('bg-secondary-500/70', 'dark:bg-secondary-500/50', 'text-white', 'dark:text-white', 'shadow-md');
+            tag.classList.add('bg-secondary-100', 'dark:bg-secondary-900/30', 'text-secondary-800', 'dark:text-secondary-200');
+          }
+        }
+      });
+    }
+    
+    // 处理标签点击事件 - 桌面端
+    function attachTagClickEvents(elements: NodeListOf<Element>) {
+      elements.forEach((tag) => {
+        // 添加触摸友好类
+        tag.classList.add('tag-hover');
+        
+        tag.addEventListener('click', () => {
+          // 找出是城市还是标签
+          const isTag = tag.textContent?.includes('#');
+          
+          // 提取文本内容，并移除计数部分和#号
+          let tagText = tag.textContent?.trim() || '';
+          
+          // 移除计数信息 (数字部分)
+          tagText = tagText.replace(/\(\d+\)$/, '').trim();
+          
+          // 对于标签，还需要移除#号
+          if (isTag) {
+            tagText = tagText.replace(/^#/, '');
+          }
+          
+          // 添加点击视觉反馈
+          tag.classList.add('scale-95', 'opacity-70');
+          setTimeout(() => {
+            tag.classList.remove('scale-95', 'opacity-70');
+          }, 200);
+          
+          if (tagText) {
+            // 在客户端处理筛选，不刷新页面
+            handleFilterClick(isTag ? 'tag' : 'city', tagText);
+          }
+        });
+      });
+    }
+    
+    // 为桌面端和移动端标签添加点击事件处理
+    if (desktopTagElements) attachTagClickEvents(desktopTagElements);
+    if (mobileTagElements) attachTagClickEvents(mobileTagElements);
+    
+    // 初始化：更新筛选状态UI、应用筛选
+    updateFilterStatusUI();
+    
+    // 如果URL中有筛选参数，执行筛选
+    if (searchParamFromUrl || tagParamFromUrl || cityParamFromUrl) {
+      if (searchParamFromUrl) {
+        if (searchInput) searchInput.value = searchParamFromUrl;
+        if (searchInputMobile) searchInputMobile.value = searchParamFromUrl;
+      }
+      
+      // 设置当前的标签和城市
+      if (tagParamFromUrl) currentTag = tagParamFromUrl;
+      if (cityParamFromUrl) currentCity = cityParamFromUrl;
+      
+      // 更新标签高亮
+      updateTagsHighlight();
+      
+      // 立即触发筛选
+      filterAttractions();
+    }
+    
+    // 窗口历史记录弹出状态处理
+    window.addEventListener('popstate', (event) => {
+      // 从历史状态中恢复筛选条件
+      if (event.state) {
+        currentSearch = event.state.search || '';
+        currentTag = event.state.tag || '';
+        currentCity = event.state.city || '';
+        
+        // 更新搜索框值
+        if (searchInput) searchInput.value = currentSearch;
+        if (searchInputMobile) searchInputMobile.value = currentSearch;
+      } else {
+        // 如果没有状态（例如回到初始页面），清除所有筛选
+        currentSearch = '';
+        currentTag = '';
+        currentCity = '';
+        
+        if (searchInput) searchInput.value = '';
+        if (searchInputMobile) searchInputMobile.value = '';
+      }
+      
+      // 更新UI和执行筛选
+      updateFilterStatusUI();
+      updateTagsHighlight(); // 更新标签高亮状态
+      filterAttractions();
+    });
+    
+    // 重置筛选按钮
+    if (resetFiltersBtn) {
+      resetFiltersBtn.addEventListener('click', () => {
+        // 清除所有筛选条件
+        currentSearch = '';
+        currentTag = '';
+        currentCity = '';
+        
+        // 清空搜索框
+        if (searchInput) searchInput.value = '';
+        if (searchInputMobile) searchInputMobile.value = '';
+        
+        // 获取所有卡片容器
+        const cardContainers = attractionsGrid ? Array.from(attractionsGrid.children) as HTMLElement[] : [];
+        
+        // 重置所有卡片的排序和显示状态
+        cardContainers.forEach((container, index) => {
+          container.classList.remove('hidden-card');
+          container.style.order = index.toString(); // 恢复原始顺序
+        });
+        
+        // 更新UI状态
+        updateFilterStatusUI();
+        updateTagsHighlight(); // 更新标签高亮状态
+        
+        // 更新URL（不带查询参数）
+        window.history.pushState({}, '', window.location.pathname);
+      });
+    }
+    
+    // 处理桌面端搜索功能
+    if (searchForm && searchInput) {
+      searchForm.addEventListener('submit', (e) => {
+        e.preventDefault(); // 阻止默认提交
+        
+        const query = searchInput.value.trim();
+        
+        if (!query) {
+          return;
+        }
+        
+        // 更新当前搜索词
+        currentSearch = query;
+        
+        // 同步到移动端搜索框
+        if (searchInputMobile) searchInputMobile.value = query;
+        
+        // 执行筛选并更新UI
+        updateFilterStatusUI();
+        filterAttractions();
+        updateHistory();
+      });
+    }
+    
+    // 处理移动端搜索功能
+    if (searchFormMobile && searchInputMobile) {
+      searchFormMobile.addEventListener('submit', (e) => {
+        e.preventDefault(); // 阻止默认提交
+        
+        const query = searchInputMobile.value.trim();
+        
+        if (!query) {
+          return;
+        }
+        
+        // 更新当前搜索词
+        currentSearch = query;
+        
+        // 同步到桌面端搜索框
+        if (searchInput) searchInput.value = query;
+        
+        // 执行筛选并更新UI
+        updateFilterStatusUI();
+        filterAttractions();
+        updateHistory();
+        
+        // 如果筛选抽屉是打开的，则关闭它
+        closeFilterDrawer();
+      });
+    }
     
     // 为所有景点卡片添加悬停发光效果
     if (attractionCards) {
@@ -522,93 +1203,6 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
         card.classList.add('card-glow');
       });
     }
-    
-    // 为标签添加悬停效果
-    if (tagElements) {
-      tagElements.forEach(tag => {
-        tag.classList.add('tag-hover');
-      });
-    }
-    
-    // 添加渐变动画效果到页面元素
-    const gradientElements = document.querySelectorAll('.bg-gradient-to-br, .bg-gradient-to-r');
-    gradientElements.forEach(element => {
-      element.classList.add('animate-gradient');
-    });
-    
-    if (searchInput) {
-      // 为搜索框添加聚焦效果
-      searchInput.addEventListener('focus', () => {
-        if (searchInput.parentElement) {
-          searchInput.parentElement.classList.add('ring-2', 'ring-primary-300', 'dark:ring-primary-700');
-        }
-      });
-      
-      searchInput.addEventListener('blur', () => {
-        if (searchInput.parentElement) {
-          searchInput.parentElement.classList.remove('ring-2', 'ring-primary-300', 'dark:ring-primary-700');
-        }
-      });
-      
-      searchInput.addEventListener('keydown', (e) => {
-        if ((e as KeyboardEvent).key === 'Enter') {
-          // 执行搜索，添加视觉反馈
-          const query = searchInput.value;
-          if (query) {
-            searchInput.classList.add('bg-primary-50', 'dark:bg-primary-900/30');
-            setTimeout(() => {
-              window.location.href = `/attractions?search=${encodeURIComponent(query)}`;
-            }, 300);
-          }
-        }
-      });
-    }
-    
-    // 添加标签点击事件，带有视觉反馈
-    tagElements.forEach((tag) => {
-      tag.addEventListener('click', () => {
-        const tagName = tag.textContent?.trim() || '';
-        if (tagName) {
-          // 添加点击视觉反馈
-          tag.classList.add('scale-95', 'opacity-70');
-          setTimeout(() => {
-            window.location.href = `/attractions?tag=${encodeURIComponent(tagName)}`;
-          }, 200);
-        }
-      });
-    });
-    
-    // 添加选项卡导航功能，改进的视觉效果
-    tabLinks.forEach((tabLink) => {
-      tabLink.addEventListener('click', (e) => {
-        e.preventDefault(); // 防止页面跳转
-        tabLinks.forEach((tab) => {
-          // 移除所有活动状态
-          tab.classList.remove('text-primary-600', 'dark:text-primary-400', 'border-b-2', 'border-primary-500', 'dark:border-primary-400', 'text-gray-900', 'dark:text-white');
-          tab.classList.add('text-gray-600', 'dark:text-gray-400');
-        });
-        
-        // 设置当前活动状态，添加流畅的过渡
-        tabLink.classList.remove('text-gray-600', 'dark:text-gray-400');
-        tabLink.classList.add('text-primary-600', 'dark:text-primary-400', 'border-b-2', 'border-primary-500', 'dark:border-primary-400');
-        
-        // 添加过渡动画
-        (tabLink as HTMLElement).style.transition = 'all 0.3s ease';
-        
-        // 获取目标ID并模拟内容切换（实际应用中可能需要根据ID加载不同内容）
-        const targetId = tabLink.getAttribute('href')?.substring(1);
-        console.log(`Tab selected: ${targetId}`);
-        
-        // 模拟内容切换的视觉反馈
-        const contentArea = document.querySelector('.lg\\:col-span-9');
-        if (contentArea) {
-          contentArea.classList.add('opacity-90');
-          setTimeout(() => {
-            contentArea.classList.remove('opacity-90');
-          }, 300);
-        }
-      });
-    });
     
     // 监听系统暗色模式变化
     const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -635,27 +1229,7 @@ const getCity = (attraction: CollectionEntry<"attractions">) => {
     // 监听系统主题变化
     darkModeMediaQuery.addEventListener('change', handleDarkModeChange);
     
-    // 为主视觉区域添加微妙的滚动效果
-    const addScrollEffects = () => {
-      const sections = document.querySelectorAll('.container');
-      
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('opacity-100', 'translate-y-0');
-            entry.target.classList.remove('opacity-90', 'translate-y-4');
-          }
-        });
-      }, { threshold: 0.1 });
-      
-      sections.forEach(section => {
-        section.classList.add('transition-all', 'duration-700');
-        section.classList.add('opacity-90', 'translate-y-4');
-        observer.observe(section);
-      });
-    };
-    
-    // 延迟执行滚动效果，让页面先加载完成
-    setTimeout(addScrollEffects, 100);
+    // 页面加载后初始化标签高亮状态
+    updateTagsHighlight();
   });
 </script> 
