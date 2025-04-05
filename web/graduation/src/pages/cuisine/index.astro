@@ -244,9 +244,185 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
   <!-- 主内容区域 - 食谱风格 -->
   <div class="bg-recipe-paper dark:bg-recipe-paper-dark py-12">
     <div class="container mx-auto px-4">
+      <!-- 移动端筛选按钮和搜索框 -->
+      <div class="lg:hidden mb-6 flex justify-between items-center">
+        <button id="mobile-filter-toggle" class="bg-amber-500 text-white px-4 py-2 rounded-full inline-flex items-center space-x-2 shadow-md active:shadow-sm transition-shadow h-[38px]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <span>筛选</span>
+        </button>
+        
+        <!-- 移动端搜索框 -->
+        <form id="search-form-mobile" class="relative flex-grow mx-3" method="get" action="/cuisine">
+          <input 
+            type="text" 
+            id="search-input-mobile"
+            name="search" 
+            placeholder="输入菜名或食材..." 
+            value={searchParam || ''} 
+            class="w-full text-brown-800 dark:text-brown-200 bg-amber-50/50 dark:bg-amber-900/20 border border-brown-300 dark:border-brown-700 rounded-full py-2 pl-3 pr-10 focus:outline-none focus:border-amber-500 dark:focus:border-amber-400 text-sm"
+          />
+          {/* 保留当前的其他筛选参数 */}
+          {categoryParam && <input type="hidden" name="category" value={categoryParam} />}
+          {cityParam && <input type="hidden" name="city" value={cityParam} />}
+          {tasteParam && <input type="hidden" name="taste" value={tasteParam} />}
+          {tagParam && <input type="hidden" name="tag" value={tagParam} />}
+          {ingredientParam && <input type="hidden" name="ingredient" value={ingredientParam} />}
+          <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-amber-600 dark:text-amber-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </form>
+      </div>
+      
+      <!-- 移动端筛选抽屉 - 默认隐藏 -->
+      <div id="mobile-filter-drawer" class="lg:hidden fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="mobile-filter-backdrop"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-4/5 max-w-sm bg-recipe-paper dark:bg-recipe-paper-dark shadow-xl overflow-y-auto">
+          <div class="p-4 border-b border-brown-200 dark:border-brown-700 flex justify-between items-center">
+            <h3 class="text-lg font-recipe text-brown-800 dark:text-brown-200">美食筛选</h3>
+            <button id="mobile-filter-close" class="rounded-full p-2 text-brown-500 hover:bg-amber-100/50 dark:hover:bg-amber-900/30">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div class="p-4 space-y-5">
+            <!-- 菜系筛选 - 移动端 -->
+            <div>
+              <h3 class="text-base font-recipe mb-3 text-brown-800 dark:text-brown-200 flex items-center">
+                <svg class="w-4 h-4 mr-2 text-red-600 dark:text-red-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z" />
+                </svg>
+                <span class="inline-block">菜系</span>
+              </h3>
+              <div class="grid grid-cols-2 gap-2">
+                {categories.slice(0, 8).map((category) => {
+                  const isSelected = categoryParam && categoryParam.toLowerCase() === category.name.toLowerCase();
+                  return (
+                    <div class="mobile-category-item px-3 py-2 border rounded-md cursor-pointer flex items-center font-recipe-body bg-amber-50/70 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-brown-800 dark:text-brown-200" data-value={category.name}>
+                      <div class={`w-3 h-3 mr-2 transition-colors ${isSelected ? 'bg-red-500 dark:bg-red-500' : 'border border-red-400 dark:border-red-600'}`}></div>
+                      <span class="truncate">{category.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <!-- 地域筛选 - 移动端 -->
+            <div>
+              <h3 class="text-base font-recipe mb-3 text-brown-800 dark:text-brown-200 flex items-center">
+                <svg class="w-4 h-4 mr-2 text-green-600 dark:text-green-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span class="inline-block">地域特色</span>
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                {citys.slice(0, 10).map((city) => {
+                  const isSelected = cityParam && cityParam.toLowerCase() === city.name.toLowerCase();
+                  return (
+                    <div class="mobile-city-item px-3 py-1.5 rounded-full cursor-pointer flex items-center bg-green-50/70 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-sm font-recipe-body" data-value={city.name}>
+                      <div class={`w-3 h-3 mr-2 transition-colors ${isSelected ? 'bg-green-500 dark:bg-green-500' : 'border border-green-400 dark:border-green-600'}`}></div>
+                      <span>{city.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <!-- 口味筛选 - 移动端 -->
+            <div>
+              <h3 class="text-base font-recipe mb-3 text-brown-800 dark:text-brown-200 flex items-center">
+                <svg class="w-4 h-4 mr-2 text-orange-600 dark:text-orange-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                <span class="inline-block">味道特点</span>
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                {tastes.slice(0, 8).map((taste) => {
+                  const isSelected = tasteParam && tasteParam.toLowerCase() === taste.name.toLowerCase();
+                  return (
+                    <div class="mobile-taste-item px-3 py-1.5 rounded-full cursor-pointer flex items-center bg-orange-50/70 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 text-sm font-recipe-body" data-value={taste.name}>
+                      <div class={`w-3 h-3 mr-2 rounded-full transition-colors ${isSelected ? 'bg-orange-400 dark:bg-orange-500' : 'border border-orange-400 dark:border-orange-500'}`}></div>
+                      <span>{taste.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <!-- 食谱标签 - 移动端 -->
+            <div>
+              <h3 class="text-base font-recipe mb-3 text-brown-800 dark:text-brown-200 flex items-center">
+                <svg class="w-4 h-4 mr-2 text-red-600 dark:text-red-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <span class="inline-block">食谱标签</span>
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                {allTags.slice(0, 15).map((tag, i) => {
+                  const isSelected = tagParam && tagParam.toLowerCase() === tag.name.toLowerCase();
+                  // 为标签生成不同的颜色
+                  const colors = ['amber', 'red', 'green', 'orange', 'amber', 'red'];
+                  const colorClasses = {
+                    'amber': 'border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 bg-amber-50/50 dark:bg-amber-900/20',
+                    'red': 'border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 bg-red-50/50 dark:bg-red-900/20',
+                    'green': 'border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 bg-green-50/50 dark:bg-green-900/20',
+                    'orange': 'border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 bg-orange-50/50 dark:bg-orange-900/20'
+                  };
+                  const color = colors[i % colors.length] as keyof typeof colorClasses;
+                  const selectedClass = isSelected ? 'ring-2 ring-amber-500 dark:ring-amber-400 shadow-md' : '';
+                  
+                  return (
+                    <div class={`mobile-tag-item px-3 py-1.5 rounded-full cursor-pointer text-sm border ${colorClasses[color]} ${selectedClass} font-recipe-body`} data-value={tag.name}>
+                      {tag.name}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <!-- 主食材筛选 - 移动端 -->
+            <div>
+              <h3 class="text-base font-recipe mb-3 text-brown-800 dark:text-brown-200 flex items-center">
+                <svg class="w-4 h-4 mr-2 text-green-600 dark:text-green-400 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <span class="inline-block">主要食材</span>
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                {topIngredients.slice(0, 15).map((ingredient) => {
+                  const isSelected = ingredientParam && ingredientParam.split(',').some(ing => ing.toLowerCase() === ingredient.name.toLowerCase());
+                  return (
+                    <div class="mobile-ingredient-item px-3 py-1.5 rounded-full cursor-pointer flex items-center bg-green-50/70 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-sm font-recipe-body" data-value={ingredient.name}>
+                      <div class={`w-3 h-3 mr-2 rounded-full transition-colors ${isSelected ? 'bg-green-400 dark:bg-green-500' : 'border border-green-400 dark:border-green-500'}`}></div>
+                      <span>{ingredient.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <!-- 底部应用按钮 -->
+            <div class="border-t border-brown-200 dark:border-brown-700 pt-4 flex justify-between">
+              <button id="reset-mobile-filters" class="px-4 py-2 rounded-full border border-brown-300 dark:border-brown-700 text-brown-600 dark:text-brown-300 font-recipe-body">
+                重置筛选
+              </button>
+              <button id="mobile-filter-apply" class="bg-amber-500 dark:bg-amber-600 text-white px-6 py-2 rounded-full shadow-md font-recipe-body">
+                应用筛选
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- 左侧筛选区域 - 食谱风格 -->
-        <div class="lg:col-span-3">
+        <div class="hidden lg:block lg:col-span-3">
           <div class="sticky top-20 space-y-8">
             <!-- 食谱筛选卡片 -->
             <div class="recipe-card-item p-6">
@@ -418,15 +594,15 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
             </div>
               
             <!-- 烹饪小贴士 -->
-            <div class="recipe-card-item p-5 mt-6">
+            <div class="recipe-card-item p-5 mt-6 recipe-tip">
               <div class="flex items-start space-x-3">
                 <div class="text-amber-600 dark:text-amber-400">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div>
-                  <h4 class="font-recipe text-base text-brown-800 dark:text-brown-200 mb-2">食谱小贴士</h4>
+                <div class="flex-1">
+                  <h4 class="font-recipe text-base text-brown-800 dark:text-brown-200 mb-1">食谱小贴士</h4>
                   <p class="text-sm text-brown-700 dark:text-brown-300 leading-relaxed font-recipe-body">
                     烹饪是一门艺术，每一道河北美食都融合了独特的地域文化和历史传承，讲究用料、火候与调味的绝妙平衡。
                   </p>
@@ -624,6 +800,26 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
             </div>
           </div>
           )}
+          
+          <!-- 客户端筛选无结果提示 - 默认隐藏 -->
+          <div id="no-results-message" class="hidden bg-white dark:bg-slate-800 p-8 text-center rounded-sm border border-amber-200 dark:border-amber-700 shadow-md mb-10 relative transform rotate-1">
+            <div class="absolute -top-3 right-5 w-12 h-12 bg-[url('/images/tape-piece.png')] bg-contain bg-no-repeat opacity-70"></div>
+            
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            
+            <h3 class="mt-4 text-xl font-recipe text-brown-800 dark:text-brown-200">未找到美食食谱</h3>
+            <p class="mt-2 font-recipe-body text-brown-600 dark:text-brown-400">
+              抱歉，未找到符合当前筛选条件的美食食谱。请尝试调整筛选条件或浏览所有食谱。
+            </p>
+            
+            <div class="mt-6">
+              <a href="/cuisine" class="inline-flex items-center text-amber-700 dark:text-amber-500 font-recipe-body hover:underline">
+                查看所有美食食谱 &rarr;
+              </a>
+            </div>
+          </div>
           
           <!-- 分页控件 - 食谱风格分页 -->
           <div class="flex justify-center items-center space-x-2 mt-12">
@@ -903,6 +1099,16 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
     min-height: 3.6rem; /* 减小最小高度 */
     margin-bottom: 0.5rem; /* 添加下方间距 */
   }
+  
+  /* 为食谱小贴士添加专有样式，覆盖通用样式 */
+  .recipe-tip.recipe-card-item {
+    height: auto;
+  }
+  
+  .recipe-tip.recipe-card-item > div {
+    min-height: auto;
+    height: auto; 
+  }
 </style>
 
 <script>
@@ -946,10 +1152,33 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
     // 获取各种筛选项和展示元素
     const cuisineCards = document.querySelectorAll('.recipe-card-item');
     const cuisineGrid = document.getElementById('cuisine-list');
-    const noResultsMessage = document.querySelector('.bg-white.dark\\:bg-slate-800.p-8.text-center');
+    const noResultsMessage = document.getElementById('no-results-message');
 
-    // 从URL获取当前筛选参数
+    // 从URL获取当前筛选参数 - 同时用于桌面端和移动端
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // 移动端筛选抽屉处理
+    const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
+    const mobileFilterDrawer = document.getElementById('mobile-filter-drawer');
+    const mobileFilterBackdrop = document.getElementById('mobile-filter-backdrop');
+    const mobileFilterClose = document.getElementById('mobile-filter-close');
+    const mobileFilterApply = document.getElementById('mobile-filter-apply');
+    const resetMobileFilters = document.getElementById('reset-mobile-filters');
+    
+    // 同步桌面端和移动端的搜索框
+    const searchInputMobile = document.getElementById('search-input-mobile') as HTMLInputElement;
+    if (searchInput && searchInputMobile) {
+      // 同步两个搜索框的值
+      searchInput.addEventListener('input', () => {
+        searchInputMobile.value = searchInput.value;
+      });
+      
+      searchInputMobile.addEventListener('input', () => {
+        searchInput.value = searchInputMobile.value;
+      });
+    }
+    
+    // 从URL获取当前筛选参数 - 同时用于桌面端和客户端筛选
     const searchParamFromUrl = urlParams.get('search') || '';
     const categoryParamFromUrl = urlParams.get('category') || '';
     const cityParamFromUrl = urlParams.get('city') || '';
@@ -957,13 +1186,182 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
     const tagParamFromUrl = urlParams.get('tag') || '';
     const ingredientParamFromUrl = urlParams.get('ingredient') || '';
 
-    // 当前筛选状态
+    // 当前筛选状态 - 整合桌面端和移动端使用
     let currentSearch = searchParamFromUrl;
     let currentCategory = categoryParamFromUrl;
     let currentCity = cityParamFromUrl;
     let currentTaste = tasteParamFromUrl;
     let currentTag = tagParamFromUrl;
     let currentIngredient = ingredientParamFromUrl;
+
+    // 打开移动端筛选抽屉
+    if (mobileFilterToggle && mobileFilterDrawer) {
+      mobileFilterToggle.addEventListener('click', () => {
+        mobileFilterDrawer.classList.remove('translate-x-full');
+        document.body.classList.add('overflow-hidden'); // 防止背景滚动
+      });
+    }
+    
+    // 关闭移动端筛选抽屉
+    const closeFilterDrawer = () => {
+      if (mobileFilterDrawer) {
+        mobileFilterDrawer.classList.add('translate-x-full');
+        document.body.classList.remove('overflow-hidden');
+      }
+    };
+    
+    // 点击背景关闭抽屉
+    if (mobileFilterBackdrop) {
+      mobileFilterBackdrop.addEventListener('click', closeFilterDrawer);
+    }
+    
+    // 点击关闭按钮关闭抽屉
+    if (mobileFilterClose) {
+      mobileFilterClose.addEventListener('click', closeFilterDrawer);
+    }
+    
+    // 处理移动端筛选项点击
+    const addFilterItemClickHandlers = (selector: string, paramName: string) => {
+      const items = document.querySelectorAll(selector);
+      items.forEach(item => {
+        item.addEventListener('click', () => {
+          // 获取当前筛选值
+          const value = item.getAttribute('data-value') || '';
+          
+          // 更新相应的当前筛选值变量
+          if (paramName === 'category') currentCategory = (currentCategory === value) ? '' : value;
+          if (paramName === 'city') currentCity = (currentCity === value) ? '' : value;
+          if (paramName === 'taste') currentTaste = (currentTaste === value) ? '' : value;
+          if (paramName === 'tag') currentTag = (currentTag === value) ? '' : value;
+          if (paramName === 'ingredient') currentIngredient = (currentIngredient === value) ? '' : value;
+          
+          // 更新视觉选中状态
+          updateMobileFilterUI();
+          
+          // 添加点击反馈
+          item.classList.add('scale-95', 'opacity-80');
+          setTimeout(() => {
+            item.classList.remove('scale-95', 'opacity-80');
+          }, 200);
+        });
+      });
+    };
+    
+    // 添加各种筛选项的点击处理
+    addFilterItemClickHandlers('.mobile-category-item', 'category');
+    addFilterItemClickHandlers('.mobile-city-item', 'city');
+    addFilterItemClickHandlers('.mobile-taste-item', 'taste');
+    addFilterItemClickHandlers('.mobile-tag-item', 'tag');
+    addFilterItemClickHandlers('.mobile-ingredient-item', 'ingredient');
+    
+    // 更新移动端筛选UI
+    const updateMobileFilterUI = () => {
+      // 更新分类筛选UI
+      document.querySelectorAll('.mobile-category-item').forEach(item => {
+        const value = item.getAttribute('data-value') || '';
+        const checkbox = item.querySelector('div');
+        if (checkbox) {
+          if (value === currentCategory) {
+            checkbox.className = 'w-3 h-3 mr-2 transition-colors bg-red-500 dark:bg-red-500';
+          } else {
+            checkbox.className = 'w-3 h-3 mr-2 transition-colors border border-red-400 dark:border-red-600';
+          }
+        }
+      });
+      
+      // 更新城市筛选UI
+      document.querySelectorAll('.mobile-city-item').forEach(item => {
+        const value = item.getAttribute('data-value') || '';
+        const checkbox = item.querySelector('div');
+        if (checkbox) {
+          if (value === currentCity) {
+            checkbox.className = 'w-3 h-3 mr-2 transition-colors bg-green-500 dark:bg-green-500';
+          } else {
+            checkbox.className = 'w-3 h-3 mr-2 transition-colors border border-green-400 dark:border-green-600';
+          }
+        }
+      });
+      
+      // 更新口味筛选UI
+      document.querySelectorAll('.mobile-taste-item').forEach(item => {
+        const value = item.getAttribute('data-value') || '';
+        const checkbox = item.querySelector('div');
+        if (checkbox) {
+          if (value === currentTaste) {
+            checkbox.className = 'w-3 h-3 mr-2 rounded-full transition-colors bg-orange-400 dark:bg-orange-500';
+          } else {
+            checkbox.className = 'w-3 h-3 mr-2 rounded-full transition-colors border border-orange-400 dark:border-orange-500';
+          }
+        }
+      });
+      
+      // 更新标签筛选UI
+      document.querySelectorAll('.mobile-tag-item').forEach(item => {
+        const value = item.getAttribute('data-value') || '';
+        if (value === currentTag) {
+          item.classList.add('ring-2', 'ring-amber-500', 'dark:ring-amber-400', 'shadow-md');
+        } else {
+          item.classList.remove('ring-2', 'ring-amber-500', 'dark:ring-amber-400', 'shadow-md');
+        }
+      });
+      
+      // 更新食材筛选UI
+      document.querySelectorAll('.mobile-ingredient-item').forEach(item => {
+        const value = item.getAttribute('data-value') || '';
+        const checkbox = item.querySelector('div');
+        if (checkbox) {
+          if (value === currentIngredient) {
+            checkbox.className = 'w-3 h-3 mr-2 rounded-full transition-colors bg-green-400 dark:bg-green-500';
+          } else {
+            checkbox.className = 'w-3 h-3 mr-2 rounded-full transition-colors border border-green-400 dark:border-green-500';
+          }
+        }
+      });
+    };
+    
+    // 应用筛选
+    if (mobileFilterApply) {
+      mobileFilterApply.addEventListener('click', () => {
+        // 构建URL参数
+        const params = new URLSearchParams();
+        
+        // 获取搜索框的值
+        const searchValue = searchInputMobile ? searchInputMobile.value : '';
+        if (searchValue) params.set('search', searchValue);
+        
+        // 添加各种筛选参数
+        if (currentCategory) params.set('category', currentCategory);
+        if (currentCity) params.set('city', currentCity);
+        if (currentTaste) params.set('taste', currentTaste);
+        if (currentTag) params.set('tag', currentTag);
+        if (currentIngredient) params.set('ingredient', currentIngredient);
+        
+        // 跳转到筛选结果页面
+        window.location.href = `/cuisine?${params.toString()}`;
+      });
+    }
+    
+    // 重置筛选
+    if (resetMobileFilters) {
+      resetMobileFilters.addEventListener('click', () => {
+        // 清空所有筛选值
+        currentSearch = '';
+        currentCategory = '';
+        currentCity = '';
+        currentTaste = '';
+        currentTag = '';
+        currentIngredient = '';
+        
+        // 清空搜索框
+        if (searchInputMobile) searchInputMobile.value = '';
+        
+        // 更新UI
+        updateMobileFilterUI();
+      });
+    }
+    
+    // 初始化：更新移动端筛选UI
+    updateMobileFilterUI();
 
     // 更新浏览器历史记录但不刷新页面
     function updateHistory() {
@@ -1009,7 +1407,7 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
         
         // 显示结果列表，隐藏无结果消息
         if (cuisineGrid) (cuisineGrid as HTMLElement).style.display = '';
-        if (noResultsMessage) (noResultsMessage as HTMLElement).style.display = 'none';
+        if (noResultsMessage) noResultsMessage.classList.add('hidden');
         
         return cuisineCards.length;
       }
@@ -1026,11 +1424,11 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
         if (tagsData && filterTag) {
           try {
             const tags = JSON.parse(tagsData) as string[];
-            if (tags.some((tag: string) => tag.toLowerCase() === filterTag)) {
+            if (filterTag && tags.includes(filterTag.toLowerCase())) {
               hasMatchingTag = true;
             }
           } catch (e) {
-            console.error('解析标签数据失败', e);
+            // 解析标签数据失败
           }
         }
         
@@ -1073,7 +1471,7 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
               hasMatchingIngredient = true;
             }
           } catch (e) {
-            console.error('解析食材数据失败', e);
+            // 解析食材数据失败
           }
         }
         
@@ -1087,7 +1485,7 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
             try {
               tags = JSON.parse(tagsData);
             } catch (e) {
-              console.error('解析标签数据失败', e);
+              // 解析标签数据失败
             }
           }
           
@@ -1123,7 +1521,7 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
         // 没有匹配结果，显示无结果消息
         if (cuisineGrid) (cuisineGrid as HTMLElement).style.display = 'none';
         if (noResultsMessage) {
-          (noResultsMessage as HTMLElement).style.display = 'block';
+          noResultsMessage.classList.remove('hidden');
           // 更新无结果消息的内容
           const messageText = noResultsMessage.querySelector('p.mt-2');
           if (messageText) {
@@ -1139,15 +1537,15 @@ if (queryParams) queryParams = '?' + queryParams.substring(1);
               messageText.textContent = `抱歉，未找到口味为"${currentTaste}"的美食食谱。请尝试其他筛选条件或浏览所有食谱。`;
             } else if (currentIngredient) {
               messageText.textContent = `抱歉，未找到含有"${currentIngredient}"的美食食谱。请尝试其他筛选条件或浏览所有食谱。`;
-      } else {
+            } else {
               messageText.textContent = `抱歉，未找到符合当前筛选条件的美食食谱。请尝试调整筛选条件或浏览所有食谱。`;
             }
           }
-          }
-        } else {
+        }
+      } else {
         // 有匹配结果，显示结果列表
         if (cuisineGrid) (cuisineGrid as HTMLElement).style.display = '';
-        if (noResultsMessage) (noResultsMessage as HTMLElement).style.display = 'none';
+        if (noResultsMessage) noResultsMessage.classList.add('hidden');
       }
       
       return matchCount;
