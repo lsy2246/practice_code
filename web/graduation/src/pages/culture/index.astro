@@ -3,21 +3,63 @@ import MainLayout from "../../layouts/MainLayout.astro";
 import { getCollection, type CollectionEntry } from "astro:content";
 import ScrollReveal from "../../components/aceternity/ScrollReveal.astro";
 
+// 获取URL参数
+const { searchParams } = Astro.url;
+const categoryParam = searchParams.get('category');
+const cityParam = searchParams.get('city');
+const tagParam = searchParams.get('tag');
+const searchParam = searchParams.get('search');
+const pageParam = parseInt(searchParams.get('page') || '1');
+
 // 获取文化内容集合
 const cultures = await getCollection("culture");
 
 // 按照日期排序
 const sortByDate = <T extends { data: { pubDate?: Date | string, updatedDate?: Date | string } }>(a: T, b: T): number => {
-  return new Date(b.data.pubDate || b.data.updatedDate || 0).getTime() - 
+  return new Date(b.data.pubDate || b.data.updatedDate || 0).getTime() -
          new Date(a.data.pubDate || a.data.updatedDate || 0).getTime();
 };
 
-// 按发布日期排序
-const sortedCultures = [...cultures].sort(sortByDate);
+// 基于URL参数筛选数据
+let filteredCultures = [...cultures];
+
+// 应用分类筛选
+if (categoryParam) {
+  filteredCultures = filteredCultures.filter(culture => 
+    culture.data.category && culture.data.category.toLowerCase() === categoryParam.toLowerCase()
+  );
+}
+
+// 应用城市筛选
+if (cityParam) {
+  filteredCultures = filteredCultures.filter(culture => 
+    culture.data.city && culture.data.city.some(city => city.toLowerCase() === cityParam.toLowerCase())
+  );
+}
+
+// 应用标签筛选
+if (tagParam) {
+  filteredCultures = filteredCultures.filter(culture => 
+    culture.data.tags && culture.data.tags.some(tag => tag.toLowerCase() === tagParam.toLowerCase())
+  );
+}
+
+// 应用搜索筛选
+if (searchParam) {
+  const searchLower = searchParam.toLowerCase();
+  filteredCultures = filteredCultures.filter(culture => 
+    (culture.data.title && culture.data.title.toLowerCase().includes(searchLower)) ||
+    (culture.data.description && culture.data.description.toLowerCase().includes(searchLower)) ||
+    (culture.data.tags && culture.data.tags.some(tag => tag.toLowerCase().includes(searchLower)))
+  );
+}
+
+// 先排序，再提取筛选项信息
+const sortedCultures = filteredCultures.sort(sortByDate);
 
 // 提取所有标签
 const allTags: {name: string, count: number}[] = [];
-sortedCultures.forEach((culture: CollectionEntry<"culture">) => {
+cultures.forEach((culture: CollectionEntry<"culture">) => {
   culture.data.tags.forEach((tag: string) => {
     const existingTag = allTags.find(t => t.name === tag);
     if (existingTag) {
@@ -33,7 +75,7 @@ allTags.sort((a, b) => b.count - a.count);
 
 // 获取所有分类并计数
 const categories: {name: string, count: number}[] = [];
-sortedCultures.forEach((culture: CollectionEntry<"culture">) => {
+cultures.forEach((culture: CollectionEntry<"culture">) => {
   if (culture.data.category) {
     const existingCategory = categories.find(c => c.name === culture.data.category);
     if (existingCategory) {
@@ -49,7 +91,7 @@ categories.sort((a, b) => b.count - a.count);
 
 // 获取所有城市并计数
 const cities: {name: string, count: number}[] = [];
-sortedCultures.forEach((culture: CollectionEntry<"culture">) => {
+cultures.forEach((culture: CollectionEntry<"culture">) => {
   if (culture.data.city && culture.data.city.length > 0) {
     // 遍历每个城市数组
     culture.data.city.forEach(cityName => {
@@ -84,74 +126,69 @@ periods.sort((a, b) => b.count - a.count);
 
 // 分页逻辑
 const itemsPerPage = 9;
-const page = 1; // 当前页码，实际应用中应该从查询参数获取
+const page = pageParam;
 const totalPages = Math.ceil(sortedCultures.length / itemsPerPage);
 const currentPageCultures = sortedCultures.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-// 搜索和筛选逻辑（实际应用中应该根据查询参数来筛选）
-const searchQuery = '';
-const selectedCategory = '';
-const selectedPeriod = '';
-const selectedTags: string[] = [];
-const sortBy: 'date' | 'name' = 'date';
+// 标记当前激活的筛选条件
+const activeCategory = categoryParam || '';
+const activeCity = cityParam || '';
+const activeTag = tagParam || '';
+const activeSearch = searchParam || '';
+
+// 构建基础URL（不包含分页参数）
+const buildUrl = (params: Record<string, string | null>) => {
+  const url = new URL(Astro.url);
+  const newParams = new URLSearchParams();
+  
+  // 添加现有参数
+  if (categoryParam && params.category !== null) newParams.set('category', categoryParam);
+  if (cityParam && params.city !== null) newParams.set('city', cityParam);
+  if (tagParam && params.tag !== null) newParams.set('tag', tagParam);
+  if (searchParam && params.search !== null) newParams.set('search', searchParam);
+  
+  // 覆盖或添加新参数
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === null) {
+      newParams.delete(key);
+    } else if (value) {
+      newParams.set(key, value);
+    }
+  });
+  
+  return `/culture${newParams.toString() ? '?' + newParams.toString() : ''}`;
+};
 ---
 
 <MainLayout title="河北文化典藏 - 河北游礼">
   <!-- 古籍书卷风格的头部 -->
-  <div class="relative overflow-hidden bg-scroll-bg dark:bg-scroll-bg-dark min-h-[500px] flex items-center">
-    <!-- 古纸纹理和装饰 -->
-    <div class="absolute inset-0 bg-pattern opacity-10 dark:opacity-15"></div>
-    <div class="absolute top-0 left-0 w-32 h-32 bg-scroll-corner opacity-30 -rotate-12"></div>
-    <div class="absolute bottom-0 right-0 w-32 h-32 bg-scroll-corner opacity-30 rotate-180"></div>
-    
-    <!-- 宣纸上的水墨效果 -->
-    <div class="absolute -right-20 top-1/4 w-40 h-40 bg-ink-splash opacity-10 dark:opacity-15 rotate-12"></div>
-    <div class="absolute -left-10 bottom-1/4 w-32 h-32 bg-ink-splash opacity-10 dark:opacity-15 -rotate-12"></div>
-    
+  <div class="relative overflow-hidden bg-scroll-bg dark:bg-ancient-paper-dark min-h-[500px] flex items-center">
+    <!-- 简洁的背景 -->
+    <div class="absolute inset-0 bg-opacity-20 bg-amber-100 dark:bg-opacity-20 dark:bg-amber-900"></div>
+
     <!-- 古籍书卷式标题区域 -->
     <div class="container mx-auto px-4 relative z-10">
       <div class="max-w-4xl mx-auto text-center">
-        <!-- 书卷式装饰 -->
-        <div class="scroll-decoration relative py-12">
-          <!-- 上卷轴 -->
-          <div class="absolute top-0 left-0 right-0 h-8 bg-scroll-top dark:bg-scroll-top-dark"></div>
-          
-          <!-- 下卷轴 -->
-          <div class="absolute bottom-0 left-0 right-0 h-8 bg-scroll-bottom dark:bg-scroll-bottom-dark"></div>
-          
+        <!-- 书卷式内容区 -->
+        <div class="relative py-12">
           <!-- 典籍风格标题 -->
           <div class="py-10 px-8">
-            <div class="mb-4 seal-mark">
-              <div class="seal absolute -top-6 right-10 w-20 h-20 opacity-80"></div>
-            </div>
-            
             <div class="official-title">
               <h2 class="text-sm font-ancient tracking-[0.2em] text-ancient-red dark:text-ancient-red-dark mb-4">河北文化典藏</h2>
               <h1 class="text-5xl md:text-6xl font-ancient text-ancient-black dark:text-ancient-white mb-4 leading-snug">文化瑰宝</h1>
               <div class="w-40 h-0.5 mx-auto my-6 bg-ancient-accent dark:bg-ancient-accent-dark"></div>
             </div>
-            
+
             <p class="font-ancient-body text-lg text-ancient-black dark:text-ancient-white max-w-2xl mx-auto leading-relaxed">
               典藏千年冀州文明，承载河北厚重历史文化积淀，
               <br>以字画诗词、戏曲非遗，述说河北文化的绵长与精彩
             </p>
-            
-            <!-- 朝代时间轴提示 -->
-            <div class="mt-8 flex justify-center">
-              <div class="px-6 py-3 bg-ancient-paper/80 dark:bg-ancient-paper-dark/80 border border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black/80 dark:text-ancient-white/80">
-                <span class="font-ancient-small tracking-wider">周 · 秦 · 汉 · 唐 · 宋 · 元 · 明 · 清 · 民国 · 现代</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
     </div>
-    
-    <!-- 装饰性书法元素 -->
-    <div class="absolute -top-10 -left-10 w-40 h-40 opacity-5 dark:opacity-10 calligraphy-decoration"></div>
-    <div class="absolute -bottom-10 -right-10 w-40 h-40 opacity-5 dark:opacity-10 calligraphy-decoration rotate-180"></div>
   </div>
-  
+
 
   <!-- 主内容区域 - 古籍风格 -->
   <div class="bg-ancient-paper dark:bg-ancient-paper-dark py-12">
@@ -159,16 +196,81 @@ const sortBy: 'date' | 'name' = 'date';
       <!-- 文化介绍语 - 书卷风格 -->
       <div class="mb-16 max-w-4xl mx-auto">
         <div class="px-8 py-10 text-center border-l-2 border-r-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 bg-ancient-paper-light/50 dark:bg-ancient-paper-dark/50 relative">
-          <!-- 装饰性笔触 -->
-          <div class="absolute top-0 left-0 w-16 h-16 opacity-10 bg-ink-flower bg-no-repeat bg-contain"></div>
-          <div class="absolute bottom-0 right-0 w-16 h-16 opacity-10 bg-ink-flower bg-no-repeat bg-contain transform rotate-180"></div>
-          
           <p class="text-xl text-ancient-black dark:text-ancient-white font-ancient-body leading-relaxed">
             河北，古称"冀州"，是中华文明的发祥地之一。这片土地上流传着众多的文化瑰宝，从京剧、评剧等传统戏曲，到皮影、剪纸等民间艺术，从千年古刹到悠久历史的传统习俗，共同构成了河北独特而丰富的文化景观。
           </p>
         </div>
       </div>
-      
+
+      <!-- 筛选状态显示 -->
+      {(categoryParam || cityParam || tagParam || searchParam) && (
+        <div class="mb-8 max-w-4xl mx-auto">
+          <div class="p-4 border-l-4 border-ancient-accent dark:border-ancient-accent-dark bg-ancient-paper-light/80 dark:bg-ancient-paper-dark-light/80 flex justify-between items-center">
+            <div class="flex flex-wrap gap-2 items-center">
+              <span class="text-ancient-black/80 dark:text-ancient-white/80 font-ancient-small">当前筛选:</span>
+              
+              {categoryParam && (
+                <div class="px-3 py-1 bg-ancient-paper/90 dark:bg-ancient-paper-dark/90 border border-ancient-accent/40 dark:border-ancient-accent-dark/40 text-sm font-ancient-small text-ancient-black dark:text-ancient-white rounded flex items-center">
+                  <span class="mr-1">分类:</span>
+                  <span class="font-medium">{categoryParam}</span>
+                </div>
+              )}
+              
+              {cityParam && (
+                <div class="px-3 py-1 bg-amber-100/50 dark:bg-amber-900/30 border border-amber-200/70 dark:border-amber-700/40 text-sm font-ancient-small text-ancient-black dark:text-ancient-white rounded flex items-center">
+                  <span class="mr-1">城市:</span>
+                  <span class="font-medium">{cityParam}</span>
+                </div>
+              )}
+              
+              {tagParam && (
+                <div class="px-3 py-1 bg-ancient-paper/90 dark:bg-ancient-paper-dark/90 border border-ancient-accent/40 dark:border-ancient-accent-dark/40 text-sm font-ancient-small text-ancient-black dark:text-ancient-white rounded flex items-center">
+                  <span class="mr-1">标签:</span>
+                  <span class="font-medium">{tagParam}</span>
+                </div>
+              )}
+              
+              {searchParam && (
+                <div class="px-3 py-1 bg-ancient-paper/90 dark:bg-ancient-paper-dark/90 border border-ancient-accent/40 dark:border-ancient-accent-dark/40 text-sm font-ancient-small text-ancient-black dark:text-ancient-white rounded flex items-center">
+                  <span class="mr-1">搜索:</span>
+                  <span class="font-medium">"{searchParam}"</span>
+                </div>
+              )}
+            </div>
+            
+            <a 
+              href="/culture" 
+              class="text-ancient-accent dark:text-ancient-accent-dark hover:text-ancient-red dark:hover:text-ancient-red-dark text-sm font-ancient-small flex items-center"
+            >
+              <span>清除筛选</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      )}
+
+      <!-- 无筛选结果提示 -->
+      {sortedCultures.length === 0 && (
+        <div class="my-12 max-w-xl mx-auto text-center">
+          <div class="p-8 border-2 border-dashed border-ancient-accent/30 dark:border-ancient-accent-dark/30 bg-ancient-paper-light/50 dark:bg-ancient-paper-dark/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-ancient-accent/50 dark:text-ancient-accent-dark/50 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="text-xl font-ancient text-ancient-black dark:text-ancient-white mb-2">未找到相关文化内容</h3>
+            <p class="text-ancient-black/80 dark:text-ancient-white/80 font-ancient-body mb-4">
+              {categoryParam && `没有找到分类为"${categoryParam}"的内容。`}
+              {cityParam && `没有找到位于"${cityParam}"的内容。`}
+              {tagParam && `没有找到标签为"${tagParam}"的内容。`}
+              {searchParam && `没有找到包含"${searchParam}"的内容。`}
+              {!categoryParam && !cityParam && !tagParam && !searchParam && '没有找到符合条件的内容。'}
+            </p>
+            <a href="/culture" class="inline-block mt-2 px-4 py-2 bg-ancient-accent dark:bg-ancient-accent-dark text-white rounded-md font-ancient-small">查看全部文化内容</a>
+          </div>
+        </div>
+      )}
+
       <!-- 移动端筛选按钮和搜索框 -->
       <div class="lg:hidden mb-6 flex justify-between items-center">
         <button id="mobile-filter-toggle" class="bg-ancient-accent dark:bg-ancient-accent-dark text-ancient-white px-4 py-2 rounded-md inline-flex items-center shadow-md">
@@ -177,15 +279,21 @@ const sortBy: 'date' | 'name' = 'date';
           </svg>
           <span class="inline-block">筛选</span>
         </button>
-        
+
         <!-- 移动端搜索框 -->
-        <form id="search-form-mobile" class="relative flex-grow mx-3">
-          <input 
-            type="text" 
-            name="search" 
-            placeholder="搜索文化内容..." 
+        <form id="search-form-mobile" class="relative flex-grow mx-3" method="get" action="/culture">
+          <input
+            type="text"
+            name="search"
+            placeholder="搜索文化内容..."
+            value={searchParam || ''}
             class="w-full text-ancient-black dark:text-ancient-white bg-ancient-paper-light/90 dark:bg-ancient-paper-dark/50 border border-ancient-accent/30 dark:border-ancient-accent-dark/30 rounded-full py-2 pl-3 pr-10 focus:outline-none focus:border-ancient-accent/70 dark:focus:border-ancient-accent-dark/70 font-ancient-body"
           />
+          <!-- 保留现有参数 -->
+          {categoryParam && <input type="hidden" name="category" value={categoryParam} />}
+          {cityParam && <input type="hidden" name="city" value={cityParam} />}
+          {tagParam && <input type="hidden" name="tag" value={tagParam} />}
+          
           <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-ancient-accent dark:text-ancient-accent-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -193,7 +301,7 @@ const sortBy: 'date' | 'name' = 'date';
           </button>
         </form>
       </div>
-      
+
       <!-- 移动端筛选抽屉 - 默认隐藏 -->
       <div id="mobile-filter-drawer" class="lg:hidden fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 ease-in-out">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="mobile-filter-backdrop"></div>
@@ -206,7 +314,7 @@ const sortBy: 'date' | 'name' = 'date';
               </svg>
             </button>
           </div>
-          
+
           <div class="p-4 space-y-6">
             <!-- 文化分类 - 移动端 -->
             <div>
@@ -218,14 +326,22 @@ const sortBy: 'date' | 'name' = 'date';
               </h3>
               <div class="flex flex-wrap gap-2">
                 {categories.slice(0, 6).map((category) => (
-                  <div class="mobile-category-item px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-ancient-black dark:text-ancient-white text-sm font-ancient-small border border-ancient-accent/30 dark:border-ancient-accent-dark/30 cursor-pointer hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50 hover:text-ancient-accent dark:hover:text-ancient-accent-dark rounded-md" data-category-value={category.name.toLowerCase()}>
+                  <a 
+                    href={buildUrl({ category: category.name === activeCategory ? null : category.name })}
+                    class:list={[
+                      "px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-sm font-ancient-small border transition-all rounded-md",
+                      category.name === activeCategory 
+                        ? "border-ancient-accent dark:border-ancient-accent-dark text-ancient-accent dark:text-ancient-accent-dark font-medium"
+                        : "border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50"
+                    ]}
+                  >
                     {category.name}
                     <span class="ml-1 text-xs text-ancient-black/60 dark:text-ancient-white/60">({category.count})</span>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>
-            
+
             <!-- 地域分布 - 移动端 -->
             <div>
               <h3 class="text-base font-ancient-heading text-ancient-black dark:text-ancient-white mb-3 flex items-center">
@@ -237,32 +353,22 @@ const sortBy: 'date' | 'name' = 'date';
               </h3>
               <div class="flex flex-wrap gap-2">
                 {cities.slice(0, 6).map((city) => (
-                  <div class="mobile-city-item px-3 py-1.5 bg-amber-100/50 dark:bg-amber-800/30 text-ancient-black/70 dark:text-ancient-white/70 text-sm font-ancient-small border border-amber-200/50 dark:border-amber-700/30 cursor-pointer hover:border-amber-300/50 dark:hover:border-amber-600/50 rounded-md" data-city-value={city.name.toLowerCase()}>
+                  <a 
+                    href={buildUrl({ city: city.name === activeCity ? null : city.name })}
+                    class:list={[
+                      "px-3 py-1.5 text-sm font-ancient-small border rounded-md transition-all",
+                      city.name === activeCity 
+                        ? "bg-amber-100 dark:bg-amber-800/50 border-amber-300 dark:border-amber-600 text-amber-800 dark:text-amber-200 font-medium"
+                        : "bg-amber-100/50 dark:bg-amber-800/30 border-amber-200/50 dark:border-amber-700/30 text-ancient-black/70 dark:text-ancient-white/70 hover:border-amber-300/50 dark:hover:border-amber-600/50"
+                    ]}
+                  >
                     {city.name}
                     <span class="ml-1 text-xs text-ancient-black/60 dark:text-ancient-white/60">({city.count})</span>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>
-            
-            <!-- 历史朝代 - 移动端 -->
-            <div>
-              <h3 class="text-base font-ancient-heading text-ancient-black dark:text-ancient-white mb-3 flex items-center">
-                <svg class="w-4 h-4 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                历史朝代
-              </h3>
-              <div class="flex flex-wrap gap-2">
-                {periods.slice(0, 6).map((period) => (
-                  <div class="mobile-period-item px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-ancient-black dark:text-ancient-white text-sm font-ancient-small border border-ancient-accent/30 dark:border-ancient-accent-dark/30 cursor-pointer hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50 hover:text-ancient-accent dark:hover:text-ancient-accent-dark rounded-md" data-period-value={period.name.toLowerCase()}>
-                    {period.name}
-                    <span class="ml-1 text-xs text-ancient-black/60 dark:text-ancient-white/60">({period.count})</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
+
             <!-- 标签筛选 - 移动端 -->
             <div>
               <h3 class="text-base font-ancient-heading text-ancient-black dark:text-ancient-white mb-3 flex items-center">
@@ -273,18 +379,26 @@ const sortBy: 'date' | 'name' = 'date';
               </h3>
               <div class="flex flex-wrap gap-2">
                 {allTags.slice(0, 12).map((tag) => (
-                  <span class="mobile-tag-item px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-ancient-black dark:text-ancient-white text-sm font-ancient-small border border-ancient-accent/30 dark:border-ancient-accent-dark/30 cursor-pointer hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50 hover:text-ancient-accent dark:hover:text-ancient-accent-dark rounded-md" data-tag-value={tag.name.toLowerCase()}>
+                  <a 
+                    href={buildUrl({ tag: tag.name === activeTag ? null : tag.name })}
+                    class:list={[
+                      "px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-sm font-ancient-small border rounded-md transition-all",
+                      tag.name === activeTag 
+                        ? "border-ancient-accent dark:border-ancient-accent-dark text-ancient-accent dark:text-ancient-accent-dark font-medium"
+                        : "border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50"
+                    ]}
+                  >
                     {tag.name}
                     <span class="ml-1 text-xs text-ancient-black/60 dark:text-ancient-white/60">({tag.count})</span>
-                  </span>
+                  </a>
                 ))}
               </div>
             </div>
-            
+
             <!-- 底部应用按钮 -->
             <div class="border-t border-ancient-accent/20 dark:border-ancient-accent-dark/20 pt-3 flex justify-end">
-              <button id="mobile-filter-apply" class="bg-ancient-accent dark:bg-ancient-accent-dark text-ancient-white px-6 py-2 rounded-md shadow-md inline-flex items-center">
-                <span class="inline-block">应用筛选</span>
+              <button id="mobile-filter-close" class="bg-ancient-accent dark:bg-ancient-accent-dark text-ancient-white px-6 py-2 rounded-md shadow-md inline-flex items-center">
+                <span class="inline-block">关闭筛选</span>
               </button>
             </div>
           </div>
@@ -303,14 +417,20 @@ const sortBy: 'date' | 'name' = 'date';
                 </svg>
                 典籍检索
               </h3>
-              
+
               <form id="search-form" class="relative" method="get" action="/culture">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="search"
-                  placeholder="输入关键词..." 
+                  placeholder="输入关键词..."
+                  value={searchParam || ''}
                   class="w-full px-4 py-2 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 placeholder-ancient-black/50 dark:placeholder-ancient-white/50 text-ancient-black dark:text-ancient-white font-ancient-body focus:outline-none focus:border-ancient-accent dark:focus:border-ancient-accent-dark"
                 />
+                <!-- 保留现有参数 -->
+                {categoryParam && <input type="hidden" name="category" value={categoryParam} />}
+                {cityParam && <input type="hidden" name="city" value={cityParam} />}
+                {tagParam && <input type="hidden" name="tag" value={tagParam} />}
+                
                 <button type="submit" class="absolute right-3 top-2 text-ancient-accent/70 dark:text-ancient-accent-dark/70">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -318,7 +438,7 @@ const sortBy: 'date' | 'name' = 'date';
                 </button>
               </form>
             </div>
-            
+
             <!-- 分类筛选 - 卷轴风格 -->
             <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
               <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
@@ -327,20 +447,30 @@ const sortBy: 'date' | 'name' = 'date';
                 </svg>
                 文化分类
               </h3>
-              
+
               <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 pr-2">
                 {categories.map((category) => (
-                  <div class="flex items-center group cursor-pointer">
-                    <div class="w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20 transition-colors"></div>
+                  <a 
+                    href={buildUrl({ category: category.name === activeCategory ? null : category.name })}
+                    class:list={[
+                      "flex items-center group cursor-pointer hover:bg-ancient-accent/10 dark:hover:bg-ancient-accent-dark/10 p-1.5 rounded",
+                      { "bg-ancient-accent/20 dark:bg-ancient-accent-dark/20": category.name === activeCategory }
+                    ]}
+                  >
+                    <div class="w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20 transition-colors">
+                      {category.name === activeCategory && (
+                        <div class="w-full h-full bg-ancient-accent/60 dark:bg-ancient-accent-dark/60"></div>
+                      )}
+                    </div>
                     <div class="text-ancient-black dark:text-ancient-white group-hover:text-ancient-accent dark:group-hover:text-ancient-accent-dark transition-colors">
                       <span>{category.name}</span>
                       <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({category.count})</span>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>
-            
+
             <!-- 城市筛选 - 新增部分 -->
             <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
               <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
@@ -350,42 +480,30 @@ const sortBy: 'date' | 'name' = 'date';
                 </svg>
                 地域分布
               </h3>
-              
+
               <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 pr-2">
                 {cities.map((city) => (
-                  <div class="flex items-center group cursor-pointer">
-                    <div class="w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20 transition-colors"></div>
-                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-ancient-accent dark:group-hover:text-ancient-accent-dark transition-colors">
+                  <a 
+                    href={buildUrl({ city: city.name === activeCity ? null : city.name })}
+                    class:list={[
+                      "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-800/20 p-1.5 rounded",
+                      { "bg-amber-100/80 dark:bg-amber-800/30": city.name === activeCity }
+                    ]}
+                  >
+                    <div class="w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30 transition-colors">
+                      {city.name === activeCity && (
+                        <div class="w-full h-full bg-amber-400/60 dark:bg-amber-600/60"></div>
+                      )}
+                    </div>
+                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
                       <span>{city.name}</span>
                       <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({city.count})</span>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>
-            
-            <!-- 历史时期筛选 -->
-            <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
-              <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                历史朝代
-              </h3>
-              
-              <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 pr-2">
-                {periods.map((period) => (
-                  <div class="flex items-center group cursor-pointer">
-                    <div class="w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20 transition-colors"></div>
-                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-ancient-accent dark:group-hover:text-ancient-accent-dark transition-colors">
-                      <span>{period.name}</span>
-                      <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({period.count})</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
+
             <!-- 标签筛选 - 古籍风格 -->
             <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
               <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
@@ -394,46 +512,59 @@ const sortBy: 'date' | 'name' = 'date';
                 </svg>
                 特色标签
               </h3>
-              
+
               <div class="flex flex-wrap gap-2">
-                {allTags.map((tag) => (
-                  <span class="px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-ancient-black dark:text-ancient-white text-sm font-ancient-small border border-ancient-accent/30 dark:border-ancient-accent-dark/30 cursor-pointer hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50 hover:text-ancient-accent dark:hover:text-ancient-accent-dark tag-item" data-tag-value={tag.name.toLowerCase()}>
+                {allTags.slice(0, 12).map((tag) => (
+                  <a 
+                    href={buildUrl({ tag: tag.name === activeTag ? null : tag.name })}
+                    class:list={[
+                      "px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-sm font-ancient-small border rounded-md transition-all",
+                      tag.name === activeTag 
+                        ? "border-ancient-accent dark:border-ancient-accent-dark text-ancient-accent dark:text-ancient-accent-dark font-medium"
+                        : "border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50"
+                    ]}
+                  >
                     {tag.name}
-                  </span>
+                    <span class="ml-1 text-xs text-ancient-black/60 dark:text-ancient-white/60">({tag.count})</span>
+                  </a>
                 ))}
               </div>
             </div>
           </div>
         </div>
-        
+
         <!-- 右侧内容区域 - 古籍风格 -->
         <div class="lg:col-span-3 lg:mt-0">
           <!-- 内容分类标签 - 古卷风格 -->
           <div class="flex flex-wrap gap-3 mb-8 lg:hidden">
             {/* 内容分类标签部分 */}
           </div>
-          
+
           <!-- 文化内容列表 - 卷轴风格网格 -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr">
             {currentPageCultures.map((culture, index) => (
               <ScrollReveal animation="fade" delay={index * 100}>
                 <a href={`/culture/${culture.slug}`} class="block group h-full">
-                  <div class="ancient-card border border-ancient-accent/40 dark:border-amber-700/50 overflow-hidden group-hover:shadow-md group-hover:border-ancient-red/50 dark:group-hover:border-amber-600/70 transition-all duration-300">
-                    <div class="aspect-[5/4] bg-ancient-paper-light/70 dark:bg-dark-card relative dark:border-b dark:border-amber-800/30">
+                  <div class="ancient-card relative h-full bg-ancient-paper dark:bg-ancient-paper-dark flex flex-col shadow-lg transition-transform duration-300 group-hover:shadow-xl overflow-hidden" 
+                     data-tags={JSON.stringify(culture.data.tags.map((tag: string) => tag.toLowerCase()))}
+                     data-category={culture.data.category?.toLowerCase() || ''}
+                     data-cities={JSON.stringify(culture.data.city?.map((city: string) => city.toLowerCase()) || [])}
+                  >
+                    <div class="relative h-48 overflow-hidden border-b-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30">
                       <!-- 装饰元素 -->
                       <div class="absolute top-2 left-2 w-8 h-8 bg-ink-decoration opacity-10 dark:opacity-15"></div>
                       <div class="absolute bottom-2 right-2 w-8 h-8 bg-ink-decoration opacity-10 dark:opacity-15 rotate-180"></div>
-                      
+
                       <!-- 默认内容显示 -->
                       <div class="absolute inset-0 flex items-center justify-center">
                         <span class="text-ancient-black/40 dark:text-amber-100/60 font-ancient">{culture.data.title}</span>
                       </div>
-                      
+
                       <!-- 印章效果 -->
                       {index % 4 === 0 && (
                         <div class="absolute top-4 right-4 w-16 h-16 bg-seal-mark opacity-40 rotate-12"></div>
                       )}
-                      
+
                       {/* 文化类别标签 */}
                       {culture.data.category && (
                         <div class="absolute top-3 right-3 px-2 py-1 bg-ancient-paper/90 dark:bg-dark-surface text-ancient-black dark:text-amber-100 text-xs font-ancient-small border border-ancient-accent/30 dark:border-amber-700/50 category-tag" data-category-value={culture.data.category.toLowerCase()}>
@@ -441,7 +572,7 @@ const sortBy: 'date' | 'name' = 'date';
                         </div>
                       )}
                     </div>
-                    
+
                     <div class="p-5 flex flex-col flex-grow dark:bg-dark-card">
                       <div class="mb-3">
                         <h3 class="text-xl font-ancient text-ancient-black dark:text-amber-100 group-hover:text-ancient-red dark:group-hover:text-amber-300 transition-colors">
@@ -453,14 +584,14 @@ const sortBy: 'date' | 'name' = 'date';
                           </div>
                         )}
                       </div>
-                      
+
                       <p class="text-ancient-black/80 dark:text-amber-100/90 text-sm line-clamp-2 mb-4 font-ancient-body">
                         {culture.data.description}
                       </p>
-                      
+
                       <div class="flex flex-wrap gap-1.5 mb-4 min-h-[2rem]">
                         {culture.data.tags.slice(0, 3).map((tag: string) => (
-                          <span class="px-2 py-1 bg-ancient-paper-light/50 dark:bg-dark-surface text-ancient-black/70 dark:text-amber-100/90 text-xs font-ancient-small border border-ancient-accent/20 dark:border-amber-700/40 tag-item cursor-pointer" data-tag-value={tag.toLowerCase()}>
+                          <span class="px-2 py-1 bg-ancient-paper-light/50 dark:bg-dark-surface text-ancient-black/70 dark:text-amber-100/90 text-xs font-ancient-small border border-ancient-accent/20 dark:border-amber-700/40 tag-item" data-tag-value={tag.toLowerCase()}>
                             {tag}
                           </span>
                         ))}
@@ -470,7 +601,7 @@ const sortBy: 'date' | 'name' = 'date';
                           </span>
                         )}
                       </div>
-                      
+
                       {/* 在卡片中添加城市信息显示 */}
                       <div class="min-h-[1.5rem]">
                         {culture.data.city && culture.data.city.length > 0 && (
@@ -488,7 +619,7 @@ const sortBy: 'date' | 'name' = 'date';
                           </div>
                         )}
                       </div>
-                      
+
                       <div class="flex items-center text-ancient-black/80 dark:text-amber-200 text-sm group-hover:translate-x-1 transition-transform font-ancient-small group-hover:text-ancient-red dark:group-hover:text-amber-300 mt-auto">
                         查阅详情
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
@@ -501,7 +632,7 @@ const sortBy: 'date' | 'name' = 'date';
               </ScrollReveal>
             ))}
           </div>
-          
+
           <!-- 无搜索结果提示 - 在客户端控制显示 -->
           <div id="no-results-message" class="hidden py-16">
             <div class="max-w-md mx-auto bg-ancient-paper-light dark:bg-ancient-paper-dark-light rounded-lg shadow-md p-8 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-center">
@@ -522,69 +653,87 @@ const sortBy: 'date' | 'name' = 'date';
               </div>
             </div>
           </div>
-          
-          <!-- 分页控件 - 古卷风格 -->
+
+          <!-- 分页控件 - 古籍风格 -->
           {totalPages > 1 && (
             <div class="mt-16 flex justify-center">
-              <div class="inline-flex border border-ancient-accent/40 dark:border-ancient-accent-dark/40 bg-ancient-paper-light/70 dark:bg-ancient-paper-dark/70 rounded">
+              <div class="inline-flex bg-ancient-paper-light dark:bg-ancient-paper-dark-light border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 rounded-md overflow-hidden">
+                <!-- 上一页 -->
                 <a
-                  href={page > 1 ? `/culture?page=${page - 1}` : '#'}
-                  class={`px-4 py-2 text-sm font-ancient-small ${
+                  href={page > 1 ? buildUrl({ page: (page - 1).toString() }) : undefined}
+                  class:list={[
+                    "px-4 py-2 border-r-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 flex items-center space-x-1 font-ancient-small",
                     page > 1
-                      ? 'text-ancient-black dark:text-ancient-white hover:bg-ancient-paper-light dark:hover:bg-ancient-paper-dark hover:text-ancient-red dark:hover:text-ancient-red-dark'
-                      : 'text-ancient-black/40 dark:text-ancient-white/40 cursor-not-allowed'
-                  } border-r border-ancient-accent/30 dark:border-ancient-accent-dark/30`}
+                      ? "text-ancient-accent dark:text-ancient-accent-dark hover:bg-ancient-paper/70 dark:hover:bg-ancient-paper-dark/70" 
+                      : "text-ancient-black/30 dark:text-ancient-white/30 cursor-not-allowed"
+                  ]}
                 >
-                  上一页
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span>上一页</span>
                 </a>
-                
+
+                <!-- 页码 -->
                 {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                   const pageNum = i + 1;
                   return (
                     <a
-                      href={`/culture?page=${pageNum}`}
-                      class={`px-4 py-2 text-sm border-r border-ancient-accent/30 dark:border-ancient-accent-dark/30 font-ancient ${
+                      href={buildUrl({ page: pageNum.toString() })}
+                      class:list={[
+                        "w-10 flex items-center justify-center border-r-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 font-ancient-small",
                         pageNum === page
-                          ? 'bg-ancient-red/10 dark:bg-ancient-red-dark/10 text-ancient-red dark:text-ancient-red-dark'
-                          : 'text-ancient-black dark:text-ancient-white hover:bg-ancient-paper-light dark:hover:bg-ancient-paper-dark'
-                      }`}
+                          ? "bg-ancient-accent/20 dark:bg-ancient-accent-dark/20 text-ancient-accent dark:text-ancient-accent-dark font-medium" 
+                          : "text-ancient-black dark:text-ancient-white hover:bg-ancient-paper/70 dark:hover:bg-ancient-paper-dark/70"
+                      ]}
                     >
                       {pageNum}
                     </a>
                   );
                 })}
-                
-                {totalPages > 5 && <span class="px-4 py-2 text-sm border-r border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black/60 dark:text-ancient-white/60 font-ancient-small">...</span>}
-                
+
+                <!-- 更多页 -->
+                {totalPages > 5 && (
+                  <span class="w-10 flex items-center justify-center border-r-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black/50 dark:text-ancient-white/50 font-ancient-small">
+                    ...
+                  </span>
+                )}
+
+                <!-- 末页 -->
                 {totalPages > 5 && (
                   <a
-                    href={`/culture?page=${totalPages}`}
-                    class="px-4 py-2 text-sm border-r border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:bg-ancient-paper-light dark:hover:bg-ancient-paper-dark hover:text-ancient-red dark:hover:text-ancient-red-dark font-ancient-small"
+                    href={buildUrl({ page: totalPages.toString() })}
+                    class="w-10 flex items-center justify-center border-r-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:bg-ancient-paper/70 dark:hover:bg-ancient-paper-dark/70 font-ancient-small"
                   >
                     {totalPages}
                   </a>
                 )}
-                
+
+                <!-- 下一页 -->
                 <a
-                  href={page < totalPages ? `/culture?page=${page + 1}` : '#'}
-                  class={`px-4 py-2 text-sm font-ancient-small ${
+                  href={page < totalPages ? buildUrl({ page: (page + 1).toString() }) : undefined}
+                  class:list={[
+                    "px-4 py-2 flex items-center space-x-1 font-ancient-small",
                     page < totalPages
-                      ? 'text-ancient-black dark:text-ancient-white hover:bg-ancient-paper-light dark:hover:bg-ancient-paper-dark hover:text-ancient-red dark:hover:text-ancient-red-dark'
-                      : 'text-ancient-black/40 dark:text-ancient-white/40 cursor-not-allowed'
-                  }`}
+                      ? "text-ancient-accent dark:text-ancient-accent-dark hover:bg-ancient-paper/70 dark:hover:bg-ancient-paper-dark/70" 
+                      : "text-ancient-black/30 dark:text-ancient-white/30 cursor-not-allowed"
+                  ]}
                 >
-                  下一页
+                  <span>下一页</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
                 </a>
               </div>
             </div>
           )}
-          
+
           <!-- 底部引言 - 古籍风格 -->
           <div class="mt-20 mb-10 text-center relative">
             <!-- 装饰元素 -->
             <div class="absolute left-1/4 top-0 w-16 h-1 bg-ancient-accent/30 dark:bg-ancient-accent-dark/30"></div>
             <div class="absolute right-1/4 bottom-0 w-16 h-1 bg-ancient-accent/30 dark:bg-ancient-accent-dark/30"></div>
-            
+
             <blockquote class="text-xl text-ancient-black dark:text-ancient-white font-ancient italic">
               "文化是一个国家、一个民族的灵魂"
             </blockquote>
@@ -601,804 +750,27 @@ const sortBy: 'date' | 'name' = 'date';
     // 同步黑暗模式与Tailwind的兼容代码
     function syncDarkModeClasses() {
       const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
-      
       if (isDarkTheme) {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
       }
     }
-    
+
     // 初始同步一次
     syncDarkModeClasses();
-    
+
     // 监听主题变更事件
     window.addEventListener('theme-change', () => {
       syncDarkModeClasses();
     });
-    
-    // 初始化筛选和搜索功能
-    const searchForm = document.getElementById('search-form') as HTMLFormElement;
-    const searchInput = document.querySelector('input[name="search"]') as HTMLInputElement;
-    const categoryItems = document.querySelectorAll('.font-ancient-body.max-h-48 .flex.items-center.group.cursor-pointer');
-    const cultureCards = document.querySelectorAll('.ancient-card');
-    const noResultsMessage = document.getElementById('no-results-message');
-    const searchTermMessage = document.getElementById('search-term-message');
-    const cultureGrid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3.gap-8');
-    const tagItems = document.querySelectorAll('.tag-item');
-    const resetFiltersBtn = document.getElementById('reset-filters-btn');
-    const categoryTags = document.querySelectorAll('.category-tag');
-    const cityTags = document.querySelectorAll('.city-tag');
-    const periodTags = document.querySelectorAll('.period-tag');
-    
-    // 客户端解析URL查询参数
-    const urlParams = new URLSearchParams(window.location.search);
-    const searchParamFromUrl = urlParams.get('search') || '';
-    const tagParam = urlParams.get('tag') || '';
-    const categoryParam = urlParams.get('category') || '';
-    const cityParam = urlParams.get('city') || '';
-    const periodParam = urlParams.get('period') || '';
-    const currentPage = Number(urlParams.get('page') || '1');
-    
-    // 搜索和筛选状态变量
-    let currentSearch = searchParamFromUrl;
-    let currentTag = tagParam;
-    let currentCategory = categoryParam;
-    let currentCity = cityParam;
-    let currentPeriod = periodParam;
-    
-    // 更新浏览器历史记录，不刷新页面
-    function updateHistory() {
-      const params = new URLSearchParams();
-      if (currentSearch) params.set('search', currentSearch);
-      if (currentTag) params.set('tag', currentTag);
-      if (currentCategory) params.set('category', currentCategory);
-      if (currentCity) params.set('city', currentCity);
-      if (currentPeriod) params.set('period', currentPeriod);
-      
-      const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
-      window.history.pushState({ 
-        search: currentSearch, 
-        tag: currentTag, 
-        category: currentCategory,
-        city: currentCity,
-        period: currentPeriod
-      }, '', newUrl);
-    }
-    
-    // 通用的选中项处理函数
-    function handleItemSelection(items: NodeListOf<Element>, parentTitleMatch: string, paramValue: string | null, addClass: boolean) {
-      if (!paramValue) return;
-      
-      // 清理参数，移除可能的计数部分 "(数字)"
-      const cleanParam = paramValue.replace(/\s*\(\d+\)$/, '').toLowerCase();
-      
-      items.forEach((item: Element) => {
-        const textElement = item.querySelector('.text-ancient-black, .dark\\:text-ancient-white span:first-child');
-        if (!textElement) return;
-        
-          const itemText = textElement.textContent?.trim().toLowerCase() || '';
-        // 获取父标题
-        const parentSection = item.closest('.bg-ancient-paper-light, .dark\\:bg-ancient-paper-dark-light');
-        const parentTitle = parentSection?.querySelector('h3')?.textContent?.trim() || '';
-        
-        if (parentTitle.includes(parentTitleMatch) && itemText === cleanParam) {
-          // 选中此项
-            const checkboxElement = item.querySelector('.w-4.h-4');
-          if (checkboxElement && addClass) {
-              checkboxElement.classList.add('bg-ancient-accent/20', 'dark:bg-ancient-accent-dark/20');
-          }
-        }
-      });
-    }
-    
-    // 根据URL参数选中对应的筛选项
-    handleItemSelection(categoryItems, '文化分类', categoryParam, true);
-    handleItemSelection(categoryItems, '地域分布', cityParam, true);
-    handleItemSelection(categoryItems, '历史朝代', periodParam, true);
-    
-    // 标签选择处理
-    if (tagParam) {
-      // 选中对应的特色标签
-      tagItems.forEach(tag => {
-        const tagValue = tag.getAttribute('data-tag-value')?.toLowerCase() || '';
-        if (tagValue === tagParam.toLowerCase()) {
-          // 高亮选中的标签
-          tag.classList.add('border-ancient-accent/70', 'dark:border-ancient-accent-dark/70');
-          tag.classList.add('text-ancient-accent', 'dark:text-ancient-accent-dark');
-          tag.classList.add('bg-ancient-accent/10', 'dark:bg-ancient-accent-dark/10');
-        }
-      });
-    }
-    
-    // 客户端筛选函数
-    function filterCultures() {
-      // 获取当前搜索词
-      const searchValue = currentSearch.toLowerCase();
-      const filterTag = currentTag.toLowerCase();
-      const filterCategory = currentCategory.toLowerCase();
-      const filterCity = currentCity.toLowerCase();
-      const filterPeriod = currentPeriod.toLowerCase();
-      
-      let matchCount = 0;
-      
-      // 如果没有筛选条件，显示所有卡片
-      if (!searchValue && !filterTag && !filterCategory && !filterCity && !filterPeriod) {
-        if (noResultsMessage) {
-          noResultsMessage.classList.add('hidden');
-        }
-        if (cultureGrid) {
-          cultureGrid.classList.remove('hidden');
-        }
-        
-        cultureCards.forEach((card) => {
-          const parentElement = card.parentElement;
-          if (parentElement && parentElement.parentElement) {
-            parentElement.parentElement.style.display = '';
-          }
-        });
-        
-        return cultureCards.length;
-      }
-      
-      // 遍历所有文化卡片进行筛选
-      cultureCards.forEach((card) => {
-        const cardTitle = card.querySelector('.text-ancient-black\\/40, .dark\\:text-ancient-white\\/40')?.textContent?.toLowerCase() || '';
-        const cardDesc = card.querySelector('p.text-ancient-black\\/80, .dark\\:text-ancient-white\\/80')?.textContent?.toLowerCase() || '';
-        // 查找卡片中的所有标签元素
-        const cardTagElements = card.querySelectorAll('.tag-item');
-        const cardCategory = card.querySelector('.absolute.top-3.right-3.px-2.py-1')?.textContent?.toLowerCase() || '';
-        
-        // 收集所有标签文本
-        let tagsArray: string[] = [];
-        cardTagElements?.forEach(tagElement => {
-          const tagText = tagElement.textContent?.trim().toLowerCase() || '';
-          if (tagText) {
-            tagsArray.push(tagText);
-          }
-        });
-        
-        // 匹配搜索条件
-        const matchesSearch = !searchValue || 
-          cardTitle.includes(searchValue) || 
-          cardDesc.includes(searchValue) ||
-          tagsArray.some(tag => tag.includes(searchValue));
-        
-        // 修改标签匹配逻辑，使用data-tag-value属性
-        let matchesTag = !filterTag;
-        if (filterTag) {
-          // 在整个卡片中搜索标签，包括卡片上的和卡片中的
-          const allTagElements = card.querySelectorAll('[data-tag-value]');
-          if (allTagElements && allTagElements.length > 0) {
-            // 有标签元素，遍历检查是否匹配
-            allTagElements.forEach(tagElem => {
-              const tagValue = tagElem.getAttribute('data-tag-value')?.toLowerCase() || '';
-              if (tagValue === filterTag.toLowerCase()) {
-                matchesTag = true;
-              }
-            });
-          } else {
-            // 如果没有标签元素，回退到文本搜索
-            matchesTag = cardDesc.includes(filterTag) || cardTitle.includes(filterTag);
-          }
-        }
-        
-        // 对于分类筛选，使用data-category-value属性
-        let matchesCategory = !filterCategory;
-        if (filterCategory) {
-          const categoryElements = card.querySelectorAll('[data-category-value]');
-          if (categoryElements && categoryElements.length > 0) {
-            categoryElements.forEach(categoryElem => {
-              const categoryValue = categoryElem.getAttribute('data-category-value')?.toLowerCase() || '';
-              if (categoryValue === filterCategory) {
-                matchesCategory = true;
-              }
-            });
-          } else {
-            // 如果没有找到分类标签，从描述中搜索
-            const cleanCardCategory = cardCategory.replace(/\s*\(\d+\)$/, '');
-            matchesCategory = cleanCardCategory === filterCategory || 
-                             cardDesc.includes(filterCategory) || 
-                             cardTitle.includes(filterCategory);
-          }
-        }
-        
-        // 对于城市筛选，使用data-city-value属性
-        let matchesCity = !filterCity;
-        if (filterCity) {
-          const cityElements = card.querySelectorAll('[data-city-value]');
-          if (cityElements && cityElements.length > 0) {
-            cityElements.forEach(cityElem => {
-              const cityValue = cityElem.getAttribute('data-city-value')?.toLowerCase() || '';
-              if (cityValue === filterCity.toLowerCase()) {
-                matchesCity = true;
-              }
-            });
-          } else {
-            // 如果没有找到城市标签，从描述中搜索
-            matchesCity = cardDesc.includes(filterCity);
-          }
-        }
-        
-        // 处理历史朝代筛选，使用data-period-value属性
-        let matchesPeriod = !filterPeriod;
-        if (filterPeriod) {
-          const periodElements = card.querySelectorAll('[data-period-value]');
-          if (periodElements && periodElements.length > 0) {
-            periodElements.forEach(periodElem => {
-              const periodValue = periodElem.getAttribute('data-period-value')?.toLowerCase() || '';
-              if (periodValue === filterPeriod.toLowerCase()) {
-                matchesPeriod = true;
-              }
-            });
-          } else {
-            // 如果没有找到朝代标签，从描述中搜索
-            matchesPeriod = cardDesc.includes(filterPeriod);
-          }
-        }
-        
-        // 所有条件都匹配才显示
-        const isMatch = matchesSearch && matchesTag && matchesCategory && matchesCity && matchesPeriod;
-        
-        const parentElement = card.parentElement;
-        if (parentElement && parentElement.parentElement) {
-          if (isMatch) {
-            matchCount++;
-            parentElement.parentElement.style.display = '';
-          } else {
-            parentElement.parentElement.style.display = 'none';
-          }
-        }
-      });
-      
-      // 更新无结果提示显示
-      if (matchCount === 0) {
-        if (noResultsMessage) {
-          noResultsMessage.classList.remove('hidden');
-          
-          // 更新无结果消息中的搜索词
-          if (searchTermMessage) {
-            if (currentSearch) {
-              searchTermMessage.textContent = `抱歉，未找到与 "${currentSearch}" 相关的文化内容。请尝试其他关键词或浏览所有内容。`;
-            } else if (currentTag) {
-              searchTermMessage.textContent = `抱歉，未找到标签为 "${currentTag}" 的文化内容。请尝试其他标签或浏览所有内容。`;
-            } else if (currentCategory) {
-              searchTermMessage.textContent = `抱歉，未找到分类为 "${currentCategory}" 的文化内容。请尝试其他分类或浏览所有内容。`;
-            } else if (currentCity) {
-              searchTermMessage.textContent = `抱歉，未找到地域为 "${currentCity}" 的文化内容。请尝试其他地域或浏览所有内容。`;
-            } else if (currentPeriod) {
-              searchTermMessage.textContent = `抱歉，未找到朝代为 "${currentPeriod}" 的文化内容。请尝试其他朝代或浏览所有内容。`;
-            } else {
-              searchTermMessage.textContent = `抱歉，未找到符合当前筛选条件的文化内容。请尝试调整筛选条件或浏览所有内容。`;
-            }
-          }
-        }
-        
-        // 隐藏文化网格
-        if (cultureGrid) {
-          cultureGrid.classList.add('hidden');
-        }
-      } else {
-        // 隐藏无结果提示
-        if (noResultsMessage) {
-          noResultsMessage.classList.add('hidden');
-        }
-        // 显示文化网格
-        if (cultureGrid) {
-          cultureGrid.classList.remove('hidden');
-        }
-      }
-      
-      return matchCount;
-    }
-    
-    // 如果URL中有搜索参数，设置到输入框中并执行筛选
-    if (searchInput && searchParamFromUrl) {
-      searchInput.value = searchParamFromUrl;
-      // 触发筛选
-      setTimeout(filterCultures, 100);
-    } else if (tagParam || categoryParam || cityParam || periodParam) {
-      // 有其他筛选参数时也执行筛选
-      setTimeout(filterCultures, 100);
-    }
-    
-    // 为搜索输入框添加焦点样式
-    if (searchInput) {
-      searchInput.addEventListener('focus', () => {
-        searchInput.classList.add('border-ancient-accent', 'dark:border-ancient-accent-dark');
-        searchInput.classList.add('bg-ancient-paper-light/30', 'dark:bg-ancient-paper-dark-light/30');
-      });
-      
-      searchInput.addEventListener('blur', () => {
-        searchInput.classList.remove('border-ancient-accent', 'dark:border-ancient-accent-dark');
-        searchInput.classList.remove('bg-ancient-paper-light/30', 'dark:bg-ancient-paper-dark-light/30');
-      });
-    }
-    
-    // 更新筛选状态UI，使用checkboxes更新勾选状态
-    function updateFilterStatusUI() {
-      // 先清除所有选中状态
-      categoryItems.forEach(item => {
-        const checkbox = item.querySelector('.w-4.h-4');
-        if (checkbox) {
-          // 移除所有选中样式
-          checkbox.classList.remove('checkbox-selected', 'bg-ancient-accent/20');
-          checkbox.classList.add('checkbox-unselected', 'bg-transparent');
-          
-          // 移除勾选标记
-          const checkmark = checkbox.querySelector('.checkmark');
-          if (checkmark) {
-            checkmark.remove();
-          }
-        }
-      });
-      
-      // 更新分类项样式
-      categoryItems.forEach(item => {
-        const textElement = item.querySelector('.text-ancient-black, .dark\\:text-ancient-white span:first-child');
-        if (!textElement) return;
-        
-        const itemText = textElement.textContent?.trim() || '';
-        // 去除计数部分
-        const cleanItemText = itemText.replace(/\s*\(\d+\)$/, '');
-        
-        // 获取父容器标题确定此项是什么类型
-        const parentSection = item.closest('.bg-ancient-paper-light, .dark\\:bg-ancient-paper-dark-light');
-        const parentTitle = parentSection?.querySelector('h3')?.textContent?.trim() || '';
-        
-        // 获取复选框
-        const checkbox = item.querySelector('.w-4.h-4');
-        if (!checkbox) return;
-        
-        // 根据分类类型和当前筛选条件设置复选框样式
-        let isSelected = false;
-        
-        if (parentTitle.includes('文化分类') && cleanItemText.toLowerCase() === currentCategory.toLowerCase()) {
-          isSelected = true;
-        } else if (parentTitle.includes('地域分布') && cleanItemText.toLowerCase() === currentCity.toLowerCase()) {
-          isSelected = true;
-        } else if (parentTitle.includes('历史朝代') && cleanItemText.toLowerCase() === currentPeriod.toLowerCase()) {
-          isSelected = true;
-        }
-        
-        if (isSelected) {
-          // 添加样式类，确保复选框有正确的样式
-          checkbox.classList.add('checkbox-container', 'checkbox-selected');
-          checkbox.classList.remove('checkbox-unselected', 'bg-transparent');
-          checkbox.classList.add('bg-ancient-accent/20');
-          
-          // 创建勾选标记
-          const checkmark = document.createElement('div');
-          checkmark.className = 'checkmark checkmark-visible';
-          checkmark.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-ancient-accent"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-          
-          // 添加勾选标记到复选框
-          checkbox.appendChild(checkmark);
-        }
-      });
-      
-      // 更新标签的UI状态
-      if (currentTag) {
-        // 清除所有标签的选中样式
-        tagItems.forEach(tag => {
-          tag.classList.remove('tag-selected');
-        });
-        
-        // 查找匹配当前标签的元素并添加选中样式
-        tagItems.forEach(tag => {
-          const tagText = tag.textContent?.trim().replace(/\s*\(\d+\)$/, '') || '';
-          if (tagText.toLowerCase() === currentTag.toLowerCase()) {
-            tag.classList.add('tag-selected');
-          }
-        });
-      } else {
-        // 当没有选中标签时，清除所有标签的选中样式
-        tagItems.forEach(tag => {
-          tag.classList.remove('tag-selected');
-        });
-      }
-      
-      // 城市标签状态更新
-      cityTags.forEach(city => {
-        const cityText = city.getAttribute('data-city-value') || city.textContent?.trim().replace(/\s*\(\d+\)$/, '') || '';
-        
-        if (currentCity.toLowerCase() === cityText.toLowerCase()) {
-          city.classList.add('tag-selected');
-        } else {
-          city.classList.remove('tag-selected');
-        }
-      });
-      
-      // 时期标签状态更新
-      periodTags.forEach(period => {
-        const periodText = period.getAttribute('data-period-value') || period.textContent?.trim().replace(/\s*时期$/, '').replace(/\s*\(\d+\)$/, '') || '';
-        
-        if (currentPeriod.toLowerCase() === periodText.toLowerCase()) {
-          period.classList.add('tag-selected', 'border-ancient-accent/90', 'bg-ancient-accent/20', 'shadow-md');
-              } else {
-          period.classList.remove('tag-selected', 'border-ancient-accent/90', 'bg-ancient-accent/20', 'shadow-md');
-        }
-      });
-      
-      // 移除所有状态指示器
-      document.querySelectorAll('.state-indicator').forEach(indicator => {
-        indicator.remove();
-      });
-    }
-    
-    // 为卡片中的分类标签添加点击事件
-    categoryTags.forEach(category => {
-      category.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // 优先使用data-category-value属性
-        let categoryText = category.getAttribute('data-category-value') || category.textContent?.trim() || '';
-        if (categoryText) {
-          // 去除可能的计数部分
-          categoryText = categoryText.replace(/\s*\(\d+\)$/, '');
-          
-          // 切换选中状态
-          if (currentCategory.toLowerCase() === categoryText.toLowerCase()) {
-            currentCategory = ''; // 取消选择
-          } else {
-            currentCategory = categoryText; // 选择新的分类
-          }
-          // 重置其他筛选条件
-          currentTag = '';
-          currentCity = '';
-          currentPeriod = '';
-          
-          // 更新UI状态
-          updateFilterStatusUI();
-          
-          // 执行筛选并更新浏览器历史
-          filterCultures();
-          updateHistory();
-        }
-      });
-    });
-    
-    // 为卡片中的城市标签添加点击事件
-    cityTags.forEach(city => {
-      city.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // 优先使用data-city-value属性
-        let cityText = city.getAttribute('data-city-value') || city.textContent?.trim() || '';
-        if (cityText) {
-          // 去除可能的计数部分
-          cityText = cityText.replace(/\s*\(\d+\)$/, '');
-          
-          // 清除所有其他城市标签的选中样式
-          cityTags.forEach(otherCity => {
-            otherCity.classList.remove('tag-selected', 'border-ancient-accent/90', 'bg-ancient-accent/20', 'shadow-md');
-          });
-          
-          // 切换选中状态
-          if (currentCity.toLowerCase() === cityText.toLowerCase()) {
-            currentCity = ''; // 取消选择
-          } else {
-            currentCity = cityText; // 选择新的城市
-            // 立即添加选中样式
-            city.classList.add('tag-selected', 'border-ancient-accent/90', 'bg-ancient-accent/20', 'shadow-md');
-          }
-          
-          // 重置其他筛选条件
-          currentTag = '';
-          currentCategory = '';
-          currentPeriod = '';
-          
-          // 更新UI状态
-          updateFilterStatusUI();
-          
-          // 执行筛选并更新浏览器历史
-          filterCultures();
-          updateHistory();
-        }
-      });
-    });
-    
-    // 为卡片中的朝代标签添加点击事件
-    periodTags.forEach(period => {
-      period.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // 优先使用data-period-value属性
-        let periodText = period.getAttribute('data-period-value') || period.textContent?.trim().replace(/\s*时期$/, '') || '';
-        if (periodText) {
-          // 去除可能的计数部分
-          periodText = periodText.replace(/\s*\(\d+\)$/, '');
-          
-          // 清除所有其他时期标签的选中样式
-          periodTags.forEach(otherPeriod => {
-            otherPeriod.classList.remove('tag-selected', 'border-ancient-accent/90', 'bg-ancient-accent/20', 'shadow-md');
-          });
-          
-          // 切换选中状态
-          if (currentPeriod.toLowerCase() === periodText.toLowerCase()) {
-            currentPeriod = ''; // 取消选择
-          } else {
-            currentPeriod = periodText; // 选择新的时期
-            // 立即添加选中样式
-            period.classList.add('tag-selected', 'border-ancient-accent/90', 'bg-ancient-accent/20', 'shadow-md');
-          }
-          
-          // 重置其他筛选条件
-          currentTag = '';
-          currentCategory = '';
-          currentCity = '';
-          
-          // 更新UI状态
-          updateFilterStatusUI();
-          
-          // 执行筛选并更新浏览器历史
-          filterCultures();
-          updateHistory();
-        }
-      });
-    });
-    
-    // 为特色标签添加点击事件
-    tagItems.forEach((tag) => {
-      tag.addEventListener('click', (e) => {
-        // 对于卡片内的标签，需要阻止冒泡
-        const isInCard = tag.closest('.ancient-card');
-        if (isInCard) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        
-        // 优先使用data-tag-value属性
-        const tagValue = tag.getAttribute('data-tag-value') || tag.textContent?.trim() || '';
-        if (tagValue) {
-          // 切换选中状态
-          if (currentTag.toLowerCase() === tagValue.toLowerCase()) {
-            currentTag = ''; // 取消选择
-          } else {
-            currentTag = tagValue; // 选择新的标签
-          }
-          // 重置其他筛选条件
-          currentCategory = '';
-          currentCity = '';
-          currentPeriod = '';
-          
-          // 立即更新UI状态以确保视觉反馈
-          updateFilterStatusUI();
-          
-          // 执行筛选并更新浏览器历史
-          filterCultures();
-          updateHistory();
-        }
-      });
-    });
-    
-    // 添加古籍翻页动画效果
-    cultureCards.forEach((card, index) => {
-      // 设置初始状态
-      (card as HTMLElement).style.opacity = '0';
-      (card as HTMLElement).style.transform = 'translateY(20px) rotateY(5deg)';
-      (card as HTMLElement).style.transition = 'all 0.5s ease-out';
-    });
-    
-    // 添加进场动画
-    setTimeout(() => {
-      cultureCards.forEach((card, index) => {
-        setTimeout(() => {
-          (card as HTMLElement).style.opacity = '1';
-          (card as HTMLElement).style.transform = 'translateY(0) rotateY(0)';
-        }, 100 + (index * 80));
-      });
-    }, 300);
-    
-    // 分类项目点击处理
-    categoryItems.forEach((item) => {
-      item.addEventListener('click', () => {
-        // 获取分类内容
-        const textElement = item.querySelector('.text-ancient-black, .dark\\:text-ancient-white');
-        if (!textElement) return;
-        
-        const itemText = textElement.textContent?.trim() || '';
-        if (!itemText) return;
-        
-        // 去除数量计数部分 "(数字)"
-        const cleanItemText = itemText.replace(/\s*\(\d+\)$/, '');
-        
-        // 确定此类别是哪种类型的筛选
-        const parentSection = item.closest('.bg-ancient-paper-light, .dark\\:bg-ancient-paper-dark-light');
-        const parentTitle = parentSection?.querySelector('h3')?.textContent?.trim() || '';
-        
-        // 获取复选框元素
-        const checkbox = item.querySelector('.w-4.h-4');
-        if (!checkbox) return;
-        
-        // 设置当前筛选状态
-        let isSelected = false;
-        
-        if (parentTitle.includes('文化分类')) {
-          // 检查是否已经选中，如果是则取消选择
-          if (currentCategory.toLowerCase() === cleanItemText.toLowerCase()) {
-        currentCategory = '';
-          } else {
-            currentCategory = cleanItemText;
-            isSelected = true;
-            // 重置其他值
-        currentCity = '';
-        currentPeriod = '';
-            currentTag = '';
-          }
-        } else if (parentTitle.includes('地域分布')) {
-          // 检查是否已经选中，如果是则取消选择
-          if (currentCity.toLowerCase() === cleanItemText.toLowerCase()) {
-            currentCity = '';
-          } else {
-            currentCity = cleanItemText;
-            isSelected = true;
-            // 重置其他值
-            currentCategory = '';
-            currentPeriod = '';
-            currentTag = '';
-          }
-        } else if (parentTitle.includes('历史朝代')) {
-          // 检查是否已经选中，如果是则取消选择
-          if (currentPeriod.toLowerCase() === cleanItemText.toLowerCase()) {
-            currentPeriod = '';
-          } else {
-            currentPeriod = cleanItemText;
-            isSelected = true;
-            // 重置其他值
-            currentCategory = '';
-            currentCity = '';
-            currentTag = '';
-          }
-        }
-        
-        // 立即为当前项设置样式（为了立即反馈效果）
-        if (isSelected) {
-          // 添加样式类，确保复选框有正确的样式
-          checkbox.classList.add('checkbox-container', 'checkbox-selected');
-          checkbox.classList.remove('checkbox-unselected', 'bg-transparent');
-          checkbox.classList.add('bg-ancient-accent/20');
-          
-          // 查找或创建勾选标记
-          let checkmark = checkbox.querySelector('.checkmark');
-          if (!checkmark) {
-            checkmark = document.createElement('div');
-            checkmark.className = 'checkmark';
-            checkmark.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-ancient-accent"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-            checkbox.appendChild(checkmark);
-          }
-          
-          checkmark.classList.add('checkmark-visible');
-        } else {
-          // 移除选中样式
-          checkbox.classList.remove('checkbox-selected', 'checkbox-container', 'bg-ancient-accent/20');
-          checkbox.classList.add('checkbox-unselected', 'bg-transparent');
-          
-          // 移除勾选标记
-          const checkmark = checkbox.querySelector('.checkmark');
-          if (checkmark) {
-            checkmark.classList.remove('checkmark-visible');
-          }
-        }
-        
-        // 清除其他同类型项目的选中状态
-        categoryItems.forEach(otherItem => {
-          if (otherItem !== item) {
-            const otherTextElement = otherItem.querySelector('.text-ancient-black, .dark\\:text-ancient-white');
-            if (!otherTextElement) return;
-            
-            const otherParentSection = otherItem.closest('.bg-ancient-paper-light, .dark\\:bg-ancient-paper-dark-light');
-            const otherParentTitle = otherParentSection?.querySelector('h3')?.textContent?.trim() || '';
-            
-            // 只清除同类别的其他项目
-            const isSameType = 
-              (parentTitle.includes('文化分类') && otherParentTitle.includes('文化分类')) ||
-              (parentTitle.includes('地域分布') && otherParentTitle.includes('地域分布')) ||
-              (parentTitle.includes('历史朝代') && otherParentTitle.includes('历史朝代'));
-            
-            if (isSameType) {
-              const otherCheckbox = otherItem.querySelector('.w-4.h-4');
-              if (otherCheckbox) {
-                otherCheckbox.classList.remove('checkbox-selected', 'checkbox-container', 'bg-ancient-accent/20');
-                otherCheckbox.classList.add('checkbox-unselected');
-                
-                // 移除勾选标记
-                const otherCheckmark = otherCheckbox.querySelector('.checkmark');
-                if (otherCheckmark) {
-                  otherCheckmark.remove();
-                }
-              }
-            }
-          }
-        });
-        
-        // 完全更新UI
-        setTimeout(() => {
-        updateFilterStatusUI();
-        filterCultures();
-        updateHistory();
-        }, 10);
-      });
-    });
-    
-    // 根据URL参数选中对应的筛选项
-    function initializeCheckboxesFromUrl() {
-      // 设置当前筛选条件变量
-      currentSearch = searchParamFromUrl || '';
-      currentTag = tagParam || '';
-      currentCategory = categoryParam || '';
-      currentCity = cityParam || '';
-      currentPeriod = periodParam || '';
-      
-      // 通过初始调用updateFilterStatusUI来设置勾选框状态
-      updateFilterStatusUI();
-    }
-    
-    // 在页面加载时初始化
-    setTimeout(initializeCheckboxesFromUrl, 100);
-    
-    // 页面加载时，如果有URL参数，执行对应的筛选
-    if (searchInput && searchParamFromUrl) {
-      searchInput.value = searchParamFromUrl;
-      // 触发筛选
-      setTimeout(filterCultures, 200);
-    } else if (tagParam || categoryParam || cityParam || periodParam) {
-      // 有其他筛选参数时也执行筛选
-      setTimeout(filterCultures, 200);
-    }
 
-    // 页面加载后自动运行初始化
-    document.addEventListener('DOMContentLoaded', () => {
-      // 移除所有已存在的状态指示器
-      document.querySelectorAll('.state-indicator').forEach(indicator => {
-        indicator.remove();
-      });
-      
-      // 延迟一小段时间确保DOM已完全加载
-      setTimeout(() => {
-        try {
-          // 已经在上面调用了初始化函数，不需要再调用initFromUrlParams
-          
-          // 添加古籍翻页动画效果
-          cultureCards.forEach((card, index) => {
-            // 设置初始状态
-            (card as HTMLElement).style.opacity = '0';
-            (card as HTMLElement).style.transform = 'translateY(20px) rotateY(5deg)';
-            (card as HTMLElement).style.transition = 'all 0.5s ease-out';
-          });
-          
-          // 添加进场动画
-          setTimeout(() => {
-            cultureCards.forEach((card, index) => {
-              setTimeout(() => {
-                (card as HTMLElement).style.opacity = '1';
-                (card as HTMLElement).style.transform = 'translateY(0) rotateY(0)';
-              }, 100 + (index * 80));
-            });
-          }, 300);
-        } catch (error) {
-          console.error('初始化过程中发生错误:', error);
-        }
-      }, 100);
-    });
-
-    // 移动端筛选元素
-    const searchFormMobile = document.getElementById('search-form-mobile');
-    const searchInputMobile = document.querySelector('#search-form-mobile input[name="search"]') as HTMLInputElement;
+    // 移动端筛选抽屉
     const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
     const mobileFilterDrawer = document.getElementById('mobile-filter-drawer');
     const mobileFilterBackdrop = document.getElementById('mobile-filter-backdrop');
     const mobileFilterClose = document.getElementById('mobile-filter-close');
-    const mobileFilterApply = document.getElementById('mobile-filter-apply');
-    const mobileCategoryItems = document.querySelectorAll('.mobile-category-item');
-    const mobileCityItems = document.querySelectorAll('.mobile-city-item');
-    const mobilePeriodItems = document.querySelectorAll('.mobile-period-item');
-    const mobileTagItems = document.querySelectorAll('.mobile-tag-item');
-    
-    // 移动端抽屉控制函数
+
     // 打开移动端筛选抽屉
     if (mobileFilterToggle && mobileFilterDrawer) {
       mobileFilterToggle.addEventListener('click', () => {
@@ -1406,254 +778,339 @@ const sortBy: 'date' | 'name' = 'date';
         document.body.classList.add('overflow-hidden'); // 防止背景滚动
       });
     }
-    
-    // 关闭移动端筛选抽屉
+
+    // 关闭抽屉函数
     const closeFilterDrawer = () => {
       if (mobileFilterDrawer) {
         mobileFilterDrawer.classList.add('translate-x-full');
         document.body.classList.remove('overflow-hidden');
       }
     };
-    
+
     // 点击背景关闭抽屉
     if (mobileFilterBackdrop) {
       mobileFilterBackdrop.addEventListener('click', closeFilterDrawer);
     }
-    
+
     // 点击关闭按钮关闭抽屉
     if (mobileFilterClose) {
       mobileFilterClose.addEventListener('click', closeFilterDrawer);
     }
+
+    // 获取所有筛选链接
+    const filterLinks = document.querySelectorAll('a[href*="?category"], a[href*="?city"], a[href*="?taste"], a[href*="?tag"], a[href*="?ingredient"]');
     
-    // 点击应用按钮关闭抽屉并应用筛选
-    if (mobileFilterApply) {
-      mobileFilterApply.addEventListener('click', () => {
-        closeFilterDrawer();
-        // 筛选逻辑已经在点击各筛选项时处理
+    // 为每个筛选链接添加点击事件监听器
+    filterLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault(); // 阻止默认行为
+        
+        const href = (link as HTMLAnchorElement).href;
+        const url = new URL(href);
+        
+        // 获取当前的筛选参数
+        const params = new URLSearchParams(window.location.search);
+        const clickedParam = Array.from(url.searchParams.entries())[0];
+        
+        if (clickedParam) {
+          const [paramName, paramValue] = clickedParam;
+          
+          // 如果当前参数值与点击的值相同，则移除该参数
+          if (params.get(paramName) === paramValue) {
+            params.delete(paramName);
+          } else {
+            // 否则设置新的参数值
+            params.set(paramName, paramValue);
+          }
+          
+          // 更新 URL，但不刷新页面
+          const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+          window.history.pushState({}, '', newUrl);
+          
+          // 应用筛选
+          applyFilters();
+        }
       });
-    }
-    
-    // 同步桌面端和移动端的搜索内容
-    const syncSearchInputs = (from: HTMLInputElement, to: HTMLInputElement) => {
-      if (from && to) {
-        to.value = from.value;
+    });
+
+    // 应用筛选函数
+    function applyFilters() {
+      const params = new URLSearchParams(window.location.search);
+      const category = params.get('category')?.toLowerCase();
+      const city = params.get('city')?.toLowerCase();
+      const tag = params.get('tag')?.toLowerCase();
+      const search = params.get('search')?.toLowerCase();
+      
+      // 获取所有文化卡片
+      const cards = document.querySelectorAll('.ancient-card');
+      let visibleCount = 0;
+      
+      cards.forEach(card => {
+        let shouldShow = true;
+        
+        // 检查分类
+        if (category && shouldShow) {
+          const cardCategory = card.getAttribute('data-category');
+          if (cardCategory !== category) {
+            shouldShow = false;
+          }
+        }
+        
+        // 检查城市
+        if (city && shouldShow) {
+          try {
+            const cardCities = JSON.parse(card.getAttribute('data-cities') || '[]');
+            if (!cardCities.includes(city)) {
+              shouldShow = false;
+            }
+          } catch (e) {
+            shouldShow = false;
+          }
+        }
+        
+        // 检查标签
+        if (tag && shouldShow) {
+          try {
+            const cardTags = JSON.parse(card.getAttribute('data-tags') || '[]');
+            if (!cardTags.includes(tag)) {
+              shouldShow = false;
+            }
+          } catch (e) {
+            shouldShow = false;
+          }
+        }
+
+        // 检查搜索关键词
+        if (search && shouldShow) {
+          const title = card.querySelector('h3')?.textContent?.toLowerCase() || '';
+          const description = card.querySelector('p.line-clamp-2')?.textContent?.toLowerCase() || '';
+          const tags = JSON.parse(card.getAttribute('data-tags') || '[]').join(' ').toLowerCase();
+          const cities = JSON.parse(card.getAttribute('data-cities') || '[]').join(' ').toLowerCase();
+          
+          if (!title.includes(search) && 
+              !description.includes(search) && 
+              !tags.includes(search) && 
+              !cities.includes(search)) {
+            shouldShow = false;
+          }
+        }
+        
+        // 更新卡片显示状态
+        const cardContainer = card.closest('a')?.parentElement;
+        if (cardContainer) {
+          if (shouldShow) {
+            cardContainer.style.display = '';
+            visibleCount++;
+          } else {
+            cardContainer.style.display = 'none';
+          }
+        }
+      });
+
+      // 更新 UI 显示
+      updateFilterUI();
+      
+      // 处理无结果情况
+      const noResultsMessage = document.getElementById('no-results-message');
+      const searchTermMessage = document.getElementById('search-term-message');
+      const gridContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3') as HTMLElement;
+      
+      if (visibleCount === 0) {
+        if (gridContainer) gridContainer.style.display = 'none';
+        if (noResultsMessage) {
+          noResultsMessage.style.display = 'block';
+          if (searchTermMessage) {
+            let message = '抱歉，未找到相关文化内容。';
+            if (search) {
+              message += `没有找到包含"${search}"的内容。`;
+            }
+            if (category) {
+              message += `没有找到分类为"${category}"的内容。`;
+            }
+            if (city) {
+              message += `没有找到位于"${city}"的内容。`;
+            }
+            if (tag) {
+              message += `没有找到标签为"${tag}"的内容。`;
+            }
+            searchTermMessage.textContent = message;
+          }
+        }
+          } else {
+        if (gridContainer) gridContainer.style.display = 'grid';
+        if (noResultsMessage) noResultsMessage.style.display = 'none';
       }
-    };
-    
-    // 添加移动端搜索表单处理
-    if (searchFormMobile && searchInputMobile) {
-      searchFormMobile.addEventListener('submit', (e) => {
+    }
+
+    // 更新筛选 UI
+    function updateFilterUI() {
+      const params = new URLSearchParams(window.location.search);
+      const currentCategory = params.get('category');
+      const currentCity = params.get('city');
+      const currentTag = params.get('tag');
+      const currentSearch = params.get('search');
+      
+      // 更新分类选中状态
+      document.querySelectorAll('a[href*="?category"]').forEach(link => {
+        try {
+          const url = new URL((link as HTMLAnchorElement).href);
+          const linkCategory = url.searchParams.get('category');
+          
+          // 检查是否选中
+          const isSelected = currentCategory === linkCategory;
+          
+          // 处理带复选框的分类项（桌面端左侧栏）
+          const checkbox = link.querySelector('div.w-4.h-4');
+          if (checkbox) {
+            if (isSelected) {
+              checkbox.className = 'w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 w-full h-full bg-ancient-accent/60 dark:bg-ancient-accent-dark/60';
+              // 同时更新父元素背景
+              link.classList.add('bg-ancient-accent/10', 'dark:bg-ancient-accent-dark/10');
+          } else {
+              checkbox.className = 'w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20 transition-colors';
+              link.classList.remove('bg-ancient-accent/10', 'dark:bg-ancient-accent-dark/10');
+            }
+          } 
+          // 处理移动端分类标签样式（移动端筛选抽屉）
+          else if (link.classList.contains('px-3')) {
+            if (isSelected) {
+              link.classList.add('border-ancient-accent', 'dark:border-ancient-accent-dark', 'text-ancient-accent', 'dark:text-ancient-accent-dark', 'font-medium', 'bg-ancient-accent/10', 'dark:bg-ancient-accent-dark/10');
+              link.classList.remove('border-ancient-accent/30', 'dark:border-ancient-accent-dark/30');
+          } else {
+              link.classList.remove('border-ancient-accent', 'dark:border-ancient-accent-dark', 'text-ancient-accent', 'dark:text-ancient-accent-dark', 'font-medium', 'bg-ancient-accent/10', 'dark:bg-ancient-accent-dark/10');
+              link.classList.add('border-ancient-accent/30', 'dark:border-ancient-accent-dark/30');
+            }
+          }
+        } catch (e) {
+          console.error('Error updating category UI:', e);
+        }
+      });
+      
+      // 更新城市选中状态
+      document.querySelectorAll('a[href*="?city"]').forEach(link => {
+        try {
+          const url = new URL((link as HTMLAnchorElement).href);
+          const linkCity = url.searchParams.get('city');
+          
+          // 检查是否选中
+          const isSelected = currentCity === linkCity;
+          
+          // 处理带复选框的城市项（桌面端左侧栏）
+          const checkbox = link.querySelector('div.w-4.h-4');
+          if (checkbox) {
+            if (isSelected) {
+              checkbox.className = 'w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 w-full h-full bg-amber-400/60 dark:bg-amber-600/60';
+              // 同时更新父元素背景
+              link.classList.add('bg-amber-100/50', 'dark:bg-amber-800/20');
+          } else {
+              checkbox.className = 'w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30 transition-colors';
+              link.classList.remove('bg-amber-100/50', 'dark:bg-amber-800/20');
+            }
+          } 
+          // 处理移动端城市标签样式（移动端筛选抽屉）
+          else if (link.classList.contains('px-3')) {
+        if (isSelected) {
+              link.classList.add('bg-amber-100', 'dark:bg-amber-800/50', 'border-amber-300', 'dark:border-amber-600', 'text-amber-800', 'dark:text-amber-200', 'font-medium', 'shadow-sm');
+              link.classList.remove('bg-amber-100/50', 'dark:bg-amber-800/30', 'border-amber-200/50', 'dark:border-amber-700/30');
+        } else {
+              link.classList.remove('bg-amber-100', 'dark:bg-amber-800/50', 'border-amber-300', 'dark:border-amber-600', 'text-amber-800', 'dark:text-amber-200', 'font-medium', 'shadow-sm');
+              link.classList.add('bg-amber-100/50', 'dark:bg-amber-800/30', 'border-amber-200/50', 'dark:border-amber-700/30');
+            }
+          }
+        } catch (e) {
+          console.error('Error updating city UI:', e);
+        }
+      });
+      
+      // 更新标签选中状态
+      document.querySelectorAll('a[href*="?tag"]').forEach(link => {
+        try {
+          const url = new URL((link as HTMLAnchorElement).href);
+          const linkTag = url.searchParams.get('tag');
+          
+          // 检查是否选中
+          const isSelected = currentTag === linkTag;
+          
+          // 标签可能有多种不同的样式结构，需要针对不同结构进行处理
+          // 处理带有类名px-3的标签（桌面端和移动端通用标签样式）
+          if (link.classList.contains('px-3')) {
+            if (isSelected) {
+              link.classList.add('border-ancient-accent', 'dark:border-ancient-accent-dark', 'text-ancient-accent', 'dark:text-ancient-accent-dark', 'font-medium', 'bg-ancient-accent/10', 'dark:bg-ancient-accent-dark/10', 'shadow-sm');
+              link.classList.remove('border-ancient-accent/30', 'dark:border-ancient-accent-dark/30');
+            } else {
+              link.classList.remove('border-ancient-accent', 'dark:border-ancient-accent-dark', 'text-ancient-accent', 'dark:text-ancient-accent-dark', 'font-medium', 'bg-ancient-accent/10', 'dark:bg-ancient-accent-dark/10', 'shadow-sm');
+              link.classList.add('border-ancient-accent/30', 'dark:border-ancient-accent-dark/30');
+            }
+          }
+        } catch (e) {
+          console.error('Error updating tag UI:', e);
+        }
+      });
+      
+      // 高亮显示当前筛选条件摘要（顶部筛选状态栏）
+      if (currentCategory || currentCity || currentTag || currentSearch) {
+        const filterSummary = document.querySelector('.flex.flex-wrap.gap-2.items-center');
+        if (filterSummary) {
+          filterSummary.classList.add('animate-pulse-once');
+      setTimeout(() => {
+            filterSummary.classList.remove('animate-pulse-once');
+          }, 500);
+        }
+      }
+    }
+
+    // 初始化：如果 URL 中有筛选参数，应用筛选
+    if (window.location.search) {
+      applyFilters();
+    }
+
+    // 处理搜索表单提交
+    const searchForm = document.getElementById('search-form');
+    const searchFormMobile = document.getElementById('search-form-mobile');
+
+    function handleSearch(e: Event) {
         e.preventDefault();
-        const query = searchInputMobile.value.trim();
-        if (query) {
-          currentSearch = query;
-          // 同步到桌面端搜索框
-          if (searchInput) searchInput.value = query;
-          
-          // 重置其他筛选条件
-          currentTag = '';
-          currentCategory = '';
-          currentCity = '';
-          currentPeriod = '';
-          
-          // 执行筛选并更新UI
-          updateFilterStatusUI();
-          filterCultures();
-          updateHistory();
-          
-          // 如果筛选抽屉是打开的，则关闭它
-          closeFilterDrawer();
-        }
+      const form = e.target as HTMLFormElement;
+      const searchInput = form.querySelector('input[name="search"]') as HTMLInputElement;
+      
+      // 获取当前的筛选参数
+      const params = new URLSearchParams(window.location.search);
+      
+      // 更新或删除搜索参数
+      if (searchInput.value.trim()) {
+        params.set('search', searchInput.value.trim());
+        } else {
+        params.delete('search');
+      }
+      
+      // 更新 URL，但不刷新页面
+      const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+      window.history.pushState({}, '', newUrl);
+      
+      // 应用筛选
+      applyFilters();
+    }
+
+    // 为搜索表单添加提交事件监听器
+    if (searchForm) {
+      searchForm.addEventListener('submit', handleSearch);
+    }
+    if (searchFormMobile) {
+      searchFormMobile.addEventListener('submit', handleSearch);
+    }
+
+    // 重置筛选按钮
+    const resetFiltersBtn = document.getElementById('reset-filters-btn');
+    if (resetFiltersBtn) {
+      resetFiltersBtn.addEventListener('click', () => {
+        window.location.href = '/culture';
       });
     }
-    
-    // 为移动端分类项添加点击事件
-    mobileCategoryItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const categoryValue = item.getAttribute('data-category-value') || '';
-        
-        // 切换选中状态
-        if (currentCategory === categoryValue) {
-          currentCategory = ''; // 取消选择
-          item.classList.remove('mobile-selected');
-        } else {
-          // 先清除其他选中状态
-          mobileCategoryItems.forEach(otherItem => {
-            otherItem.classList.remove('mobile-selected');
-          });
-          
-          currentCategory = categoryValue; // 选择新的分类
-          item.classList.add('mobile-selected');
-        }
-        
-        // 重置其他筛选条件
-        currentTag = '';
-        currentCity = '';
-        currentPeriod = '';
-        
-        // 不立即更新，等待用户点击应用按钮
-      });
-    });
-    
-    // 为移动端城市项添加点击事件
-    mobileCityItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const cityValue = item.getAttribute('data-city-value') || '';
-        
-        // 切换选中状态
-        if (currentCity === cityValue) {
-          currentCity = ''; // 取消选择
-          item.classList.remove('mobile-selected');
-        } else {
-          // 先清除其他选中状态
-          mobileCityItems.forEach(otherItem => {
-            otherItem.classList.remove('mobile-selected');
-          });
-          
-          currentCity = cityValue; // 选择新的城市
-          item.classList.add('mobile-selected');
-        }
-        
-        // 重置其他筛选条件
-        currentTag = '';
-        currentCategory = '';
-        currentPeriod = '';
-        
-        // 不立即更新，等待用户点击应用按钮
-      });
-    });
-    
-    // 为移动端朝代项添加点击事件
-    mobilePeriodItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const periodValue = item.getAttribute('data-period-value') || '';
-        
-        // 切换选中状态
-        if (currentPeriod === periodValue) {
-          currentPeriod = ''; // 取消选择
-          item.classList.remove('mobile-selected');
-        } else {
-          // 先清除其他选中状态
-          mobilePeriodItems.forEach(otherItem => {
-            otherItem.classList.remove('mobile-selected');
-          });
-          
-          currentPeriod = periodValue; // 选择新的朝代
-          item.classList.add('mobile-selected');
-        }
-        
-        // 重置其他筛选条件
-        currentTag = '';
-        currentCategory = '';
-        currentCity = '';
-        
-        // 不立即更新，等待用户点击应用按钮
-      });
-    });
-    
-    // 为移动端标签项添加点击事件
-    mobileTagItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const tagValue = item.getAttribute('data-tag-value') || '';
-        
-        // 切换选中状态
-        if (currentTag === tagValue) {
-          currentTag = ''; // 取消选择
-          item.classList.remove('mobile-selected');
-        } else {
-          // 先清除其他选中状态
-          mobileTagItems.forEach(otherItem => {
-            otherItem.classList.remove('mobile-selected');
-          });
-          
-          currentTag = tagValue; // 选择新的标签
-          item.classList.add('mobile-selected');
-        }
-        
-        // 重置其他筛选条件
-        currentCategory = '';
-        currentCity = '';
-        currentPeriod = '';
-        
-        // 不立即更新，等待用户点击应用按钮
-      });
-    });
-    
-    // 应用按钮点击事件，统一更新UI和执行筛选
-    if (mobileFilterApply) {
-      mobileFilterApply.addEventListener('click', () => {
-        // 更新UI状态
-        updateFilterStatusUI();
-        // 执行筛选
-        filterCultures();
-        // 更新浏览器历史
-        updateHistory();
-        // 关闭抽屉
-        closeFilterDrawer();
-      });
-    }
-    
-    // 文档加载完成后，同步初始化桌面端和移动端的选中状态
-    document.addEventListener('DOMContentLoaded', () => {
-      // 初始化搜索框
-      if (searchInput && searchParamFromUrl) {
-        (searchInput as HTMLInputElement).value = searchParamFromUrl;
-      }
-      if (searchInputMobile && searchParamFromUrl) {
-        searchInputMobile.value = searchParamFromUrl;
-      }
-      
-      // 更新移动端分类项状态
-      if (currentCategory) {
-        mobileCategoryItems.forEach(item => {
-          const value = item.getAttribute('data-category-value') || '';
-          if (value === currentCategory) {
-            item.classList.add('mobile-selected');
-          }
-        });
-      }
-      
-      // 更新移动端城市项状态
-      if (currentCity) {
-        mobileCityItems.forEach(item => {
-          const value = item.getAttribute('data-city-value') || '';
-          if (value === currentCity) {
-            item.classList.add('mobile-selected');
-          }
-        });
-      }
-      
-      // 更新移动端朝代项状态
-      if (currentPeriod) {
-        mobilePeriodItems.forEach(item => {
-          const value = item.getAttribute('data-period-value') || '';
-          if (value === currentPeriod) {
-            item.classList.add('mobile-selected');
-          }
-        });
-      }
-      
-      // 更新移动端标签项状态
-      if (currentTag) {
-        mobileTagItems.forEach(item => {
-          const value = item.getAttribute('data-tag-value') || '';
-          if (value === currentTag) {
-            item.classList.add('mobile-selected');
-          }
-        });
-      }
-      
-      // 执行初始筛选
-      if (searchParamFromUrl || tagParam || categoryParam || cityParam || periodParam) {
-        // 触发筛选
-        setTimeout(filterCultures, 100);
-      }
-    });
   });
 </script>
 
 <style>
-  
+
   /* 古籍卡片样式 */
   .ancient-card {
     position: relative;
@@ -1663,35 +1120,35 @@ const sortBy: 'date' | 'name' = 'date';
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
   }
-  
+
   [data-theme='dark'] .ancient-card {
     background: linear-gradient(145deg, rgba(32, 30, 34, 0.95), rgba(38, 36, 42, 0.95));
     border-color: rgba(184, 124, 80, 0.35);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.03);
   }
-  
+
   [data-theme='dark'] .ancient-card:hover {
     background: linear-gradient(145deg, rgba(40, 38, 48, 0.95), rgba(46, 43, 53, 0.95));
     border-color: rgba(201, 145, 95, 0.45);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
   }
-  
+
   .ancient-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
-  
+
   /* 书卷装饰 */
   .scroll-decoration {
     position: relative;
     border-radius: 8px;
     overflow: hidden;
   }
-  
+
   /* 印章效果 */
   .seal-mark {
     position: relative;
   }
-  
+
   .seal-mark::after {
     content: '';
     position: absolute;
@@ -1705,7 +1162,7 @@ const sortBy: 'date' | 'name' = 'date';
     opacity: 0.2;
     transform: rotate(15deg);
   }
-  
+
   /* 卷轴打开动画 */
   @keyframes unrollScroll {
     0% {
@@ -1717,11 +1174,11 @@ const sortBy: 'date' | 'name' = 'date';
       transform: translateY(0);
     }
   }
-  
+
   .scroll-decoration {
     animation: unrollScroll 1.2s ease-out;
   }
-  
+
   /* 印章浮现动画 */
   @keyframes revealSeal {
     0% {
@@ -1737,13 +1194,13 @@ const sortBy: 'date' | 'name' = 'date';
       transform: scale(1) rotate(15deg);
     }
   }
-  
+
   .seal {
     animation: revealSeal 1.5s ease-out forwards;
     animation-delay: 0.8s;
     opacity: 0;
   }
-  
+
   /* 水墨渐显动画 */
   @keyframes inkReveal {
     0% {
@@ -1755,11 +1212,11 @@ const sortBy: 'date' | 'name' = 'date';
       filter: blur(0);
     }
   }
-  
+
   .bg-ink-splash, .bg-ink-decoration, .bg-ink-flower {
     animation: inkReveal 2s ease-out forwards;
   }
-  
+
   /* 隐藏滚动条但保留功能 */
   .hide-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
@@ -1768,13 +1225,13 @@ const sortBy: 'date' | 'name' = 'date';
   .hide-scrollbar::-webkit-scrollbar {
     display: none;  /* Chrome, Safari, Opera */
   }
-  
+
   /* 标题毛笔效果 */
   .official-title h1 {
     position: relative;
     display: inline-block;
   }
-  
+
   .official-title h1::after {
     content: '';
     position: absolute;
@@ -1785,11 +1242,11 @@ const sortBy: 'date' | 'name' = 'date';
     background-color: #8a2c12;
     transform: rotate(-0.5deg);
   }
-  
+
   [data-theme='dark'] .official-title h1::after {
     background-color: #c34c2a;
   }
-  
+
   /* 勾选框样式 */
   .checkbox-container {
     position: relative;
@@ -1804,19 +1261,19 @@ const sortBy: 'date' | 'name' = 'date';
     align-items: center;
     justify-content: center;
   }
-  
+
   .checkbox-selected {
     background-color: rgba(139, 90, 43, 0.2);
     border-color: #8B5A2B;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transform: scale(1.05);
   }
-  
+
   .checkbox-unselected {
     background-color: transparent;
     border-color: rgba(139, 90, 43, 0.5);
   }
-  
+
   .checkmark {
     position: absolute;
     top: 50%;
@@ -1831,40 +1288,51 @@ const sortBy: 'date' | 'name' = 'date';
     align-items: center;
     justify-content: center;
   }
-  
+
   .checkmark-visible {
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
-  
+
   /* 标签选中状态样式 */
   .tag-selected {
-    transform: scale(1.05) !important;
-    box-shadow: 0 2px 6px rgba(139, 90, 43, 0.15) !important;
-    background-color: rgba(139, 90, 43, 0.15) !important;
-    border-color: rgba(139, 90, 43, 0.7) !important;
-    position: relative;
-    color: #8B5A2B !important;
+    background-color: rgba(139, 90, 43, 0.2) !important;
+    border-color: rgba(139, 90, 43, 0.9) !important;
+    color: rgba(139, 90, 43, 1) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
-  
+
+  .dark .tag-selected {
+    background-color: rgba(139, 90, 43, 0.3) !important;
+    border-color: rgba(139, 90, 43, 0.7) !important;
+    color: rgba(215, 171, 101, 1) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  /* 确保标签选中时有完整边框 */
+  .tag-selected {
+    border-width: 1px;
+    border-style: solid;
+  }
+
   /* 删除选中标签后的彩色点 */
   .tag-selected::after {
     content: none;
   }
-  
+
   /* 标签悬停效果 */
   .tag-item:hover {
     transform: scale(1.05);
     box-shadow: 0 2px 4px rgba(139, 90, 43, 0.1);
     transition: all 0.2s ease;
   }
-  
+
   /* 鼠标悬停在标签上的效果 */
   .tag-item:hover {
     border-color: rgba(156, 79, 46, 0.5) !important;
     background-color: rgba(156, 79, 46, 0.1) !important;
   }
-  
+
   /* 专门处理复选框的样式 */
   .font-ancient-body.max-h-48 .flex.items-center.group.cursor-pointer .w-4.h-4 {
     position: relative;
@@ -1880,124 +1348,124 @@ const sortBy: 'date' | 'name' = 'date';
     justify-content: center;
     background-color: transparent;
   }
-  
+
   .font-ancient-body.max-h-48 .flex.items-center.group.cursor-pointer .w-4.h-4.bg-ancient-accent\/20 {
     background-color: rgba(139, 90, 43, 0.2) !important;
     border-color: #8B5A2B !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transform: scale(1.05);
   }
-  
+
   /* 添加特定的悬停效果到类别项 */
   .flex.items-center.group.cursor-pointer:hover .w-4.h-4 {
     background-color: rgba(139, 90, 43, 0.1);
     border-color: #8B5A2B;
     transition: all 0.2s ease;
   }
-  
+
   /* 黑暗模式下的背景和内容区优化 */
   [data-theme='dark'] .bg-ancient-paper-dark {
     background-color: #1e1a21;
   }
-  
+
   [data-theme='dark'] .bg-ancient-paper-dark-light {
     background-color: #28232a;
   }
-  
-  [data-theme='dark'] .bg-ancient-paper-dark\/70, 
-  [data-theme='dark'] .bg-ancient-paper-dark\/50, 
+
+  [data-theme='dark'] .bg-ancient-paper-dark\/70,
+  [data-theme='dark'] .bg-ancient-paper-dark\/50,
   [data-theme='dark'] .bg-ancient-paper-dark\/90 {
     background-color: rgba(30, 26, 33, 0.9) !important;
   }
-  
+
   /* 黑暗模式下的文字颜色 */
   [data-theme='dark'] .text-ancient-white {
     color: #f4e8d8 !important;
   }
-  
+
   [data-theme='dark'] .text-ancient-white\/70 {
     color: rgba(244, 232, 216, 0.8) !important;
   }
-  
+
   [data-theme='dark'] .text-ancient-white\/80 {
     color: rgba(244, 232, 216, 0.9) !important;
   }
-  
+
   [data-theme='dark'] .text-ancient-white\/40 {
     color: rgba(244, 232, 216, 0.6) !important;
   }
-  
+
   /* 修改深色模式下琥珀色背景 */
   [data-theme='dark'] .dark\:bg-amber-800\/30 {
     background-color: rgba(100, 50, 20, 0.4) !important;
   }
-  
+
   [data-theme='dark'] .dark\:border-amber-700\/30 {
     border-color: rgba(160, 80, 30, 0.5) !important;
   }
-  
+
   /* 黑暗模式下的配色修正 */
   [data-theme='dark'] .border-ancient-accent-dark {
     border-color: rgba(215, 171, 101, 0.6);
   }
-  
+
   [data-theme='dark'] .text-ancient-accent-dark {
     color: #d7ab65;
   }
-  
+
   [data-theme='dark'] .bg-ancient-accent-dark {
     background-color: #9b763d;
   }
-  
+
   [data-theme='dark'] .text-ancient-red-dark {
     color: #e67e56;
   }
-  
+
   /* 黑暗模式下的卡片内标签 */
   [data-theme='dark'] .bg-ancient-paper-dark/50 {
     background-color: rgba(52, 46, 38, 0.5);
   }
-  
+
   [data-theme='dark'] .bg-ancient-paper-dark/70 {
     background-color: rgba(52, 46, 38, 0.7);
   }
-  
+
   [data-theme='dark'] .bg-ancient-paper-dark/90 {
     background-color: rgba(52, 46, 38, 0.9);
   }
-  
+
   /* 黑暗模式下的城市标签 */
   [data-theme='dark'] .dark\:bg-amber-800\/30 {
     background-color: rgba(146, 64, 14, 0.3);
   }
-  
+
   [data-theme='dark'] .dark\:border-amber-700\/30 {
     border-color: rgba(180, 83, 9, 0.4);
   }
-  
+
   /* 黑暗模式下的勾选框 */
   [data-theme='dark'] .checkbox-container,
   [data-theme='dark'] .font-ancient-body.max-h-48 .flex.items-center.group.cursor-pointer .w-4.h-4 {
     border-color: rgba(215, 171, 101, 0.6);
   }
-  
+
   [data-theme='dark'] .checkbox-selected,
   [data-theme='dark'] .font-ancient-body.max-h-48 .flex.items-center.group.cursor-pointer .w-4.h-4.bg-ancient-accent\/20 {
     background-color: rgba(155, 118, 61, 0.3) !important;
     border-color: rgba(215, 171, 101, 0.8) !important;
   }
-  
+
   [data-theme='dark'] .checkmark {
     color: #d7ab65;
   }
-  
+
   /* 黑暗模式下标签的悬停效果 */
   [data-theme='dark'] .tag-item:hover {
     border-color: rgba(215, 171, 101, 0.7) !important;
     background-color: rgba(155, 118, 61, 0.2) !important;
     color: #f5efe2 !important;
   }
-  
+
   /* 黑暗模式下标签的选中状态 */
   [data-theme='dark'] .tag-selected {
     background-color: rgba(155, 118, 61, 0.25) !important;
@@ -2005,133 +1473,99 @@ const sortBy: 'date' | 'name' = 'date';
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
     color: rgba(215, 171, 101, 0.9) !important;
   }
-  
+
   /* 删除暗色模式下选中标签后的彩色点 */
   [data-theme='dark'] .tag-selected::after {
     content: none;
   }
-  
+
   /* 黑暗模式下卡片标题的悬停效果 */
   [data-theme='dark'] .group-hover\:text-ancient-red-dark {
     color: #e67e56;
   }
-  
+
   /* 高级悬停效果 */
   [data-theme='dark'] .ancient-card:hover .text-ancient-black\/40 {
     color: rgba(245, 239, 226, 0.6);
   }
-  
+
   /* 增强卡片阴影渐变效果 */
   [data-theme='dark'] .ancient-card {
     transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
     backface-visibility: hidden;
   }
-  
+
   /* 改善分页控件的黑暗模式样式 */
   [data-theme='dark'] .dark\:bg-ancient-paper-dark\/70 {
     background-color: rgba(52, 46, 38, 0.7);
   }
-  
+
   [data-theme='dark'] .dark\:bg-ancient-red-dark\/10 {
     background-color: rgba(230, 126, 86, 0.1);
   }
-  
+
   [data-theme='dark'] .dark\:hover\:bg-ancient-paper-dark:hover {
     background-color: rgba(52, 46, 38, 1);
   }
-  
+
   /* 卷轴头部背景 */
   .bg-scroll-bg {
-    background: url('/images/ancient-paper-texture.jpg') repeat;
-    background-size: 500px;
+    background-color: var(--bg-scroll);
+    background-image: linear-gradient(to right, rgba(139, 90, 43, 0.05) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(139, 90, 43, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
   }
-  
+
+  /* 深色模式下的卷轴背景 */
   .bg-scroll-bg-dark {
-    background: url('/images/ancient-paper-texture-dark.jpg') repeat;
-    background-size: 500px;
+    background-color: var(--color-dark-scroll);
+    background-image: linear-gradient(to right, rgba(139, 90, 43, 0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(139, 90, 43, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
   }
-  
-  /* 卷轴边角装饰 */
-  .bg-scroll-corner {
-    background: url('/images/scroll-corner.png') no-repeat;
-    background-size: contain;
-  }
-  
-  /* 卷轴上下边界 */
-  .bg-scroll-top {
-    background: url('/images/scroll-top.png') repeat-x;
-    background-size: auto 100%;
-  }
-  
-  .bg-scroll-bottom {
-    background: url('/images/scroll-bottom.png') repeat-x;
-    background-size: auto 100%;
-  }
-  
-  .bg-scroll-top-dark {
-    background: url('/images/scroll-top-dark.png') repeat-x;
-    background-size: auto 100%;
-  }
-  
-  .bg-scroll-bottom-dark {
-    background: url('/images/scroll-bottom-dark.png') repeat-x;
-    background-size: auto 100%;
-  }
-  
-  /* 印章和书法装饰 */
-  .seal {
-    background: url('/images/seal.png') no-repeat center center;
-    background-size: contain;
-  }
-  
-  .calligraphy-decoration {
-    background: url('/images/calligraphy-decoration.png') no-repeat center center;
-    background-size: contain;
-  }
-  
-  /* 水墨效果 */
+
+  /* 水墨效果 - 使用CSS渐变替代图片 */
   .bg-ink-splash {
-    background: url('/images/ink-splash.png') no-repeat;
-    background-size: contain;
+    background: radial-gradient(ellipse at center, rgba(139, 90, 43, 0.6) 0%, rgba(139, 90, 43, 0) 70%);
   }
-  
+
   .bg-ink-decoration {
-    background: url('/images/ink-decoration.png') no-repeat;
-    background-size: contain;
+    background: radial-gradient(ellipse at center, rgba(139, 90, 43, 0.5) 0%, rgba(139, 90, 43, 0) 70%);
   }
-  
+
   .bg-ink-flower {
-    background: url('/images/ink-flower.png') no-repeat;
-    background-size: contain;
+    background: radial-gradient(ellipse at center, rgba(139, 90, 43, 0.4) 0%, rgba(139, 90, 43, 0) 70%);
   }
-  
+
   .bg-pattern {
-    background: url('/images/pattern.png') repeat;
+    background-image: linear-gradient(to right, rgba(139, 90, 43, 0.05) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(139, 90, 43, 0.05) 1px, transparent 1px);
+    background-size: 10px 10px;
   }
-  
+
   /* 自定义滚动条样式 */
   ::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   ::-webkit-scrollbar-track {
     background: rgba(236, 227, 212, 0.2);
   }
-  
+
   ::-webkit-scrollbar-thumb {
     background: rgba(193, 154, 107, 0.3);
     border-radius: 4px;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(193, 154, 107, 0.5);
   }
-  
+
   /* 标签选中状态样式 */
   .tag-selected::after {
     content: none;
   }
-  
+
   /* 勾选标记样式 */
   .checkmark {
     position: relative;
@@ -2139,13 +1573,13 @@ const sortBy: 'date' | 'name' = 'date';
     width: 8px;
     height: 8px;
   }
-  
+
   .checkmark:before, .checkmark:after {
     position: absolute;
     content: '';
     background-color: #d5a021;
   }
-  
+
   .checkmark:before {
     width: 2px;
     height: 5px;
@@ -2153,7 +1587,7 @@ const sortBy: 'date' | 'name' = 'date';
     left: 2px;
     transform: rotate(-45deg);
   }
-  
+
   .checkmark:after {
     width: 2px;
     height: 8px;
@@ -2161,7 +1595,7 @@ const sortBy: 'date' | 'name' = 'date';
     left: 5px;
     transform: rotate(45deg);
   }
-  
+
   /* 移动端筛选项选中状态强化样式 */
   .mobile-selected {
     background-color: rgba(213, 160, 33, 0.2) !important;
@@ -2170,7 +1604,7 @@ const sortBy: 'date' | 'name' = 'date';
     position: relative;
     padding-right: 1.5rem !important;
   }
-  
+
   .mobile-selected::after {
     content: '✓';
     position: absolute;
@@ -2180,17 +1614,17 @@ const sortBy: 'date' | 'name' = 'date';
     color: #d5a021;
     font-weight: bold;
   }
-  
+
   .dark .mobile-selected {
     background-color: rgba(213, 160, 33, 0.3) !important;
     border-color: rgba(213, 160, 33, 0.6) !important;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
   }
-  
+
   .dark .mobile-selected::after {
     color: rgba(213, 171, 101, 0.9);
   }
-  
+
   /* 特定类型的移动端筛选项选中状态 */
   .mobile-category-item.mobile-selected,
   .mobile-city-item.mobile-selected,
@@ -2199,7 +1633,7 @@ const sortBy: 'date' | 'name' = 'date';
     background-color: rgba(180, 83, 9, 0.2) !important;
     border-color: rgba(180, 83, 9, 0.6) !important;
   }
-  
+
   .dark .mobile-category-item.mobile-selected,
   .dark .mobile-city-item.mobile-selected,
   .dark .mobile-period-item.mobile-selected,
@@ -2207,51 +1641,51 @@ const sortBy: 'date' | 'name' = 'date';
     background-color: rgba(180, 83, 9, 0.3) !important;
     border-color: rgba(180, 83, 9, 0.6) !important;
   }
-  
+
   .dark .mobile-category-item.mobile-selected::after,
   .dark .mobile-city-item.mobile-selected::after,
   .dark .mobile-period-item.mobile-selected::after,
   .dark .mobile-tag-item.mobile-selected::after {
     color: rgba(213, 171, 101, 0.9);
   }
-  
+
   /* 移除所有重复的样式定义 */
-  
+
   /* 卡片底部区域占据剩余空间 */
   .ancient-card > div:nth-child(2) {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
   }
-  
+
   /* 确保卡片内部元素高度一致 */
   .ancient-card p.text-ancient-black\/80,
   .ancient-card p.dark\:text-ancient-white\/80 {
     min-height: 2.5rem; /* 约为两行文本的高度 */
   }
-  
+
   /* 确保标签容器高度一致 */
   .ancient-card .flex.flex-wrap.gap-1\.5.mb-4 {
     min-height: 2rem; /* 足够容纳一行标签的高度 */
   }
-  
+
   /* 查阅详情按钮放在底部 */
   .ancient-card div.flex.items-center.text-ancient-black\/80,
   .ancient-card div.dark\:text-ancient-white\/80 {
     margin-top: auto;
   }
-  
+
   /* Grid等高卡片设置 */
   .grid.auto-rows-fr {
     grid-auto-rows: 1fr;
   }
-  
+
   /* 确保ScrollReveal容器也是等高的 */
   .grid.auto-rows-fr > div {
     height: 100%;
     display: flex;
   }
-  
+
   /* 确保卡片一致高度 */
   .ancient-card {
     display: flex;
@@ -2263,24 +1697,24 @@ const sortBy: 'date' | 'name' = 'date';
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
   }
-  
+
   /* 卡片内容区域 */
   .ancient-card > div:nth-child(2) {
     flex: 1;
     display: flex;
     flex-direction: column;
   }
-  
+
   /* 卡片标题区域 */
   .ancient-card .mb-3 {
     flex-shrink: 0;
   }
-  
+
   /* 固定图片区域高度 */
   .ancient-card .aspect-\[5\/4\] {
     flex-shrink: 0;
   }
-  
+
   /* 描述区域固定高度 */
   .ancient-card p.line-clamp-2 {
     height: 2.5rem;
@@ -2291,121 +1725,117 @@ const sortBy: 'date' | 'name' = 'date';
     flex-shrink: 0;
     margin-bottom: 1rem;
   }
-  
+
   /* 标签区固定高度 */
   .ancient-card .flex.flex-wrap.gap-1\.5.mb-4 {
     height: 2.5rem;
     overflow: hidden;
     flex-shrink: 0;
   }
-  
+
   /* 城市信息区固定高度 */
   .ancient-card .min-h-\[1\.5rem\] {
     height: 2rem;
     overflow: hidden;
     flex-shrink: 0;
   }
-  
+
   /* 查阅详情按钮固定在底部 */
   .ancient-card div.flex.items-center.group-hover\:translate-x-1 {
     margin-top: auto;
     flex-shrink: 0;
   }
-  
+
   /* 确保筛选栏和卡片顶部对齐 */
   @media (min-width: 1024px) {
     .lg\:grid-cols-4 {
       align-items: start;
     }
-    
+
     .lg\:grid-cols-4 > div:first-child,
     .lg\:grid-cols-4 > div:last-child {
       margin-top: 0;
       padding-top: 0;
     }
-    
+
     .lg\:grid-cols-4 > div:first-child > div {
       margin-top: 0;
     }
   }
-  
+
   /* 图片区域暗色模式 */
   [data-theme='dark'] .ancient-card .aspect-\[5\/4\] {
     background-color: rgba(40, 38, 45, 0.8) !important;
   }
-  
+
   /* 暗色模式下卡片内文字颜色 */
   [data-theme='dark'] .ancient-card h3 {
     color: rgba(235, 220, 200, 0.95);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
-  
+
   [data-theme='dark'] .ancient-card:hover h3 {
     color: rgba(245, 230, 210, 0.98);
   }
-  
+
   [data-theme='dark'] .ancient-card p {
     color: rgba(220, 210, 195, 0.85);
   }
-  
+
   /* 暗色模式下标签样式 */
   [data-theme='dark'] .ancient-card .tag-item {
     background-color: rgba(50, 45, 55, 0.75);
     border-color: rgba(184, 134, 90, 0.4);
     color: rgba(235, 220, 200, 0.9);
   }
-  
+
   /* 暗色模式下城市标签样式 */
   [data-theme='dark'] .ancient-card .city-tag {
     background-color: rgba(120, 60, 25, 0.3);
     border-color: rgba(150, 80, 30, 0.4);
     color: rgba(240, 220, 190, 0.85);
   }
-  
+
   /* 卡片详情查看按钮暗色模式 */
   [data-theme='dark'] .ancient-card div.flex.items-center.text-ancient-black\/80 {
     color: rgba(215, 190, 155, 0.85) !important;
   }
-  
+
   [data-theme='dark'] .ancient-card:hover div.flex.items-center.text-ancient-black\/80 {
     color: rgba(227, 161, 103, 0.95) !important;
   }
-  
-  /* 暗色模式下朝代标签样式 */
-  [data-theme='dark'] .ancient-card .period-tag {
-    color: rgba(215, 190, 155, 0.75) !important;
-  }
-  
+
+
   /* 暗色模式下卡片内标题悬停样式 */
   [data-theme='dark'] .ancient-card .group-hover\:text-ancient-red-dark {
     color: rgba(227, 161, 103, 0.95) !important;
   }
-  
+
   /* 暗色模式下卡片分类标签 */
   [data-theme='dark'] .ancient-card .category-tag {
     background-color: rgba(50, 45, 55, 0.85) !important;
     border-color: rgba(184, 134, 90, 0.4) !important;
   }
-  
+
   /* 暗色模式下卡片阴影和边框过渡效果 */
   [data-theme='dark'] .ancient-card {
     transition: all 0.4s ease;
   }
-  
+
   [data-theme='dark'] .ancient-card:hover {
     transform: translateY(-2px);
   }
-  
+
   /* 优化暗色模式下卡片装饰元素 */
   [data-theme='dark'] .ancient-card .bg-ink-decoration {
     opacity: 0.15 !important;
   }
-  
+
   /* 优化暗色模式下卡片内默认标题显示 */
   [data-theme='dark'] .ancient-card .text-ancient-white\/40 {
     color: rgba(236, 215, 185, 0.25) !important;
   }
-  
+
   /* 优化暗色模式下印章效果 */
   [data-theme='dark'] .ancient-card .bg-seal-mark {
     opacity: 0.3 !important;
@@ -2430,5 +1860,252 @@ const sortBy: 'date' | 'name' = 'date';
     transform: translateY(-2px);
   }
 
-```
+  /* 古纸纹理背景 - 添加纹理感的CSS定义 */
+  .bg-ancient-paper {
+    background-color: var(--bg-paper);
+  }
+
+  .bg-ancient-paper-dark {
+    background-color: var(--color-dark-paper);
+  }
+
+  .bg-ancient-paper-light {
+    background-color: rgba(248, 245, 232, 0.5);
+  }
+
+  .bg-ancient-paper-dark-light {
+    background-color: rgba(52, 46, 38, 0.5);
+  }
+
+  /* 卷轴头部背景 */
+  .bg-scroll-bg {
+    background-color: var(--bg-scroll);
+  }
+
+  /* 深色模式下的卷轴背景 */
+  .bg-scroll-bg-dark {
+    background-color: var(--color-dark-scroll);
+    background-image: linear-gradient(to right, rgba(139, 90, 43, 0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(139, 90, 43, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* 地域分布样式 - 明亮模式 */
+  .font-ancient-body.max-h-48 a[href*="?city"] {
+    transition: all 0.3s ease;
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?city"]:hover {
+    background-color: rgba(251, 191, 36, 0.1);
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?city"] .w-4.h-4 {
+    border-color: rgba(251, 191, 36, 0.5);
+    transition: all 0.3s ease;
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?city"]:hover .w-4.h-4 {
+    border-color: rgba(251, 191, 36, 0.8);
+    background-color: rgba(251, 191, 36, 0.1);
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 {
+    background-color: rgba(251, 191, 36, 0.15);
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 .w-4.h-4 {
+    border-color: rgba(251, 191, 36, 0.8);
+    background-color: rgba(251, 191, 36, 0.2);
+  }
+
+  /* 文化分类样式 - 明亮模式 */
+  .font-ancient-body.max-h-48 a[href*="?category"] {
+    transition: all 0.3s ease;
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?category"]:hover {
+    background-color: rgba(139, 90, 43, 0.1);
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4 {
+    border-color: rgba(139, 90, 43, 0.5);
+    transition: all 0.3s ease;
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?category"]:hover .w-4.h-4 {
+    border-color: rgba(139, 90, 43, 0.8);
+    background-color: rgba(139, 90, 43, 0.1);
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 {
+    background-color: rgba(139, 90, 43, 0.15);
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 .w-4.h-4 {
+    border-color: rgba(139, 90, 43, 0.8);
+    background-color: rgba(139, 90, 43, 0.2);
+  }
+
+  /* 文化分类样式 - 暗黑模式 */
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"] {
+    transition: all 0.3s ease;
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"]:hover {
+    background-color: rgba(215, 171, 101, 0.1);
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4 {
+    border-color: rgba(215, 171, 101, 0.5);
+    transition: all 0.3s ease;
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"]:hover .w-4.h-4 {
+    border-color: rgba(215, 171, 101, 0.8);
+    background-color: rgba(215, 171, 101, 0.1);
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 {
+    background-color: rgba(215, 171, 101, 0.15);
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 .w-4.h-4 {
+    border-color: rgba(215, 171, 101, 0.8);
+    background-color: rgba(215, 171, 101, 0.2);
+  }
+
+  /* 地域分布样式 - 暗黑模式 */
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"] {
+    transition: all 0.3s ease;
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"]:hover {
+    background-color: rgba(180, 83, 9, 0.2);
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"] .w-4.h-4 {
+    border-color: rgba(180, 83, 9, 0.5);
+    transition: all 0.3s ease;
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"]:hover .w-4.h-4 {
+    border-color: rgba(180, 83, 9, 0.8);
+    background-color: rgba(180, 83, 9, 0.2);
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 {
+    background-color: rgba(180, 83, 9, 0.25);
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 .w-4.h-4 {
+    border-color: rgba(180, 83, 9, 0.8);
+    background-color: rgba(180, 83, 9, 0.3);
+  }
+
+  /* 文化分类和地域分布的勾选框基础样式 */
+  .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4,
+  .font-ancient-body.max-h-48 a[href*="?city"] .w-4.h-4 {
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.25rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 勾选框选中状态 - 添加勾选图标 */
+  .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4 div,
+  .font-ancient-body.max-h-48 a[href*="?city"] .w-4.h-4 div {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4 div::before,
+  .font-ancient-body.max-h-48 a[href*="?city"] .w-4.h-4 div::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 5px;
+    height: 8px;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: translate(-50%, -60%) rotate(45deg);
+    opacity: 1;
+  }
+
+  /* 文化分类选中状态 */
+  .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 {
+    background-color: rgba(139, 90, 43, 0.1);
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 .w-4.h-4 {
+    border-color: rgba(139, 90, 43, 0.8);
+    color: rgba(139, 90, 43, 0.8);
+  }
+
+  /* 地域分布选中状态 */
+  .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 {
+    background-color: rgba(251, 191, 36, 0.1);
+  }
+
+  .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 .w-4.h-4 {
+    border-color: rgba(251, 191, 36, 0.8);
+    color: rgba(251, 191, 36, 0.8);
+  }
+
+  /* 特色标签样式 */
+  .flex.flex-wrap.gap-2 a[href*="?tag"] {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flex.flex-wrap.gap-2 a[href*="?tag"]:hover {
+    background-color: rgba(139, 90, 43, 0.1);
+    border-color: rgba(139, 90, 43, 0.5);
+  }
+
+  .flex.flex-wrap.gap-2 a[href*="?tag"].border-ancient-accent {
+    background-color: rgba(139, 90, 43, 0.15);
+    border-color: rgba(139, 90, 43, 0.8);
+    color: rgba(139, 90, 43, 1);
+    font-weight: 500;
+  }
+
+  /* 暗黑模式样式 */
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 {
+    background-color: rgba(215, 171, 101, 0.15);
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 .w-4.h-4 {
+    border-color: rgba(215, 171, 101, 0.8);
+    color: rgba(215, 171, 101, 0.8);
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 {
+    background-color: rgba(180, 83, 9, 0.2);
+  }
+
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 .w-4.h-4 {
+    border-color: rgba(180, 83, 9, 0.8);
+    color: rgba(180, 83, 9, 0.8);
+  }
+
+  [data-theme='dark'] .flex.flex-wrap.gap-2 a[href*="?tag"]:hover {
+    background-color: rgba(215, 171, 101, 0.1);
+    border-color: rgba(215, 171, 101, 0.5);
+  }
+
+  [data-theme='dark'] .flex.flex-wrap.gap-2 a[href*="?tag"].border-ancient-accent {
+    background-color: rgba(215, 171, 101, 0.15);
+    border-color: rgba(215, 171, 101, 0.8);
+    color: rgba(215, 171, 101, 1);
+  }
+
 </style>

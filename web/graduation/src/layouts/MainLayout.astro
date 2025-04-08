@@ -11,16 +11,11 @@ interface Props {
 
 const { title, description = "河北游礼宣传网站 - 探索河北的文化与魅力" } = Astro.props;
 
-// 社交媒体数据
-const socialLinks = [
-  { name: "微信", url: "#" },
-  { name: "微博", url: "#" },
-  { name: "抖音", url: "#" }
-];
+
 ---
 
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="no-js">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -29,94 +24,64 @@ const socialLinks = [
     <meta name="description" content={description} />
     <title>{title}</title>
     <DarkModeTransition />
+    <script>
+      document.documentElement.classList.remove('no-js');
+    </script>
   </head>
   <body>
     <SmoothScroll />
     
-    <div class="min-h-screen flex flex-col">
-      <header class="sticky top-0 z-50 bg-white dark:bg-color-dark-surface">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between items-center h-16">
-            <!-- 网站Logo和名称 -->
-            <div class="flex items-center">
-              <a href="/" class="flex items-center">
-                <span class="text-xl font-bold text-color-primary-600 dark:text-color-primary-400">河北游礼</span>
-              </a>
-            </div>
-            
-            <!-- 导航菜单 -->
-            <nav class="hidden md:flex space-x-8">
-              <a href="/" class="text-gray-700 hover:text-color-primary-600 dark:text-gray-300 dark:hover:text-color-primary-400">首页</a>
-              <a href="/attractions" class="text-gray-700 hover:text-color-primary-600 dark:text-gray-300 dark:hover:text-color-primary-400">景点</a>
-              <a href="/culture" class="text-gray-700 hover:text-color-primary-600 dark:text-gray-300 dark:hover:text-color-primary-400">文化</a>
-              <a href="/cuisine" class="text-gray-700 hover:text-color-primary-600 dark:text-gray-300 dark:hover:text-color-primary-400">美食</a>
-              <a href="/travel" class="text-gray-700 hover:text-color-primary-600 dark:text-gray-300 dark:hover:text-color-primary-400">旅游攻略</a>
-            </nav>
-            
-            <!-- 主题切换按钮和移动端菜单 -->
-            <div class="flex items-center">
-              <ThemeToggle />
-              
-              <!-- 移动端菜单按钮 -->
-              <button id="mobileMenuToggle" aria-label="打开菜单" class="md:hidden ml-2 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-color-dark-card">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
+    <!-- 导航栏 - 完全脱离文档流 -->
+    <header class="fixed top-0 left-0 right-0 z-50 pointer-events-none">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <!-- 网站Logo和名称 -->
+          <div class="flex items-center pointer-events-auto">
+            <a href="/" class="flex items-center">
+              <span class="text-xl font-bold text-color-primary-600 dark:text-color-primary-400 text-shadow-sm">河北游礼</span>
+            </a>
           </div>
           
-          <!-- 移动端菜单 -->
-          <div id="mobileMenu" class="md:hidden hidden pb-3">
-            <div class="flex flex-col space-y-2">
-              <a href="/" class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-color-dark-card">首页</a>
-              <a href="/attractions" class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-color-dark-card">景点</a>
-              <a href="/culture" class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-color-dark-card">文化</a>
-              <a href="/cuisine" class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-color-dark-card">美食</a>
-              <a href="/travel" class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-color-dark-card">旅游攻略</a>
-            </div>
+          <!-- 导航菜单 -->
+          <nav class="hidden md:flex space-x-8 pointer-events-auto">
+            <a href="/" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">首页</a>
+            <a href="/attractions" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">景点</a>
+            <a href="/culture" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">文化</a>
+            <a href="/cuisine" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">美食</a>
+            <a href="/travel" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">旅游攻略</a>
+          </nav>
+          
+          <!-- 主题切换按钮和移动端菜单 -->
+          <div class="flex items-center pointer-events-auto">
+            <ThemeToggle />
+            
+            <!-- 移动端菜单按钮 -->
+            <button id="mobileMenuToggle" aria-label="打开菜单" class="md:hidden ml-2 p-2 rounded-full hover:bg-white/20 dark:hover:bg-black/20">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
           </div>
         </div>
-      </header>
-
+        
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="md:hidden hidden pb-3 bg-white/90 dark:bg-black/90 backdrop-blur-md mt-1 rounded-lg shadow-lg pointer-events-auto">
+          <div class="flex flex-col space-y-2">
+            <a href="/" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">首页</a>
+            <a href="/attractions" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">景点</a>
+            <a href="/culture" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">文化</a>
+            <a href="/cuisine" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">美食</a>
+            <a href="/travel" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">旅游攻略</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- 页面主体内容 - 完全不受导航栏影响 -->
+    <div class="min-h-screen flex flex-col">
       <main class="flex-grow">
         <slot />
       </main>
-
-      <footer class="bg-gray-100 dark:bg-color-dark-surface border-t border-border-color">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">关于我们</h3>
-              <p class="text-gray-600 dark:text-gray-400">河北游礼网站致力于宣传河北省的旅游资源、文化遗产和地方特色，为游客提供全面的河北旅游信息。</p>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">快速链接</h3>
-              <ul class="space-y-2">
-                <li><a href="/about" class="text-color-primary-600 hover:text-color-primary-800 dark:text-color-primary-400 dark:hover:text-color-primary-300">关于河北</a></li>
-                <li><a href="/contact" class="text-color-primary-600 hover:text-color-primary-800 dark:text-color-primary-400 dark:hover:text-color-primary-300">联系我们</a></li>
-                <li><a href="/sitemap" class="text-color-primary-600 hover:text-color-primary-800 dark:text-color-primary-400 dark:hover:text-color-primary-300">网站地图</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">关注我们</h3>
-              <div class="flex space-x-4">
-                {socialLinks.map(({name, url}) => (
-                  <a href={url} class="social-icon text-gray-600 hover:text-color-primary-600 dark:text-gray-400 dark:hover:text-color-primary-400">
-                    <span class="sr-only">{name}</span>
-                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                    </svg>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div class="mt-8 pt-8 border-t border-gray-300 dark:border-color-dark-border text-center">
-            <p class="text-gray-600 dark:text-gray-400">&copy; {new Date().getFullYear()} 河北游礼网站. 保留所有权利.</p>
-          </div>
-        </div>
-      </footer>
     </div>
 
     <script>
@@ -144,4 +109,63 @@ const socialLinks = [
   .social-icon:hover {
     color: var(--theme-primary);
   }
-</style> 
+  
+  /* 文字阴影样式 */
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.1);
+  }
+  
+  :global(.dark) .text-shadow-sm {
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2);
+  }
+  
+  /* 导航栏样式 */
+  header {
+    transition: all 0.3s ease;
+  }
+  
+  /* 滚动时的背景效果 */
+  header.scrolled nav a,
+  header.scrolled .text-shadow-sm {
+    text-shadow: none;
+  }
+  
+  header.scrolled::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: -1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  :global([data-theme='dark']) header.scrolled::before {
+  background-color: var(--color-dark-card);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+</style>
+
+<script>
+  // 监听滚动事件，当页面滚动时给导航栏添加背景
+  document.addEventListener('DOMContentLoaded', () => {
+    const header = document.querySelector('header');
+    
+    const checkScroll = () => {
+      if (window.scrollY > 10) {
+        header?.classList.add('scrolled');
+      } else {
+        header?.classList.remove('scrolled');
+      }
+    };
+    
+    // 初始检查
+    checkScroll();
+    
+    // 滚动时检查
+    window.addEventListener('scroll', checkScroll);
+  });
+</script> 

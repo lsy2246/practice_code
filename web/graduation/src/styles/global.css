@@ -90,6 +90,19 @@
   --color-dark-primary-900: #faefdb;
 }
 
+/* 确保在无JavaScript环境下，ScrollReveal元素仍然可见 */
+.no-js .scroll-reveal {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* 当JS加载完成时，移除no-js类 */
+html {
+  &.no-js {
+    opacity: 1;
+  }
+}
+
 :root {
   /* 基础色调 */
   --bg-primary: var(--color-gray-50);
@@ -176,6 +189,37 @@
   .bg-slate-900 {
     background-color: var(--color-dark-bg);
   }
+  
+  /* 处理颜色命名不一致的问题 */
+  .text-color-primary-600, 
+  .text-primary-600 {
+    color: var(--color-dark-primary-600);
+  }
+  
+  .text-color-primary-400, 
+  .text-primary-400 {
+    color: var(--color-dark-primary-400);
+  }
+  
+  .bg-color-primary-600, 
+  .bg-primary-600 {
+    background-color: var(--color-dark-primary-600);
+  }
+  
+  .bg-color-primary-400, 
+  .bg-primary-400 {
+    background-color: var(--color-dark-primary-400);
+  }
+  
+  .border-color-primary-600, 
+  .border-primary-600 {
+    border-color: var(--color-dark-primary-600);
+  }
+  
+  .border-color-primary-400, 
+  .border-primary-400 {
+    border-color: var(--color-dark-primary-400);
+  }
 
   /* 表单元素适配 */
   input,
@@ -220,6 +264,37 @@
   .bg-amber-100 {
     background-color: var(--color-primary-50);
   }
+  
+  /* 处理颜色命名不一致的问题 */
+  .text-color-primary-600, 
+  .text-primary-600 {
+    color: var(--color-primary-600);
+  }
+  
+  .text-color-primary-400, 
+  .text-primary-400 {
+    color: var(--color-primary-400);
+  }
+  
+  .bg-color-primary-600, 
+  .bg-primary-600 {
+    background-color: var(--color-primary-600);
+  }
+  
+  .bg-color-primary-400, 
+  .bg-primary-400 {
+    background-color: var(--color-primary-400);
+  }
+  
+  .border-color-primary-600, 
+  .border-primary-600 {
+    border-color: var(--color-primary-600);
+  }
+  
+  .border-color-primary-400, 
+  .border-primary-400 {
+    border-color: var(--color-primary-400);
+  }
 }
 
 /* 背景渐变动画 */
@@ -242,6 +317,25 @@
 .border-theme-primary { border-color: var(--theme-primary); }
 .border-theme-primary-light { border-color: var(--theme-primary-light); }
 .border-theme-primary-dark { border-color: var(--theme-primary-dark); }
+
+/* 添加color-primary和primary颜色类的统一映射 */
+.text-primary-500, .text-color-primary-500 { color: var(--theme-primary); }
+.text-primary-400, .text-color-primary-400 { color: var(--theme-primary-light); }
+.text-primary-600, .text-color-primary-600 { color: var(--theme-primary-dark); }
+.text-primary-300, .text-color-primary-300 { color: var(--color-primary-300); }
+.text-primary-700, .text-color-primary-700 { color: var(--color-primary-700); }
+
+.bg-primary-500, .bg-color-primary-500 { background-color: var(--theme-primary); }
+.bg-primary-400, .bg-color-primary-400 { background-color: var(--theme-primary-light); }
+.bg-primary-600, .bg-color-primary-600 { background-color: var(--theme-primary-dark); }
+.bg-primary-50, .bg-color-primary-50 { background-color: var(--theme-primary-bg); }
+.bg-primary-100, .bg-color-primary-100 { background-color: var(--theme-primary-bg-hover); }
+
+.border-primary-500, .border-color-primary-500 { border-color: var(--theme-primary); }
+.border-primary-400, .border-color-primary-400 { border-color: var(--theme-primary-light); }
+.border-primary-600, .border-color-primary-600 { border-color: var(--theme-primary-dark); }
+.border-primary-300, .border-color-primary-300 { border-color: var(--color-primary-300); }
+.border-primary-700, .border-color-primary-700 { border-color: var(--color-primary-700); }
 
 /* 主题特殊背景 - 使用统一命名并移除重复定义 */
 .bg-scroll-bg { background-color: var(--bg-scroll); }

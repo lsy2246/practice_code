@@ -59,6 +59,30 @@ const initialStyles = getInitialStyles();
   document.addEventListener('DOMContentLoaded', () => {
     const revealElements = document.querySelectorAll('.scroll-reveal');
     
+    // 检查是否为移动端设备
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // 如果是移动端，直接显示所有元素，不使用动画
+    if (isMobile) {
+      revealElements.forEach((element) => {
+        const el = element as HTMLElement;
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+      return;
+    }
+    
+    // 检查是否支持 IntersectionObserver
+    if (!('IntersectionObserver' in window)) {
+      // 如果不支持，也直接显示所有元素
+      revealElements.forEach((element) => {
+        const el = element as HTMLElement;
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+      return;
+    }
+    
     const observerOptions = {
       root: null, // 使用视口作为根元素
       rootMargin: '0px', 
@@ -115,6 +139,16 @@ const initialStyles = getInitialStyles();
         }
       });
     }, observerOptions);
+    
+    // 为每个元素添加超时保障，确保元素最终会显示
+    revealElements.forEach((element) => {
+      const el = element as HTMLElement;
+      // 设置一个3秒的超时，确保即使IntersectionObserver失效，元素也会显示
+      setTimeout(() => {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      }, 3000);
+    });
     
     // 开始观察所有滚动显示元素
     revealElements.forEach(element => {

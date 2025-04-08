@@ -89,9 +89,9 @@ const visibleTravels = sortedTravels.slice(
 
 <MainLayout title="旅行攻略 - 河北游礼">
   <!-- 手绘旅行日记本风格的头部 -->
-  <div class="bg-theme-primary-bg dark:bg-slate-900 py-12 relative overflow-hidden">
+  <div class="bg-theme-primary-bg dark:bg-slate-900 pt-28 pb-16 md:pt-32 md:pb-20 relative overflow-hidden">
     <!-- 装饰性笔触元素 -->
-    <div class="absolute top-0 right-0 w-40 h-40 bg-[url('/images/ink-splash.png')] bg-no-repeat opacity-10"></div>
+    <div class="absolute top-16 right-0 w-40 h-40 bg-[url('/images/ink-splash.png')] bg-no-repeat opacity-10"></div>
     <div class="absolute bottom-0 left-0 w-32 h-32 bg-[url('/images/coffee-stain.png')] bg-no-repeat opacity-5"></div>
     
     <div class="container mx-auto px-4 relative">
@@ -349,7 +349,14 @@ const visibleTravels = sortedTravels.slice(
                     href={`/travel/${travel.slug}`}
                     class="block group"
                   >
-                    <div class={`bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden shadow-md transform ${index % 2 === 0 ? 'rotate-1' : '-rotate-1'} hover:shadow-lg transition-shadow relative`}>
+                    <div class={`bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden shadow-md transform ${index % 2 === 0 ? 'rotate-1' : '-rotate-1'} hover:shadow-lg transition-shadow relative`}
+                         data-tags={JSON.stringify(travel.data.tags)}
+                         data-season={travel.data.season}
+                         data-type={travel.data.type}
+                         data-cities={JSON.stringify(travel.data.city)}
+                         data-title={travel.data.title}
+                         data-description={travel.data.description}
+                    >
                       <!-- 装饰性元素 -->
                       <div class="absolute top-3 right-3 w-16 h-16 bg-[url('/images/polaroid-corner.png')] bg-contain bg-no-repeat opacity-20"></div>
                       
@@ -1178,7 +1185,7 @@ const visibleTravels = sortedTravels.slice(
     const searchInput = document.getElementById('search-input') as HTMLInputElement;
     const searchButton = document.getElementById('search-button');
     const testNoResultsBtn = document.getElementById('test-no-results-btn');
-    const travelCards = document.querySelectorAll('.space-y-10 a');
+    const travelCards = document.querySelectorAll('#travel-list div[data-tags]');
     const noResultsMessage = document.getElementById('no-results-message');
     const searchTermMessage = document.getElementById('search-term-message');
     const travelList = document.getElementById('travel-list');
@@ -1603,166 +1610,90 @@ const visibleTravels = sortedTravels.slice(
       
       let matchCount = 0;
       
-      // 如果没有筛选条件，显示所有卡片
-      if (!searchValue && selectedSeasons.length === 0 && selectedTypes.length === 0 && selectedCities.length === 0 && selectedTags.length === 0) {
-        if (noResultsMessage) {
-          noResultsMessage.classList.add('hidden');
-        }
-        if (travelList) {
-          travelList.classList.remove('hidden');
-        }
-        
-        travelCards.forEach((card) => {
-          card.classList.remove('hidden');
-        });
-        
-        return travelCards.length;
-      }
-      
       // 遍历所有旅行卡片进行筛选
       travelCards.forEach((card) => {
-        const cardTitle = card.querySelector('h3')?.textContent?.toLowerCase() || '';
-        const cardDesc = card.querySelector('p.font-handwriting.text-slate-600')?.textContent?.toLowerCase() || '';
-        const cardTags = card.querySelectorAll('span.px-2.py-0\\.5.text-xs');
-        const cardInfo = card.querySelectorAll('.flex.flex-wrap.gap-4 .flex.items-center');
-        
-        // 获取卡片的季节、类型和城市信息
-        let cardSeason = '';
-        let cardType = '';
-        let cardCities: string[] = [];
-        let tagsText = '';
-        let cardTagsList: string[] = [];
-        
-        cardInfo.forEach(info => {
-          const infoText = info.textContent?.toLowerCase() || '';
-          if (infoText.includes('难度')) {
-            // 跳过难度信息
-          } else if (infoText.includes('天')) {
-            // 跳过天数信息
-          } else if (cardSeason === '') {
-            cardSeason = infoText;
-          } else if (cardType === '') {
-            cardType = infoText;
-          }
-        });
-        
-        // 提取卡片标签文本
-        cardTags.forEach(tag => {
-          const tagText = tag.textContent?.toLowerCase().replace('#', '').trim() || '';
-          if (tagText) {
-            tagsText += tagText + ' ';
-            cardTagsList.push(tagText);
-          }
-        });
-        
-        // 寻找城市信息 - 从DOM中寻找城市标签
-        // 首先尝试查找城市专用标签
-        const cityElements = card.querySelectorAll('.city-tag, .location-tag');
-        if (cityElements && cityElements.length > 0) {
-          cityElements.forEach(cityElem => {
-            const cityText = cityElem.textContent?.toLowerCase().trim() || '';
-            if (cityText) {
-              cardCities.push(cityText);
-            }
-          });
-        } 
-        
-        // 如果没有找到专用城市标签，尝试从cardInfo中提取
-        if (cardCities.length === 0) {
-          // 检查是否有标记了城市信息的元素
-          const cityInfoElements = card.querySelectorAll('[data-city], .city-info');
-          if (cityInfoElements && cityInfoElements.length > 0) {
-            cityInfoElements.forEach(cityElem => {
-              const cityText = cityElem.textContent?.toLowerCase().trim() || '';
-              cardCities.push(cityText);
-            });
-          }
-        }
-        
-        // 如果依然没有找到，尝试从描述和标题中提取
-        if (cardCities.length === 0) {
-          // 检查标题和描述中是否包含已知城市
-          selectedCities.forEach(city => {
-            if (cardTitle.includes(city) || cardDesc.includes(city)) {
-              cardCities.push(city);
-            }
-          });
-        }
-        
-        // 匹配条件
-        const matchesSearch = !searchValue || 
-          cardTitle.includes(searchValue) || 
-          cardDesc.includes(searchValue) ||
-          tagsText.includes(searchValue);
-          
-        const matchesSeasons = selectedSeasons.length === 0 || selectedSeasons.some(season => cardSeason.includes(season));
-        const matchesTypes = selectedTypes.length === 0 || selectedTypes.some(type => cardType.includes(type));
-        
-        // 检查是否有任何选中的城市存在于卡片城市中
-        // 如果没有找到城市标签，但存在城市筛选条件，尝试在标题和描述中寻找
-        let matchesCities = selectedCities.length === 0;
-        if (!matchesCities) {
-          if (cardCities.length > 0) {
-            // 如果找到了城市标签，检查是否匹配
-            matchesCities = cardCities.some(cardCity => 
-              selectedCities.some(selectedCity => cardCity.includes(selectedCity))
-            );
+        const cardContainer = card.closest('a')?.parentElement;
+        if (!cardContainer) return;
+
+        try {
+          // 直接从card获取数据属性
+          const cardData = {
+            title: card.getAttribute('data-title')?.toLowerCase() || '',
+            description: card.getAttribute('data-description')?.toLowerCase() || '',
+            tags: JSON.parse(card.getAttribute('data-tags') || '[]').map((tag: string) => tag.toLowerCase()),
+            season: card.getAttribute('data-season')?.toLowerCase() || '',
+            type: card.getAttribute('data-type')?.toLowerCase() || '',
+            cities: JSON.parse(card.getAttribute('data-cities') || '[]').map((city: string) => city.toLowerCase())
+          };
+
+          // 匹配搜索词
+          const matchesSearch = !searchValue || 
+            cardData.title.includes(searchValue) || 
+            cardData.description.includes(searchValue) ||
+            cardData.tags.some((tag: string) => tag.includes(searchValue)) ||
+            cardData.cities.some((city: string) => city.includes(searchValue));
+
+          // 匹配季节
+          const matchesSeasons = selectedSeasons.length === 0 || 
+            selectedSeasons.some(season => cardData.season.includes(season));
+
+          // 匹配类型
+          const matchesTypes = selectedTypes.length === 0 || 
+            selectedTypes.some(type => cardData.type.includes(type));
+
+          // 匹配城市
+          const matchesCities = selectedCities.length === 0 || 
+            selectedCities.some(city => cardData.cities.some((cardCity: string) => cardCity.includes(city)));
+
+          // 匹配标签
+          const matchesTags = selectedTags.length === 0 || 
+            selectedTags.some(tag => cardData.tags.some((cardTag: string) => cardTag.includes(tag)));
+
+          // 所有条件都匹配才显示
+          const isMatch = matchesSearch && matchesSeasons && matchesTypes && matchesCities && matchesTags;
+
+          if (isMatch) {
+            matchCount++;
+            cardContainer.style.display = '';
           } else {
-            // 如果没有找到城市标签，尝试在标题和描述中寻找
-            matchesCities = selectedCities.some(city => 
-              cardTitle.includes(city) || cardDesc.includes(city)
-            );
+            cardContainer.style.display = 'none';
           }
-        }
-        
-        // 标签匹配：如果有选中的标签，检查卡片标签中是否包含它们中的任何一个
-        const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => 
-          cardTagsList.some(cardTag => cardTag.includes(tag))
-        );
-        
-        // 所有条件都匹配才显示
-        const isMatch = matchesSearch && matchesSeasons && matchesTypes && matchesCities && matchesTags;
-        
-        if (isMatch) {
-          matchCount++;
-          card.classList.remove('hidden');
-        } else {
-          card.classList.add('hidden');
+        } catch (error) {
+          console.error('Error filtering card:', error);
+          cardContainer.style.display = 'none';
         }
       });
-      
+
       // 更新无结果提示显示
       if (matchCount === 0) {
+        if (travelList) travelList.classList.add('hidden');
         if (noResultsMessage) {
           noResultsMessage.classList.remove('hidden');
-          
-          // 更新无结果消息中的搜索词
           if (searchTermMessage) {
+            let message = '抱歉，未找到相关旅行笔记。';
             if (searchValue) {
-              searchTermMessage.textContent = `抱歉，未找到与 "${searchValue}" 相关的旅行笔记。请尝试其他关键词或浏览所有旅行记录。`;
-            } else if (selectedSeasons.length > 0 || selectedTypes.length > 0 || selectedCities.length > 0 || selectedTags.length > 0) {
-              searchTermMessage.textContent = `抱歉，未找到符合当前筛选条件的旅行笔记。请尝试调整筛选条件或浏览所有旅行记录。`;
-            } else {
-              searchTermMessage.textContent = `抱歉，未找到相关旅行笔记。请尝试其他关键词或浏览所有旅行记录。`;
+              message += `没有找到包含"${searchValue}"的内容。`;
             }
+            if (selectedSeasons.length > 0) {
+              message += `没有找到${selectedSeasons.join('、')}季节的内容。`;
+            }
+            if (selectedTypes.length > 0) {
+              message += `没有找到${selectedTypes.join('、')}类型的内容。`;
+            }
+            if (selectedCities.length > 0) {
+              message += `没有找到位于${selectedCities.join('、')}的内容。`;
+            }
+            if (selectedTags.length > 0) {
+              message += `没有找到标签为${selectedTags.join('、')}的内容。`;
+            }
+            searchTermMessage.textContent = message;
           }
         }
-        
-        // 隐藏旅行列表
-        if (travelList) {
-          travelList.classList.add('hidden');
-        }
       } else {
-        // 隐藏无结果提示
-        if (noResultsMessage) {
-          noResultsMessage.classList.add('hidden');
-        }
-        // 显示旅行列表
-        if (travelList) {
-          travelList.classList.remove('hidden');
-        }
+        if (travelList) travelList.classList.remove('hidden');
+        if (noResultsMessage) noResultsMessage.classList.add('hidden');
       }
-      
+
       return matchCount;
     }
     

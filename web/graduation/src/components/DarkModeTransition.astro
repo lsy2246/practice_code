@@ -15,7 +15,18 @@
   body * {
     transition: background-color var(--transition-duration) ease,
                 color var(--transition-duration) ease,
-                box-shadow var(--transition-duration) ease;
+                box-shadow var(--transition-duration) ease,
+                border-color var(--transition-duration) ease,
+                opacity var(--transition-duration) ease,
+                transform var(--transition-duration) ease,
+                filter var(--transition-duration) ease;
+  }
+  
+  /* 特别处理渐变背景过渡 */
+  [class*="bg-gradient"] {
+    transition: background-image var(--transition-duration) ease,
+                background-color var(--transition-duration) ease,
+                opacity var(--transition-duration) ease;
   }
   
   /* 防止某些元素过渡 */
