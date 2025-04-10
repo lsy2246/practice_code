@@ -2,7 +2,7 @@
 import "../styles/global.css";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import DarkModeTransition from "../components/DarkModeTransition.astro";
-import SmoothScroll from "../components/aceternity/SmoothScroll.astro";
+import SmoothScroll from "../components/SmoothScroll.astro";
 
 interface Props {
   title: string;
@@ -49,6 +49,7 @@ const { title, description = "河北游礼宣传网站 - 探索河北的文化�
             <a href="/culture" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">文化</a>
             <a href="/cuisine" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">美食</a>
             <a href="/travel" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">旅游攻略</a>
+            <a href="/map" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">地图导航</a>
           </nav>
           
           <!-- 主题切换按钮和移动端菜单 -->
@@ -72,6 +73,7 @@ const { title, description = "河北游礼宣传网站 - 探索河北的文化�
             <a href="/culture" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">文化</a>
             <a href="/cuisine" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">美食</a>
             <a href="/travel" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">旅游攻略</a>
+            <a href="/map" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">地图导航</a>
           </div>
         </div>
       </div>

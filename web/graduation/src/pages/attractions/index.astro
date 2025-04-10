@@ -1,5 +1,5 @@
 ---
-import MainLayout from "../../layouts/MainLayout.astro";
+import MainLayout from "../../components/MainLayout.astro";
 import { getCollection, type CollectionEntry } from "astro:content";
 
 // 获取景点内容集合
@@ -74,11 +74,6 @@ let filteredAttractions = sortedAttractions;
 
 const totalPages = Math.ceil(filteredAttractions.length / itemsPerPage);
 const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-
-// 辅助函数，用于获取景点的分类（从city提取或默认值）
-const getCategory = (attraction: CollectionEntry<"attractions">) => {
-  return attraction.data.city && attraction.data.city.length > 0 ? attraction.data.city[0] : '其他景点';
-};
 
 ---
 
