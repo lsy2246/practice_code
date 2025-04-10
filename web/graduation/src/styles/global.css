@@ -90,12 +90,6 @@
   --color-dark-primary-900: #faefdb;
 }
 
-/* 确保在无JavaScript环境下，ScrollReveal元素仍然可见 */
-.no-js .scroll-reveal {
-  opacity: 1 !important;
-  transform: none !important;
-}
-
 /* 当JS加载完成时，移除no-js类 */
 html {
   &.no-js {

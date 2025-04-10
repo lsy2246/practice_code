@@ -1,25 +1,23 @@
 ---
-import MainLayout from "../../layouts/MainLayout.astro";
 import { getCollection, type CollectionEntry } from "astro:content";
-import ScrollReveal from "../../components/aceternity/ScrollReveal.astro";
+import MainLayout from "../../layouts/MainLayout.astro";
 
-// 获取旅行攻略集合
-const travels = await getCollection("travel");
+// 获取所有旅行数据并按发布日期排序
+const allTravels = await getCollection("travel");
 
 // 按发布日期排序
-function sortByDate<T extends { data: { pubDate?: Date | string, updatedDate?: Date | string } }>(a: T, b: T): number {
-  return new Date(b.data.pubDate || b.data.updatedDate || 0).getTime() - 
-         new Date(a.data.pubDate || a.data.updatedDate || 0).getTime();
+const sortByDate = (a: CollectionEntry<"travel">, b: CollectionEntry<"travel">) => {
+  return new Date(b.data.pubDate || 0).getTime() - new Date(a.data.pubDate || 0).getTime();
 }
 
-const sortedTravels = [...travels].sort(sortByDate);
+const sortedTravels = [...allTravels].sort(sortByDate);
 
 // 检查是否有旅行攻略内容
-const hasTravels = travels.length > 0;
+const hasTravels = allTravels.length > 0;
 
 // 提取所有标签并按数量排序
 const allTags: {name: string, count: number}[] = [];
-travels.forEach((travel) => {
+allTravels.forEach((travel: CollectionEntry<"travel">) => {
   travel.data.tags.forEach((tag: string) => {
     const existing = allTags.find(t => t.name === tag);
     if (existing) {
@@ -30,57 +28,49 @@ travels.forEach((travel) => {
   });
 });
 
-const sortedTags = [...allTags].sort((a, b) => b.count - a.count);
+// 按出现次数排序
+allTags.sort((a, b) => b.count - a.count);
 
 // 提取所有季节
 const allSeasons = new Set<string>();
-travels.forEach((travel) => {
+allTravels.forEach((travel: CollectionEntry<"travel">) => {
   if (travel.data.season) {
     allSeasons.add(travel.data.season);
   }
 });
-const seasons = Array.from(allSeasons);
 
 // 提取所有类型
 const allTypes = new Set<string>();
-travels.forEach((travel) => {
+allTravels.forEach((travel: CollectionEntry<"travel">) => {
   if (travel.data.type) {
     allTypes.add(travel.data.type);
   }
 });
-const types = Array.from(allTypes);
-
-// 提取所有难度
-const allDifficulties = new Set<string>();
-travels.forEach((travel) => {
-  if (travel.data.difficulty) {
-    allDifficulties.add(travel.data.difficulty);
-  }
-});
 
 // 提取所有城市
-const cities: {name: string, count: number}[] = [];
-travels.forEach((travel) => {
-  if (travel.data.city && travel.data.city.length > 0) {
-    // 遍历每个城市数组
-    travel.data.city.forEach(cityName => {
-      const existingCity = cities.find(c => c.name === cityName);
-      if (existingCity) {
-        existingCity.count++;
-      } else {
-        cities.push({ name: cityName, count: 1 });
-      }
+const allCities = new Set<string>();
+allTravels.forEach((travel: CollectionEntry<"travel">) => {
+  if (travel.data.city && Array.isArray(travel.data.city)) {
+    travel.data.city.forEach((cityName: string) => {
+      allCities.add(cityName);
     });
   }
 });
 
-// 按城市出现次数排序
-cities.sort((a, b) => b.count - a.count);
+// 将Set转换为数组
+const seasonArray = Array.from(allSeasons);
+const typeArray = Array.from(allTypes);
+const cityArray = Array.from(allCities);
 
-// 分页相关
-const itemsPerPage = 10;
-const totalPages = Math.ceil(sortedTravels.length / itemsPerPage);
+// 当前页码和每页显示数量
 const currentPage = 1;
+const itemsPerPage = 10;
+
+// 计算总页数
+const totalTravels = sortedTravels.length;
+const totalPages = Math.ceil(totalTravels / itemsPerPage);
+
+// 获取当前页面的旅行攻略
 const visibleTravels = sortedTravels.slice(
   (currentPage - 1) * itemsPerPage,
   currentPage * itemsPerPage
@@ -94,7 +84,7 @@ const visibleTravels = sortedTravels.slice(
     <div class="absolute top-16 right-0 w-40 h-40 bg-[url('/images/ink-splash.png')] bg-no-repeat opacity-10"></div>
     <div class="absolute bottom-0 left-0 w-32 h-32 bg-[url('/images/coffee-stain.png')] bg-no-repeat opacity-5"></div>
     
-    <div class="container mx-auto px-4 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
       <div class="max-w-4xl mx-auto">
         <!-- 手绘风格标题 -->
         <div class="mb-10 relative">
@@ -153,7 +143,7 @@ const visibleTravels = sortedTravels.slice(
     <div class="absolute top-20 right-20 w-60 h-60 bg-[url('/images/map-element.png')] bg-no-repeat opacity-5"></div>
     <div class="absolute bottom-40 left-40 w-48 h-48 bg-[url('/images/compass-rose.png')] bg-no-repeat opacity-5 transform rotate-15"></div>
     
-    <div class="container mx-auto px-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- 移动端筛选切换按钮 -->
       <div class="lg:hidden mb-6">
         <button id="mobile-filter-toggle" class="w-full py-3 px-4 flex items-center justify-between bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 shadow-md transform -rotate-1 relative">
@@ -243,7 +233,7 @@ const visibleTravels = sortedTravels.slice(
                   最适季节
                 </h3>
                 <div class="stickers-container">
-                  {seasons.map((season) => (
+                  {seasonArray.map((season) => (
                     <div class="filter-sticker season-sticker" data-value={season}>
                       {season}
                     </div>
@@ -258,7 +248,7 @@ const visibleTravels = sortedTravels.slice(
                   旅行方式
                 </h3>
                 <div class="stickers-container">
-                  {types.map((type) => (
+                  {typeArray.map((type) => (
                     <div class="filter-sticker type-sticker" data-value={type}>
                       {type}
                     </div>
@@ -273,9 +263,9 @@ const visibleTravels = sortedTravels.slice(
                   目的地城市
                 </h3>
                 <div class="stickers-container">
-                  {cities.map((city) => (
-                    <div class="filter-sticker city-sticker" data-value={city.name}>
-                      {city.name} <span class="sticker-count">({city.count})</span>
+                  {cityArray.map((city) => (
+                    <div class="filter-sticker city-sticker" data-value={city}>
+                      {city} <span class="sticker-count">({cityArray.filter(c => c === city).length})</span>
                     </div>
                   ))}
                 </div>
@@ -288,7 +278,7 @@ const visibleTravels = sortedTravels.slice(
                   旅行灵感
                 </h3>
                 <div class="stickers-container">
-                  {sortedTags.slice(0, 10).map((tag) => (
+                  {allTags.slice(0, 10).map((tag) => (
                     <div class="filter-sticker tag-sticker" data-value={tag.name}>
                       #{tag.name} <span class="sticker-count">({tag.count})</span>
                     </div>
@@ -344,98 +334,96 @@ const visibleTravels = sortedTravels.slice(
           <div id="travel-list" class="space-y-10">
             {hasTravels ? (
               visibleTravels.map((travel, index) => (
-                <ScrollReveal animation={index % 2 === 0 ? "slide-right" : "slide-left"}>
-                  <a 
-                    href={`/travel/${travel.slug}`}
-                    class="block group"
+                <a 
+                  href={`/travel/${travel.slug}`}
+                  class="block group"
+                >
+                  <div class={`bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden shadow-md transform ${index % 2 === 0 ? 'rotate-1' : '-rotate-1'} hover:shadow-lg transition-shadow relative`}
+                       data-tags={JSON.stringify(travel.data.tags)}
+                       data-season={travel.data.season}
+                       data-type={travel.data.type}
+                       data-cities={JSON.stringify(travel.data.city)}
+                       data-title={travel.data.title}
+                       data-description={travel.data.description}
                   >
-                    <div class={`bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden shadow-md transform ${index % 2 === 0 ? 'rotate-1' : '-rotate-1'} hover:shadow-lg transition-shadow relative`}
-                         data-tags={JSON.stringify(travel.data.tags)}
-                         data-season={travel.data.season}
-                         data-type={travel.data.type}
-                         data-cities={JSON.stringify(travel.data.city)}
-                         data-title={travel.data.title}
-                         data-description={travel.data.description}
-                    >
-                      <!-- 装饰性元素 -->
-                      <div class="absolute top-3 right-3 w-16 h-16 bg-[url('/images/polaroid-corner.png')] bg-contain bg-no-repeat opacity-20"></div>
-                      
-                      <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
-                        <div class="md:col-span-1 h-full">
-                          <div class="h-48 md:h-full bg-primary-100 dark:bg-slate-700 relative border-b md:border-r border-slate-200 dark:border-slate-700">
-                            <div class="flex items-center justify-center h-full font-handwriting italic text-slate-500 dark:text-slate-400">
-                              {travel.data.title} 照片
+                    <!-- 装饰性元素 -->
+                    <div class="absolute top-3 right-3 w-16 h-16 bg-[url('/images/polaroid-corner.png')] bg-contain bg-no-repeat opacity-20"></div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
+                      <div class="md:col-span-1 h-full">
+                        <div class="h-48 md:h-full bg-primary-100 dark:bg-slate-700 relative border-b md:border-r border-slate-200 dark:border-slate-700">
+                          <div class="flex items-center justify-center h-full font-handwriting italic text-slate-500 dark:text-slate-400">
+                            {travel.data.title} 照片
+                          </div>
+                          {travel.data.featured && (
+                            <div class="absolute top-3 left-3 px-3 py-1 bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-400 text-xs font-handwriting border border-primary-200 dark:border-primary-800/50 transform -rotate-3 shadow-sm">
+                              ★ 私藏路线
                             </div>
-                            {travel.data.featured && (
-                              <div class="absolute top-3 left-3 px-3 py-1 bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-400 text-xs font-handwriting border border-primary-200 dark:border-primary-800/50 transform -rotate-3 shadow-sm">
-                                ★ 私藏路线
-                              </div>
-                            )}
-                          </div>
+                          )}
                         </div>
-                        <div class="md:col-span-2 p-6">
-                          <h3 class="text-2xl font-handwriting text-slate-800 dark:text-primary-100 mb-3 group-hover:text-primary-800 dark:group-hover:text-primary-400 transition-colors">
-                            {travel.data.title}
-                          </h3>
+                      </div>
+                      <div class="md:col-span-2 p-6">
+                        <h3 class="text-2xl font-handwriting text-slate-800 dark:text-primary-100 mb-3 group-hover:text-primary-800 dark:group-hover:text-primary-400 transition-colors">
+                          {travel.data.title}
+                        </h3>
+                        
+                        <div class="flex flex-wrap gap-4 mb-4 text-sm font-handwriting text-slate-600 dark:text-slate-400">
+                          {travel.data.season && (
+                            <div class="flex items-center">
+                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/season-small.png')] bg-contain bg-no-repeat"></span>
+                              {travel.data.season}
+                            </div>
+                          )}
                           
-                          <div class="flex flex-wrap gap-4 mb-4 text-sm font-handwriting text-slate-600 dark:text-slate-400">
-                            {travel.data.season && (
-                              <div class="flex items-center">
-                                <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/season-small.png')] bg-contain bg-no-repeat"></span>
-                                {travel.data.season}
-                              </div>
-                            )}
-                            
-                            {travel.data.type && (
-                              <div class="flex items-center">
-                                <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/type-small.png')] bg-contain bg-no-repeat"></span>
-                                {travel.data.type}
-                              </div>
-                            )}
-                            
-                            {travel.data.days && (
-                              <div class="flex items-center">
-                                <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/days-small.png')] bg-contain bg-no-repeat"></span>
-                                {travel.data.days}天
-                              </div>
-                            )}
-                            
-                            {travel.data.difficulty && (
-                              <div class="flex items-center">
-                                <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/difficulty-small.png')] bg-contain bg-no-repeat"></span>
-                                难度: {travel.data.difficulty}
-                              </div>
-                            )}
-                          </div>
+                          {travel.data.type && (
+                            <div class="flex items-center">
+                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/type-small.png')] bg-contain bg-no-repeat"></span>
+                              {travel.data.type}
+                            </div>
+                          )}
                           
-                          <p class="font-handwriting text-slate-600 dark:text-slate-400 leading-relaxed mb-4 line-clamp-3">
-                            {travel.data.description}
-                          </p>
+                          {travel.data.days && (
+                            <div class="flex items-center">
+                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/days-small.png')] bg-contain bg-no-repeat"></span>
+                              {travel.data.days}天
+                            </div>
+                          )}
                           
-                          <div class="flex flex-wrap gap-2 mb-3">
-                            {travel.data.tags.slice(0, 3).map((tag: string) => (
-                              <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
-                                #{tag}
-                              </span>
-                            ))}
-                            {travel.data.tags.length > 3 && (
-                              <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
-                                +{travel.data.tags.length - 3}
-                              </span>
-                            )}
-                          </div>
-                          
-                          <div class="text-primary-700 dark:text-primary-500 text-sm font-handwriting group-hover:underline mt-2 flex items-center">
-                            阅读完整笔记
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                              <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
-                          </div>
+                          {travel.data.difficulty && (
+                            <div class="flex items-center">
+                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/difficulty-small.png')] bg-contain bg-no-repeat"></span>
+                              难度: {travel.data.difficulty}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <p class="font-handwriting text-slate-600 dark:text-slate-400 leading-relaxed mb-4 line-clamp-3">
+                          {travel.data.description}
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-2 mb-3">
+                          {travel.data.tags.slice(0, 3).map((tag: string) => (
+                            <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                              #{tag}
+                            </span>
+                          ))}
+                          {travel.data.tags.length > 3 && (
+                            <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                              +{travel.data.tags.length - 3}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div class="text-primary-700 dark:text-primary-500 text-sm font-handwriting group-hover:underline mt-2 flex items-center">
+                          阅读完整笔记
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                          </svg>
                         </div>
                       </div>
                     </div>
-                  </a>
-                </ScrollReveal>
+                  </div>
+                </a>
               ))
             ) : (
               <div class="bg-white dark:bg-slate-800 p-8 text-center rounded-sm border border-slate-200 dark:border-slate-700 shadow-md mb-10 relative transform rotate-1">
