@@ -109,7 +109,15 @@ const relatedAttractions = allAttractions
           <!-- 景点图片 -->
           <div class="rounded-lg overflow-hidden shadow-md">
             <div class="h-48 md:h-64 bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
-              <span class="text-gray-500 dark:text-gray-400">{entry.data.title} 图片</span>
+              {entry.data.image ? (
+                <img 
+                  src={entry.data.image} 
+                  alt={entry.data.title}
+                  class="w-full h-full object-cover"
+                />
+              ) : (
+                <span class="text-gray-500 dark:text-gray-400">{entry.data.title} 图片</span>
+              )}
             </div>
           </div>
           
@@ -147,22 +155,22 @@ const relatedAttractions = allAttractions
           </div>
           
           <!-- 景点信息卡片 -->
-          <div class="bg-gray-50 dark:bg-color-dark-card rounded-lg shadow-md p-5">
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md p-5">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">景点信息</h3>
             
             <div class="space-y-3">
               {entry.data.city && (
-                <div class="flex">
-                  <span class="w-24 flex-shrink-0 text-gray-600 dark:text-gray-400">位置:</span>
+                <div class="flex items-start">
+                  <span class="text-gray-600 dark:text-gray-300 mr-2">位置：</span>
                   <span class="text-gray-900 dark:text-white">{entry.data.city}</span>
                 </div>
               )}
               
               <div class="flex flex-wrap">
-                <span class="w-24 flex-shrink-0 text-gray-600 dark:text-gray-400">景点类型:</span>
+                <span class="text-gray-600 dark:text-gray-300 mr-2">景点类型：</span>
                 <div class="flex flex-wrap gap-1">
                   {entry.data.tags.map((tag: string) => (
-                    <span class="px-2 py-0.5 bg-color-primary-100 text-color-primary-800 text-xs rounded-full dark:bg-color-dark-primary-900/70 dark:text-color-primary-300">
+                    <span class="px-2 py-0.5 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 text-xs rounded-full">
                       {tag}
                     </span>
                   ))}
@@ -170,8 +178,8 @@ const relatedAttractions = allAttractions
               </div>
               
               {entry.data.pubDate && (
-                <div class="flex">
-                  <span class="w-24 flex-shrink-0 text-gray-600 dark:text-gray-400">发布时间:</span>
+                <div class="flex items-start">
+                  <span class="text-gray-600 dark:text-gray-300 mr-2">发布时间：</span>
                   <span class="text-gray-900 dark:text-white">{new Date(entry.data.pubDate).toLocaleDateString('zh-CN')}</span>
                 </div>
               )}
@@ -262,8 +270,16 @@ const relatedAttractions = allAttractions
                 {relatedAttractions.map((attraction: CollectionEntry<"attractions">) => (
                   <a href={`/attractions/${attraction.slug}`} class="block group">
                     <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors">
-                      <div class="w-12 h-12 md:w-16 md:h-16 rounded bg-primary-200 dark:bg-primary-800 flex items-center justify-center text-primary-700 dark:text-primary-300 flex-shrink-0">
-                        {attraction.data.title.substring(0, 1)}
+                      <div class="w-12 h-12 md:w-16 md:h-16 rounded bg-primary-200 dark:bg-primary-800 flex items-center justify-center text-primary-700 dark:text-primary-300 flex-shrink-0 overflow-hidden">
+                        {attraction.data.image ? (
+                          <img 
+                            src={attraction.data.image} 
+                            alt={attraction.data.title}
+                            class="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>{attraction.data.title.substring(0, 1)}</span>
+                        )}
                       </div>
                       <div>
                         <h4 class="font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary-700 dark:group-hover:text-primary-300 transition-colors">

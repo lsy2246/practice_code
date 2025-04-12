@@ -344,7 +344,15 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
                       <!-- 景点图片 - 彩色摄影展览风格 -->
                       <div class="aspect-[4/5] relative overflow-hidden rounded-t-lg">
                         <div class="absolute inset-0 bg-gradient-to-br from-primary-100 via-primary-100 to-secondary-100 dark:from-primary-900/30 dark:via-primary-900/30 dark:to-secondary-900/30 flex items-center justify-center">
-                          <span class="text-primary-400 dark:text-primary-500">{attraction.data.title}</span>
+                          {attraction.data.image ? (
+                            <img 
+                              src={attraction.data.image} 
+                              alt={attraction.data.title}
+                              class="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span class="text-primary-400 dark:text-primary-500">{attraction.data.title}</span>
+                          )}
                         </div>
                           
                         <!-- 景点信息悬浮层 - 彩色相片信息卡片 -->
@@ -371,20 +379,15 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
                               </p>
                                 
                               <!-- 标签 - 彩色快速信息 -->
-                              <div class="attraction-tags flex flex-wrap gap-0.5 sm:gap-1 pt-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                                {attraction.data.tags.slice(0, 3).map((tag: string, i: number) => {
+                              <div class="attraction-tags flex overflow-x-auto gap-0.5 sm:gap-1 pt-1 opacity-80 group-hover:opacity-100 transition-opacity scrollbar-thin scrollbar-thumb-primary-500/30 dark:scrollbar-thumb-primary-400/30 scrollbar-track-primary-100/20 dark:scrollbar-track-primary-900/20 pb-2">
+                                {attraction.data.tags.map((tag: string, i: number) => {
                                   const tagColors = ['bg-primary-500/40', 'bg-secondary-500/40', 'bg-accent-500/40'];
                                   return (
-                                    <span class={`px-1.5 py-0.5 text-[10px] ${tagColors[i % tagColors.length]} text-white backdrop-blur-sm rounded-sm`}>
+                                    <span class={`flex-shrink-0 px-1.5 py-0.5 text-[10px] ${tagColors[i % tagColors.length]} text-white backdrop-blur-sm rounded-sm`}>
                                       #{tag}
                                     </span>
                                   );
                                 })}
-                                {attraction.data.tags.length > 3 && (
-                                  <span class="px-1.5 py-0.5 text-[10px] bg-white/20 text-white backdrop-blur-sm rounded-sm">
-                                    +{attraction.data.tags.length - 3}
-                                  </span>
-                                )}
                               </div>
                             </div>
                           </div>
@@ -667,6 +670,72 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
       height: 14px;
     }
   }
+
+  /* 自定义滚动条样式 */
+  .attraction-tags::-webkit-scrollbar {
+    height: 4px;
+    border-radius: 2px;
+  }
+
+  .attraction-tags::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+  }
+
+  .attraction-tags::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    transition: background-color 0.3s ease;
+  }
+
+  .attraction-tags::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  /* 暗色模式下的滚动条样式 */
+  .dark .attraction-tags::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .dark .attraction-tags::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .dark .attraction-tags::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* 火狐浏览器的滚动条样式 */
+  .attraction-tags {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+  }
+
+  .dark .attraction-tags {
+    scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.2);
+  }
+
+  /* 确保滚动条在悬停时显示 */
+  .attraction-tags {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; /* 在iOS上实现平滑滚动 */
+    scroll-behavior: smooth; /* 平滑滚动效果 */
+    padding-bottom: 8px; /* 为滚动条预留空间 */
+    margin-bottom: -8px; /* 补偿padding-bottom造成的空间 */
+  }
+
+  /* 在触摸设备上优化滚动体验 */
+  @media (hover: none) {
+    .attraction-tags {
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x proximity;
+    }
+
+    .attraction-tags > * {
+      scroll-snap-align: start;
+    }
+  }
 </style>
 
 <script>
@@ -744,25 +813,41 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
     // 客户端解析URL查询参数
     const urlParams = new URLSearchParams(window.location.search);
     const searchParamFromUrl = urlParams.get('search');
-    const tagParamFromUrl = urlParams.get('tag');
-    const cityParamFromUrl = urlParams.get('city');
+    const tagsParamFromUrl = urlParams.getAll('tags');
+    const citiesParamFromUrl = urlParams.getAll('cities');
     const pageParam = urlParams.get('page');
     const currentPage = pageParam ? parseInt(pageParam) : 1;
     
-    // 当前筛选状态
-    let currentTag = tagParamFromUrl || '';
-    let currentCity = cityParamFromUrl || '';
+    // 当前筛选状态 - 改为数组以支持多选
     let currentSearch = searchParamFromUrl || '';
+    let selectedTags: string[] = tagsParamFromUrl || [];
+    let selectedCities: string[] = citiesParamFromUrl || [];
     
     // 更新浏览器历史记录，不刷新页面
     function updateHistory() {
       const params = new URLSearchParams();
       if (currentSearch) params.set('search', currentSearch);
-      if (currentTag) params.set('tag', currentTag);
-      if (currentCity) params.set('city', currentCity);
+      
+      // 添加多个标签参数
+      selectedTags.forEach(tag => {
+        params.append('tags', tag);
+      });
+      
+      // 添加多个城市参数
+      selectedCities.forEach(city => {
+        params.append('cities', city);
+      });
+      
+      // 如果有分页参数
+      if (pageParam) params.set('page', pageParam);
       
       const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
-      window.history.pushState({ search: currentSearch, tag: currentTag, city: currentCity }, '', newUrl);
+      window.history.pushState({ 
+        search: currentSearch, 
+        tags: selectedTags, 
+        cities: selectedCities,
+        page: currentPage 
+      }, '', newUrl);
     }
     
     // 显示当前筛选状态
@@ -778,18 +863,18 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
         searchFilter.classList.add('hidden');
       }
       
-      // 处理标签筛选
-      if (currentTag && tagFilter && tagFilterText) {
-        tagFilterText.textContent = `标签: ${currentTag}`;
+      // 处理标签筛选 - 现在可能有多个标签
+      if (selectedTags.length > 0 && tagFilter && tagFilterText) {
+        tagFilterText.textContent = `标签: ${selectedTags.join(', ')}`;
         tagFilter.classList.remove('hidden');
         hasFilters = true;
       } else if (tagFilter) {
         tagFilter.classList.add('hidden');
       }
       
-      // 处理城市筛选
-      if (currentCity && cityFilter && cityFilterText) {
-        cityFilterText.textContent = `城市: ${currentCity}`;
+      // 处理城市筛选 - 现在可能有多个城市
+      if (selectedCities.length > 0 && cityFilter && cityFilterText) {
+        cityFilterText.textContent = `城市: ${selectedCities.join(', ')}`;
         cityFilter.classList.remove('hidden');
         hasFilters = true;
       } else if (cityFilter) {
@@ -807,9 +892,6 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
     // 客户端筛选函数
     function filterAttractions() {
       const searchValue = currentSearch.toLowerCase();
-      const tagValue = currentTag.toLowerCase();
-      const cityValue = currentCity.toLowerCase();
-      
       let matchCount = 0;
       const matchedCards: HTMLElement[] = [];
       
@@ -843,14 +925,32 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
             isMatch = false;
           }
           
-          // 标签筛选
-          if (tagValue && !cardData.tags.some((tag: string) => tag.includes(tagValue))) {
-            isMatch = false;
+          // 标签筛选 - 多标签匹配
+          if (selectedTags.length > 0) {
+            // 判断卡片的标签是否包含任意一个选中的标签
+            const hasMatchingTag = selectedTags.some(selectedTag => 
+              cardData.tags.some((cardTag: string) => 
+                cardTag.includes(selectedTag.toLowerCase())
+              )
+            );
+            
+            if (!hasMatchingTag) {
+              isMatch = false;
+            }
           }
           
-          // 城市筛选
-          if (cityValue && !cardData.city.some((city: string) => city.includes(cityValue))) {
-            isMatch = false;
+          // 城市筛选 - 多城市匹配
+          if (selectedCities.length > 0) {
+            // 判断卡片的城市是否包含任意一个选中的城市
+            const hasMatchingCity = selectedCities.some(selectedCity => 
+              cardData.city.some((cardCity: string) => 
+                cardCity.includes(selectedCity.toLowerCase())
+              )
+            );
+            
+            if (!hasMatchingCity) {
+              isMatch = false;
+            }
           }
           
           if (isMatch) {
@@ -861,7 +961,6 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
             container.classList.add('hidden-card');
           }
         } catch (error) {
-          console.error('Error filtering card:', error);
           container.classList.add('hidden-card');
         }
       });
@@ -881,11 +980,11 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
             if (searchValue) {
               messageText += ` 搜索词: "${searchValue}"`;
             }
-            if (tagValue) {
-              messageText += ` 标签: "${tagValue}"`;
+            if (selectedTags.length > 0) {
+              messageText += ` 标签: "${selectedTags.join(', ')}"`;
             }
-            if (cityValue) {
-              messageText += ` 城市: "${cityValue}"`;
+            if (selectedCities.length > 0) {
+              messageText += ` 城市: "${selectedCities.join(', ')}"`;
             }
             
             messageText += '。请尝试其他条件或浏览所有景点。';
@@ -910,19 +1009,25 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
     
     // 处理点击标签/城市筛选的函数
     function handleFilterClick(type: 'tag' | 'city', value: string) {
-      // 如果点击了已选中的标签/城市，则取消选择
-      if ((type === 'tag' && value === currentTag) || (type === 'city' && value === currentCity)) {
-        if (type === 'tag') {
-          currentTag = '';
+      if (type === 'tag') {
+        // 检查标签是否已经选中
+        const tagIndex = selectedTags.indexOf(value);
+        if (tagIndex !== -1) {
+          // 如果已经选中，则移除
+          selectedTags.splice(tagIndex, 1);
         } else {
-          currentCity = '';
+          // 如果未选中，则添加
+          selectedTags.push(value);
         }
       } else {
-        // 否则，选择新标签/城市
-        if (type === 'tag') {
-          currentTag = value;
+        // 检查城市是否已经选中
+        const cityIndex = selectedCities.indexOf(value);
+        if (cityIndex !== -1) {
+          // 如果已经选中，则移除
+          selectedCities.splice(cityIndex, 1);
         } else {
-          currentCity = value;
+          // 如果未选中，则添加
+          selectedCities.push(value);
         }
       }
       
@@ -933,7 +1038,7 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
       updateHistory();
     }
     
-    // 新增：更新标签和城市的高亮状态
+    // 更新标签和城市的高亮状态
     function updateTagsHighlight() {
       // 处理桌面端标签
       if (desktopTagElements) {
@@ -959,8 +1064,8 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
         if (isTag) {
           tagText = tagText.replace(/^#/, '');
           
-          // 处理标签高亮
-          if (tagText === currentTag) {
+          // 处理标签高亮 - 检查是否在选中标签数组中
+          if (selectedTags.includes(tagText)) {
             // 添加高亮样式
             tag.classList.add('bg-accent-500/70', 'dark:bg-accent-500/50', 'text-white', 'dark:text-white', 'shadow-md');
             tag.classList.remove('bg-accent-100', 'dark:bg-accent-900/30', 'text-accent-800', 'dark:text-accent-200');
@@ -970,8 +1075,8 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
             tag.classList.add('bg-accent-100', 'dark:bg-accent-900/30', 'text-accent-800', 'dark:text-accent-200');
           }
         } else {
-          // 处理城市高亮
-          if (tagText === currentCity) {
+          // 处理城市高亮 - 检查是否在选中城市数组中
+          if (selectedCities.includes(tagText)) {
             // 添加高亮样式
             tag.classList.add('bg-secondary-500/70', 'dark:bg-secondary-500/50', 'text-white', 'dark:text-white', 'shadow-md');
             tag.classList.remove('bg-secondary-100', 'dark:bg-secondary-900/30', 'text-secondary-800', 'dark:text-secondary-200');
@@ -1027,15 +1132,15 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
     updateFilterStatusUI();
     
     // 如果URL中有筛选参数，执行筛选
-    if (searchParamFromUrl || tagParamFromUrl || cityParamFromUrl) {
+    if (searchParamFromUrl || tagsParamFromUrl.length > 0 || citiesParamFromUrl.length > 0) {
       if (searchParamFromUrl) {
         if (searchInput) searchInput.value = searchParamFromUrl;
         if (searchInputMobile) searchInputMobile.value = searchParamFromUrl;
       }
       
-      // 设置当前的标签和城市
-      if (tagParamFromUrl) currentTag = tagParamFromUrl;
-      if (cityParamFromUrl) currentCity = cityParamFromUrl;
+      // 标签和城市筛选从URL参数中获取
+      selectedTags = tagsParamFromUrl;
+      selectedCities = citiesParamFromUrl;
       
       // 更新标签高亮
       updateTagsHighlight();
@@ -1049,8 +1154,8 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
       // 从历史状态中恢复筛选条件
       if (event.state) {
         currentSearch = event.state.search || '';
-        currentTag = event.state.tag || '';
-        currentCity = event.state.city || '';
+        selectedTags = event.state.tags || [];
+        selectedCities = event.state.cities || [];
         
         // 更新搜索框值
         if (searchInput) searchInput.value = currentSearch;
@@ -1058,8 +1163,8 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
       } else {
         // 如果没有状态（例如回到初始页面），清除所有筛选
         currentSearch = '';
-        currentTag = '';
-        currentCity = '';
+        selectedTags = [];
+        selectedCities = [];
         
         if (searchInput) searchInput.value = '';
         if (searchInputMobile) searchInputMobile.value = '';
@@ -1076,8 +1181,8 @@ const currentPageAttractions = filteredAttractions.slice((page - 1) * itemsPerPa
       resetFiltersBtn.addEventListener('click', () => {
         // 清除所有筛选条件
         currentSearch = '';
-        currentTag = '';
-        currentCity = '';
+        selectedTags = [];
+        selectedCities = [];
         
         // 清空搜索框
         if (searchInput) searchInput.value = '';

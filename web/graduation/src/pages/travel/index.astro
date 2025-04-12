@@ -90,7 +90,7 @@ const visibleTravels = sortedTravels.slice(
         <div class="mb-10 relative">
           <div class="absolute -top-8 -left-8 w-16 h-16 bg-[url('/images/paper-clip.png')] bg-no-repeat opacity-70 transform -rotate-12"></div>
           <div class="relative inline-block">
-            <h1 class="text-5xl font-handwriting text-slate-800 dark:text-primary-100 leading-tight transform -rotate-1 relative z-10">
+            <h1 class="text-5xl font-handwriting text-slate-800 dark:text-primary-200 leading-tight transform -rotate-1 relative z-10">
               河北私人旅行笔记
             </h1>
             <div class="absolute -bottom-3 left-0 w-full h-3 bg-primary-300 dark:bg-primary-600 opacity-40 transform rotate-1"></div>
@@ -109,7 +109,7 @@ const visibleTravels = sortedTravels.slice(
           
           <!-- 右侧似手绘地图的概述 -->
           <div class="md:w-1/2 bg-theme-primary-bg dark:bg-slate-800/50 p-5 border border-primary-200 dark:border-slate-700 rounded-sm shadow-md transform -rotate-1">
-            <h2 class="font-handwriting text-2xl text-slate-800 dark:text-primary-300 mb-3 flex items-center">
+            <h2 class="font-handwriting text-2xl text-slate-800 dark:text-primary-200 mb-3 flex items-center">
               <span class="inline-block w-6 h-6 mr-2 bg-[url('/images/compass-icon.png')] bg-contain bg-no-repeat"></span>
               地域指南
             </h2>
@@ -148,7 +148,7 @@ const visibleTravels = sortedTravels.slice(
       <div class="lg:hidden mb-6">
         <button id="mobile-filter-toggle" class="w-full py-3 px-4 flex items-center justify-between bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 shadow-md transform -rotate-1 relative">
           <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-12 h-4 bg-[url('/images/binding-tape.png')] bg-contain bg-no-repeat"></div>
-          <span class="font-handwriting text-xl text-slate-800 dark:text-primary-100">旅行者笔记本</span>
+          <span class="font-handwriting text-xl text-slate-800 dark:text-primary-200">旅行者笔记本</span>
           <svg id="filter-arrow-down" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600 dark:text-slate-400" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
           </svg>
@@ -168,7 +168,7 @@ const visibleTravels = sortedTravels.slice(
               
               <!-- 移动端筛选关闭按钮 -->
               <div class="lg:hidden flex justify-between items-center mb-4">
-                <h2 class="font-handwriting text-2xl text-slate-800 dark:text-primary-100">
+                <h2 class="font-handwriting text-2xl text-slate-800 dark:text-primary-200">
                   旅行者笔记
                 </h2>
                 <button id="mobile-filter-close" class="p-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400">
@@ -180,7 +180,7 @@ const visibleTravels = sortedTravels.slice(
               
               <!-- 仅在桌面显示的筛选标题 -->
               <div class="hidden lg:block">
-                <h2 class="font-handwriting text-2xl text-slate-800 dark:text-primary-100 mb-6 pb-3 border-b border-slate-200 dark:border-slate-700">
+                <h2 class="font-handwriting text-2xl text-slate-800 dark:text-primary-200 mb-6 pb-3 border-b border-slate-200 dark:border-slate-700">
                   旅行者笔记
                 </h2>
               </div>
@@ -194,12 +194,12 @@ const visibleTravels = sortedTravels.slice(
                     type="text"
                     name="search"
                     placeholder="输入关键词..."
-                    class="w-full px-4 py-2 bg-theme-primary-bg dark:bg-slate-700/50 border-b-2 border-slate-300 dark:border-slate-600 font-handwriting text-slate-800 dark:text-slate-200 focus:outline-none focus:border-theme-primary dark:focus:border-theme-primary placeholder-slate-400"
+                    class="w-full px-4 py-2 bg-theme-primary-bg dark:bg-slate-700/50 border-b-2 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-theme-primary dark:focus:border-theme-primary placeholder-slate-400 caret-slate-800 dark:caret-slate-200"
                   />
                 </div>
                 <button
                   id="search-button"
-                  class="mt-2 w-full py-2 px-4 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-400 font-handwriting text-sm border border-primary-200 dark:border-primary-800/40 hover:bg-primary-200 dark:hover:bg-primary-800/40 transition-colors flex items-center justify-center"
+                  class="mt-2 w-full py-2 px-4 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-400 font-handwriting text-sm border border-primary-200 dark:border-primary-800/40 hover:bg-primary-200 dark:hover:bg-primary-800/40 hover:text-primary-900 dark:hover:text-primary-300 hover:shadow-md hover:scale-[1.02] transition-all duration-200 flex items-center justify-center"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
@@ -228,7 +228,7 @@ const visibleTravels = sortedTravels.slice(
               
               <!-- 季节关联 -->
               <div id="seasons-panel" class="filter-panel lg:block mb-8">
-                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-100 mb-4 flex items-center">
+                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-200 mb-4 flex items-center">
                   <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/season-icon.png')] bg-contain bg-no-repeat"></span>
                   最适季节
                 </h3>
@@ -243,7 +243,7 @@ const visibleTravels = sortedTravels.slice(
               
               <!-- 旅行类型 -->
               <div id="types-panel" class="filter-panel hidden lg:block mb-8">
-                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-100 mb-4 flex items-center">
+                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-200 mb-4 flex items-center">
                   <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/travel-type-icon.png')] bg-contain bg-no-repeat"></span>
                   旅行方式
                 </h3>
@@ -258,7 +258,7 @@ const visibleTravels = sortedTravels.slice(
               
               <!-- 城市筛选 - 新增部分 -->
               <div id="cities-panel" class="filter-panel hidden lg:block mb-8">
-                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-100 mb-4 flex items-center">
+                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-200 mb-4 flex items-center">
                   <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/city-icon.png')] bg-contain bg-no-repeat"></span>
                   目的地城市
                 </h3>
@@ -273,7 +273,7 @@ const visibleTravels = sortedTravels.slice(
               
               <!-- 旅行灵感标签 -->
               <div id="tags-panel" class="filter-panel hidden lg:block mb-4">
-                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-100 mb-4 flex items-center">
+                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-200 mb-4 flex items-center">
                   <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/tag-icon.png')] bg-contain bg-no-repeat"></span>
                   旅行灵感
                 </h3>
@@ -306,6 +306,7 @@ const visibleTravels = sortedTravels.slice(
           <div id="mobile-filter-indicators" class="lg:hidden flex flex-wrap gap-2 mb-6">
             <!-- 筛选标签将在JS中动态添加 -->
           </div>
+          
           
           <!-- 无搜索结果提示 - 在客户端控制显示 -->
           <div id="no-results-message" class="hidden bg-white dark:bg-slate-800 p-8 text-center rounded-sm border border-slate-200 dark:border-slate-700 shadow-md mb-10 relative transform rotate-1">
@@ -352,18 +353,21 @@ const visibleTravels = sortedTravels.slice(
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
                       <div class="md:col-span-1 h-full">
                         <div class="h-48 md:h-full bg-primary-100 dark:bg-slate-700 relative border-b md:border-r border-slate-200 dark:border-slate-700">
-                          <div class="flex items-center justify-center h-full font-handwriting italic text-slate-500 dark:text-slate-400">
-                            {travel.data.title} 照片
-                          </div>
-                          {travel.data.featured && (
-                            <div class="absolute top-3 left-3 px-3 py-1 bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-400 text-xs font-handwriting border border-primary-200 dark:border-primary-800/50 transform -rotate-3 shadow-sm">
-                              ★ 私藏路线
+                          {travel.data.image ? (
+                            <img 
+                              src={travel.data.image} 
+                              alt={travel.data.title}
+                              class="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div class="flex items-center justify-center h-full font-handwriting italic text-slate-500 dark:text-slate-400">
+                              {travel.data.title} 照片
                             </div>
                           )}
                         </div>
                       </div>
                       <div class="md:col-span-2 p-6">
-                        <h3 class="text-2xl font-handwriting text-slate-800 dark:text-primary-100 mb-3 group-hover:text-primary-800 dark:group-hover:text-primary-400 transition-colors">
+                        <h3 class="text-2xl font-handwriting text-slate-800 dark:text-primary-200 mb-3 group-hover:text-primary-800 dark:group-hover:text-primary-400 transition-colors">
                           {travel.data.title}
                         </h3>
                         
@@ -401,17 +405,12 @@ const visibleTravels = sortedTravels.slice(
                           {travel.data.description}
                         </p>
                         
-                        <div class="flex flex-wrap gap-2 mb-3">
-                          {travel.data.tags.slice(0, 3).map((tag: string) => (
-                            <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                        <div class="flex overflow-x-auto gap-2 mb-3 scrollbar-thin scrollbar-thumb-slate-500/30 dark:scrollbar-thumb-slate-400/30 scrollbar-track-slate-100/20 dark:scrollbar-track-slate-900/20 pb-2">
+                          {travel.data.tags.map((tag: string) => (
+                            <span class="flex-shrink-0 px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
                               #{tag}
                             </span>
                           ))}
-                          {travel.data.tags.length > 3 && (
-                            <span class="px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
-                              +{travel.data.tags.length - 3}
-                            </span>
-                          )}
                         </div>
                         
                         <div class="text-primary-700 dark:text-primary-500 text-sm font-handwriting group-hover:underline mt-2 flex items-center">
@@ -1164,6 +1163,21 @@ const visibleTravels = sortedTravels.slice(
     animation: tag-remove 0.3s ease forwards;
     pointer-events: none;
   }
+
+  /* 为搜索框添加光标样式 */
+  #search-input {
+    font-family: sans-serif; /* 使用标准字体以确保光标可见 */
+    caret-color: currentColor; /* 确保光标颜色与文本颜色匹配 */
+  }
+  
+  /* 解决光标不可见问题的额外样式 */
+  #search-input:focus {
+    color: var(--slate-900, #1e293b); /* 确保文本颜色足够深以便看到 */
+  }
+  
+  .dark #search-input:focus {
+    color: var(--slate-100, #f1f5f9); /* 暗模式下的文本颜色 */
+  }
 </style>
 
 <script>
@@ -1174,6 +1188,7 @@ const visibleTravels = sortedTravels.slice(
     const searchButton = document.getElementById('search-button');
     const testNoResultsBtn = document.getElementById('test-no-results-btn');
     const travelCards = document.querySelectorAll('#travel-list div[data-tags]');
+    
     const noResultsMessage = document.getElementById('no-results-message');
     const searchTermMessage = document.getElementById('search-term-message');
     const travelList = document.getElementById('travel-list');
@@ -1555,14 +1570,13 @@ const visibleTravels = sortedTravels.slice(
     
     // 客户端筛选函数
     function filterTravels() {
-      // 获取当前搜索词
       const searchValue = searchInput?.value.trim().toLowerCase() || '';
+      
       const selectedSeasons: string[] = [];
       const selectedTypes: string[] = [];
       const selectedCities: string[] = [];
       const selectedTags: string[] = [];
       
-      // 获取选中的季节贴纸
       seasonStickers.forEach((sticker: Element) => {
         if (sticker.classList.contains('selected')) {
           const seasonText = sticker.getAttribute('data-value')?.toLowerCase() || '';
@@ -1570,7 +1584,6 @@ const visibleTravels = sortedTravels.slice(
         }
       });
       
-      // 获取选中的旅行类型贴纸
       typeStickers.forEach((sticker: Element) => {
         if (sticker.classList.contains('selected')) {
           const typeText = sticker.getAttribute('data-value')?.toLowerCase() || '';
@@ -1578,17 +1591,13 @@ const visibleTravels = sortedTravels.slice(
         }
       });
       
-      // 获取选中的城市贴纸
       cityStickers.forEach((sticker: Element) => {
         if (sticker.classList.contains('selected')) {
           const cityText = sticker.getAttribute('data-value')?.toLowerCase() || '';
-          if (cityText) {
-            selectedCities.push(cityText);
-          }
+          if (cityText) selectedCities.push(cityText);
         }
       });
       
-      // 获取选中的标签贴纸
       tagStickers.forEach((sticker: Element) => {
         if (sticker.classList.contains('selected')) {
           const tagText = sticker.getAttribute('data-value')?.toLowerCase() || '';
@@ -1597,14 +1606,21 @@ const visibleTravels = sortedTravels.slice(
       });
       
       let matchCount = 0;
+      let totalCards = 0;
       
-      // 遍历所有旅行卡片进行筛选
       travelCards.forEach((card) => {
-        const cardContainer = card.closest('a')?.parentElement;
-        if (!cardContainer) return;
+        totalCards++;
+        
+        // 检查DOM结构
+        const anchor = card.closest('a');
+        
+        // 修正这里，直接使用anchor作为容器，而不是anchor.parentElement
+        const cardContainer = anchor;
+        if (!cardContainer) {
+          return;
+        }
 
         try {
-          // 直接从card获取数据属性
           const cardData = {
             title: card.getAttribute('data-title')?.toLowerCase() || '',
             description: card.getAttribute('data-description')?.toLowerCase() || '',
@@ -1614,73 +1630,168 @@ const visibleTravels = sortedTravels.slice(
             cities: JSON.parse(card.getAttribute('data-cities') || '[]').map((city: string) => city.toLowerCase())
           };
 
-          // 匹配搜索词
           const matchesSearch = !searchValue || 
             cardData.title.includes(searchValue) || 
             cardData.description.includes(searchValue) ||
             cardData.tags.some((tag: string) => tag.includes(searchValue)) ||
             cardData.cities.some((city: string) => city.includes(searchValue));
 
-          // 匹配季节
           const matchesSeasons = selectedSeasons.length === 0 || 
             selectedSeasons.some(season => cardData.season.includes(season));
 
-          // 匹配类型
           const matchesTypes = selectedTypes.length === 0 || 
             selectedTypes.some(type => cardData.type.includes(type));
 
-          // 匹配城市
           const matchesCities = selectedCities.length === 0 || 
             selectedCities.some(city => cardData.cities.some((cardCity: string) => cardCity.includes(city)));
 
-          // 匹配标签
           const matchesTags = selectedTags.length === 0 || 
             selectedTags.some(tag => cardData.tags.some((cardTag: string) => cardTag.includes(tag)));
 
-          // 所有条件都匹配才显示
           const isMatch = matchesSearch && matchesSeasons && matchesTypes && matchesCities && matchesTags;
 
           if (isMatch) {
             matchCount++;
-            cardContainer.style.display = '';
+            
+            // 使用多种方式尝试显示
+            cardContainer.style.cssText = 'display: block !important;'; // 使用内联CSS并添加!important
+            // 添加一个class确保显示
+            cardContainer.classList.remove('hidden');
           } else {
-            cardContainer.style.display = 'none';
+            // 使用多种方式尝试隐藏
+            cardContainer.style.cssText = 'display: none !important;'; // 使用内联CSS并添加!important
+            // 添加一个class来隐藏
+            cardContainer.classList.add('hidden');
           }
         } catch (error) {
-          console.error('Error filtering card:', error);
           cardContainer.style.display = 'none';
         }
       });
 
-      // 更新无结果提示显示
       if (matchCount === 0) {
-        if (travelList) travelList.classList.add('hidden');
+        if (travelList) {
+          travelList.classList.add('hidden');
+        }
         if (noResultsMessage) {
           noResultsMessage.classList.remove('hidden');
           if (searchTermMessage) {
             let message = '抱歉，未找到相关旅行笔记。';
-            if (searchValue) {
-              message += `没有找到包含"${searchValue}"的内容。`;
-            }
-            if (selectedSeasons.length > 0) {
-              message += `没有找到${selectedSeasons.join('、')}季节的内容。`;
-            }
-            if (selectedTypes.length > 0) {
-              message += `没有找到${selectedTypes.join('、')}类型的内容。`;
-            }
-            if (selectedCities.length > 0) {
-              message += `没有找到位于${selectedCities.join('、')}的内容。`;
-            }
-            if (selectedTags.length > 0) {
-              message += `没有找到标签为${selectedTags.join('、')}的内容。`;
-            }
+            if (searchValue) message += `没有找到包含"${searchValue}"的内容。`;
+            if (selectedSeasons.length > 0) message += `没有找到${selectedSeasons.join('、')}季节的内容。`;
+            if (selectedTypes.length > 0) message += `没有找到${selectedTypes.join('、')}类型的内容。`;
+            if (selectedCities.length > 0) message += `没有找到位于${selectedCities.join('、')}的内容。`;
+            if (selectedTags.length > 0) message += `没有找到标签为${selectedTags.join('、')}的内容。`;
             searchTermMessage.textContent = message;
           }
         }
       } else {
-        if (travelList) travelList.classList.remove('hidden');
-        if (noResultsMessage) noResultsMessage.classList.add('hidden');
+        if (travelList) {
+          travelList.classList.remove('hidden');
+        }
+        if (noResultsMessage) {
+          noResultsMessage.classList.add('hidden');
+        }
       }
+
+      // 更新匹配数量显示
+      const matchCountDisplay = document.getElementById('match-count-display');
+      const currentMatchCount = document.getElementById('current-match-count');
+      if (matchCountDisplay && currentMatchCount) {
+        if (matchCount === 0) {
+          matchCountDisplay.style.display = 'none';
+        } else {
+          matchCountDisplay.style.display = 'block';
+          currentMatchCount.textContent = matchCount.toString();
+        }
+      }
+
+      // 额外的DOM验证和修复
+      setTimeout(() => {
+        // 获取所有卡片的a标签容器
+        const allContainers = Array.from(document.querySelectorAll('#travel-list > a'));
+        
+        // 如果没有找到，尝试其他选择器
+        if (allContainers.length === 0) {
+          // 尝试全部a标签
+          const altContainers = Array.from(document.querySelectorAll('#travel-list a'));
+          
+          if (altContainers.length > 0) {
+            allContainers.splice(0, allContainers.length, ...altContainers);
+          }
+        }
+        
+        let visibleCount = 0;
+        
+        allContainers.forEach(container => {
+          const card = container.querySelector('div[data-tags]');
+          if (!card) {
+            return;
+          }
+          
+          const cardTitle = card.getAttribute('data-title') || '未知标题';
+          
+          // 检查这个卡片是否应该显示（通过我们前面的筛选逻辑）
+          const shouldShow = Array.from(travelCards).some(travelCard => {
+            if (travelCard === card) {
+              // 这个卡片的匹配状态
+              const cardData = {
+                title: travelCard.getAttribute('data-title')?.toLowerCase() || '',
+                description: travelCard.getAttribute('data-description')?.toLowerCase() || '',
+                tags: JSON.parse(travelCard.getAttribute('data-tags') || '[]').map((tag: string) => tag.toLowerCase()),
+                season: travelCard.getAttribute('data-season')?.toLowerCase() || '',
+                type: travelCard.getAttribute('data-type')?.toLowerCase() || '',
+                cities: JSON.parse(travelCard.getAttribute('data-cities') || '[]').map((city: string) => city.toLowerCase())
+              };
+              
+              const matchesSearch = !searchValue || 
+                cardData.title.includes(searchValue) || 
+                cardData.description.includes(searchValue) ||
+                cardData.tags.some((tag: string) => tag.includes(searchValue)) ||
+                cardData.cities.some((city: string) => city.includes(searchValue));
+    
+              const matchesSeasons = selectedSeasons.length === 0 || 
+                selectedSeasons.some(season => cardData.season.includes(season));
+    
+              const matchesTypes = selectedTypes.length === 0 || 
+                selectedTypes.some(type => cardData.type.includes(type));
+    
+              const matchesCities = selectedCities.length === 0 || 
+                selectedCities.some(city => cardData.cities.some((cardCity: string) => cardCity.includes(city)));
+    
+              const matchesTags = selectedTags.length === 0 || 
+                selectedTags.some(tag => cardData.tags.some((cardTag: string) => cardTag.includes(tag)));
+    
+              return matchesSearch && matchesSeasons && matchesTypes && matchesCities && matchesTags;
+            }
+            return false;
+          });
+          
+          // 确保显示/隐藏状态正确
+          if (shouldShow) {
+            visibleCount++;
+            // 使用最强硬的方式确保显示
+            (container as HTMLElement).style.cssText = 'display: block !important;';
+          } else {
+            // 使用最强硬的方式确保隐藏
+            (container as HTMLElement).style.cssText = 'display: none !important;';
+          }
+        });
+        
+        // 更新匹配计数显示
+        const currentMatchCount = document.getElementById('current-match-count');
+        if (currentMatchCount) {
+          currentMatchCount.textContent = visibleCount.toString();
+        }
+        
+        // 检查是否需要显示无结果消息
+        if (visibleCount === 0) {
+          if (travelList) travelList.classList.add('hidden');
+          if (noResultsMessage) noResultsMessage.classList.remove('hidden');
+        } else {
+          if (travelList) travelList.classList.remove('hidden');
+          if (noResultsMessage) noResultsMessage.classList.add('hidden');
+        }
+      }, 100);
 
       return matchCount;
     }

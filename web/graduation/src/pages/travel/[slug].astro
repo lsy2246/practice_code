@@ -102,7 +102,15 @@ const relatedTravels = allTravels
           <!-- 旅行图片 -->
           <div class="rounded-lg overflow-hidden shadow-md">
             <div class="h-64 bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
-              <span class="text-gray-500 dark:text-gray-400">{entry.data.title} 图片</span>
+              {entry.data.image ? (
+                <img 
+                  src={entry.data.image} 
+                  alt={entry.data.title}
+                  class="w-full h-full object-cover"
+                />
+              ) : (
+                <span class="text-gray-500 dark:text-gray-400">{entry.data.title} 图片</span>
+              )}
             </div>
           </div>
           
@@ -206,7 +214,15 @@ const relatedTravels = allTravels
                   >
                     <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors">
                       <div class="w-16 h-16 flex-shrink-0 bg-gray-300 dark:bg-gray-700 rounded flex items-center justify-center">
-                        <span class="text-xs text-gray-500 dark:text-gray-300">图片</span>
+                        {travel.data.image ? (
+                          <img 
+                            src={travel.data.image} 
+                            alt={travel.data.title}
+                            class="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span class="text-xs text-gray-500 dark:text-gray-300">图片</span>
+                        )}
                       </div>
                       <div>
                         <h4 class="text-base font-medium text-gray-900 dark:text-white group-hover:text-color-primary-600 dark:group-hover:text-color-primary-400 transition-colors">

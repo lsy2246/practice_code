@@ -36,7 +36,7 @@ const relatedCultures = allCultures
   <div class="md:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
     <a 
       href="/culture"
-      class="flex items-center space-x-2 px-5 py-3 bg-ancient-accent dark:bg-ancient-accent-dark text-ancient-white rounded-full shadow-lg hover:bg-ancient-accent/90 dark:hover:bg-ancient-accent-dark/90 transition-colors border border-ancient-accent/30 dark:border-ancient-accent-dark/30"
+      class="flex items-center space-x-2 px-5 py-3 bg-ancient-accent dark:bg-ancient-accent-dark text-ancient-white rounded-full shadow-lg hover:bg-ancient-accent/90 dark:hover:bg-ancient-accent-dark/90 transition-colors border border-ancient-accent/30 dark:border-ancient-accent-dark/30 backdrop-blur-sm"
       aria-label="返回所有文化"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -117,7 +117,15 @@ const relatedCultures = allCultures
           <!-- 文化图片 - 古籍风格 -->
           <div class="border border-ancient-accent/40 dark:border-ancient-accent-dark/40 overflow-hidden shadow-md">
             <div class="h-64 bg-ancient-paper-light/70 dark:bg-ancient-paper-dark/70 flex items-center justify-center relative">
-              <span class="text-ancient-black/40 dark:text-ancient-white/40 font-ancient">{entry.data.title} 图片</span>
+              {entry.data.image ? (
+                <img 
+                  src={entry.data.image} 
+                  alt={entry.data.title}
+                  class="w-full h-full object-cover"
+                />
+              ) : (
+                <span class="text-ancient-black/40 dark:text-ancient-white/40 font-ancient">{entry.data.title} 图片</span>
+              )}
             </div>
           </div>
           
@@ -188,8 +196,16 @@ const relatedCultures = allCultures
                     class="block group"
                   >
                     <div class="flex items-start space-x-3">
-                      <div class="w-16 h-16 flex-shrink-0 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 border border-ancient-accent/20 dark:border-ancient-accent-dark/20 rounded flex items-center justify-center">
-                        <span class="text-xs text-ancient-black/40 dark:text-ancient-white/40">图片</span>
+                      <div class="w-16 h-16 flex-shrink-0 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 border border-ancient-accent/20 dark:border-ancient-accent-dark/20 rounded flex items-center justify-center overflow-hidden">
+                        {culture.data.image ? (
+                          <img 
+                            src={culture.data.image} 
+                            alt={culture.data.title}
+                            class="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span class="text-xs text-ancient-black/40 dark:text-ancient-white/40">图片</span>
+                        )}
                       </div>
                       <div>
                         <h4 class="text-base font-ancient-heading text-ancient-black dark:text-ancient-white group-hover:text-ancient-accent dark:group-hover:text-ancient-accent-dark transition-colors">
@@ -210,7 +226,7 @@ const relatedCultures = allCultures
           <div class="hidden md:block">
             <a 
               href="/culture"
-              class="block w-full py-4 mt-8 mb-4 text-center bg-ancient-accent dark:bg-ancient-accent-dark text-ancient-white rounded-md hover:bg-ancient-accent/90 dark:hover:bg-ancient-accent-dark/90 transition-colors font-ancient shadow-md border border-ancient-accent/50 dark:border-ancient-accent-dark/50 text-lg"
+              class="block w-full py-4 mt-8 mb-4 text-center bg-ancient-accent dark:bg-ancient-accent-dark text-ancient-white rounded-md hover:bg-ancient-accent/90 dark:hover:bg-ancient-accent-dark/90 transition-colors font-ancient shadow-lg border border-ancient-accent/50 dark:border-ancient-accent-dark/50 text-lg backdrop-blur-sm"
             >
               返回所有文化
             </a>

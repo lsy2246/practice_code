@@ -4,9 +4,9 @@ import MainLayout from "../../components/MainLayout.astro";
 
 // 获取URL参数
 const { searchParams } = Astro.url;
-const categoryParam = searchParams.get('category');
-const cityParam = searchParams.get('city');
-const tagParam = searchParams.get('tag');
+const categoryParam = searchParams.getAll('category');
+const cityParam = searchParams.getAll('city');
+const tagParam = searchParams.getAll('tag');
 const searchParam = searchParams.get('search');
 const pageParam = parseInt(searchParams.get('page') || '1');
 
@@ -23,23 +23,29 @@ const sortByDate = <T extends { data: { pubDate?: Date | string, updatedDate?: D
 let filteredCultures = [...cultures];
 
 // 应用分类筛选
-if (categoryParam) {
+if (categoryParam.length > 0) {
   filteredCultures = filteredCultures.filter(culture => 
-    culture.data.category && culture.data.category.toLowerCase() === categoryParam.toLowerCase()
+    culture.data.category && categoryParam.some(cat => 
+      cat.toLowerCase() === culture.data.category?.toLowerCase()
+    )
   );
 }
 
 // 应用城市筛选
-if (cityParam) {
+if (cityParam.length > 0) {
   filteredCultures = filteredCultures.filter(culture => 
-    culture.data.city && culture.data.city.some(city => city.toLowerCase() === cityParam.toLowerCase())
+    culture.data.city && cityParam.some(city => 
+      culture.data.city?.some(c => c.toLowerCase() === city.toLowerCase())
+    )
   );
 }
 
 // 应用标签筛选
-if (tagParam) {
+if (tagParam.length > 0) {
   filteredCultures = filteredCultures.filter(culture => 
-    culture.data.tags && culture.data.tags.some(tag => tag.toLowerCase() === tagParam.toLowerCase())
+    culture.data.tags && tagParam.some(tag => 
+      culture.data.tags?.some(t => t.toLowerCase() === tag.toLowerCase())
+    )
   );
 }
 
@@ -130,27 +136,38 @@ const totalPages = Math.ceil(sortedCultures.length / itemsPerPage);
 const currentPageCultures = sortedCultures.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
 // 标记当前激活的筛选条件
-const activeCategory = categoryParam || '';
-const activeCity = cityParam || '';
-const activeTag = tagParam || '';
+const activeCategories = categoryParam || [];
+const activeCities = cityParam || [];
+const activeTags = tagParam || [];
 const activeSearch = searchParam || '';
 
 // 构建基础URL（不包含分页参数）
-const buildUrl = (params: Record<string, string | null>) => {
+const buildUrl = (params: Record<string, string[] | string | null>) => {
   const url = new URL(Astro.url);
   const newParams = new URLSearchParams();
   
   // 添加现有参数
-  if (categoryParam && params.category !== null) newParams.set('category', categoryParam);
-  if (cityParam && params.city !== null) newParams.set('city', cityParam);
-  if (tagParam && params.tag !== null) newParams.set('tag', tagParam);
-  if (searchParam && params.search !== null) newParams.set('search', searchParam);
+  if (categoryParam.length > 0 && params.category !== null) {
+    categoryParam.forEach(cat => newParams.append('category', cat));
+  }
+  if (cityParam.length > 0 && params.city !== null) {
+    cityParam.forEach(city => newParams.append('city', city));
+  }
+  if (tagParam.length > 0 && params.tag !== null) {
+    tagParam.forEach(tag => newParams.append('tag', tag));
+  }
+  if (searchParam && params.search !== null) {
+    newParams.set('search', searchParam);
+  }
   
   // 覆盖或添加新参数
   Object.entries(params).forEach(([key, value]) => {
     if (value === null) {
       newParams.delete(key);
-    } else if (value) {
+    } else if (Array.isArray(value)) {
+      newParams.delete(key);
+      value.forEach(v => newParams.append(key, v));
+    } else if (typeof value === 'string') {
       newParams.set(key, value);
     }
   });
@@ -202,30 +219,30 @@ const buildUrl = (params: Record<string, string | null>) => {
       </div>
 
       <!-- 筛选状态显示 -->
-      {(categoryParam || cityParam || tagParam || searchParam) && (
+      {(categoryParam.length > 0 || cityParam.length > 0 || tagParam.length > 0 || searchParam) && (
         <div class="mb-8 max-w-4xl mx-auto">
           <div class="p-4 border-l-4 border-ancient-accent dark:border-ancient-accent-dark bg-ancient-paper-light/80 dark:bg-ancient-paper-dark-light/80 flex justify-between items-center">
             <div class="flex flex-wrap gap-2 items-center">
               <span class="text-ancient-black/80 dark:text-ancient-white/80 font-ancient-small">当前筛选:</span>
               
-              {categoryParam && (
+              {categoryParam.length > 0 && (
                 <div class="px-3 py-1 bg-ancient-paper/90 dark:bg-ancient-paper-dark/90 border border-ancient-accent/40 dark:border-ancient-accent-dark/40 text-sm font-ancient-small text-ancient-black dark:text-ancient-white rounded flex items-center">
                   <span class="mr-1">分类:</span>
-                  <span class="font-medium">{categoryParam}</span>
+                  <span class="font-medium">{categoryParam.join(', ')}</span>
                 </div>
               )}
               
-              {cityParam && (
+              {cityParam.length > 0 && (
                 <div class="px-3 py-1 bg-amber-100/50 dark:bg-amber-900/30 border border-amber-200/70 dark:border-amber-700/40 text-sm font-ancient-small text-ancient-black dark:text-ancient-white rounded flex items-center">
                   <span class="mr-1">城市:</span>
-                  <span class="font-medium">{cityParam}</span>
+                  <span class="font-medium">{cityParam.join(', ')}</span>
                 </div>
               )}
               
-              {tagParam && (
+              {tagParam.length > 0 && (
                 <div class="px-3 py-1 bg-ancient-paper/90 dark:bg-ancient-paper-dark/90 border border-ancient-accent/40 dark:border-ancient-accent-dark/40 text-sm font-ancient-small text-ancient-black dark:text-ancient-white rounded flex items-center">
                   <span class="mr-1">标签:</span>
-                  <span class="font-medium">{tagParam}</span>
+                  <span class="font-medium">{tagParam.join(', ')}</span>
                 </div>
               )}
               
@@ -259,11 +276,11 @@ const buildUrl = (params: Record<string, string | null>) => {
             </svg>
             <h3 class="text-xl font-ancient text-ancient-black dark:text-ancient-white mb-2">未找到相关文化内容</h3>
             <p class="text-ancient-black/80 dark:text-ancient-white/80 font-ancient-body mb-4">
-              {categoryParam && `没有找到分类为"${categoryParam}"的内容。`}
-              {cityParam && `没有找到位于"${cityParam}"的内容。`}
-              {tagParam && `没有找到标签为"${tagParam}"的内容。`}
+              {categoryParam.length > 0 && `没有找到分类为"${categoryParam.join(', ')}"的内容。`}
+              {cityParam.length > 0 && `没有找到位于"${cityParam.join(', ')}"的内容。`}
+              {tagParam.length > 0 && `没有找到标签为"${tagParam.join(', ')}"的内容。`}
               {searchParam && `没有找到包含"${searchParam}"的内容。`}
-              {!categoryParam && !cityParam && !tagParam && !searchParam && '没有找到符合条件的内容。'}
+              {!categoryParam.length && !cityParam.length && !tagParam.length && !searchParam && '没有找到符合条件的内容。'}
             </p>
             <a href="/culture" class="inline-block mt-2 px-4 py-2 bg-ancient-accent dark:bg-ancient-accent-dark text-white rounded-md font-ancient-small">查看全部文化内容</a>
           </div>
@@ -289,9 +306,9 @@ const buildUrl = (params: Record<string, string | null>) => {
             class="w-full text-ancient-black dark:text-ancient-white bg-ancient-paper-light/90 dark:bg-ancient-paper-dark/50 border border-ancient-accent/30 dark:border-ancient-accent-dark/30 rounded-full py-2 pl-3 pr-10 focus:outline-none focus:border-ancient-accent/70 dark:focus:border-ancient-accent-dark/70 font-ancient-body"
           />
           <!-- 保留现有参数 -->
-          {categoryParam && <input type="hidden" name="category" value={categoryParam} />}
-          {cityParam && <input type="hidden" name="city" value={cityParam} />}
-          {tagParam && <input type="hidden" name="tag" value={tagParam} />}
+          {categoryParam.length > 0 && <input type="hidden" name="category" value={categoryParam.join(',')} />}
+          {cityParam.length > 0 && <input type="hidden" name="city" value={cityParam.join(',')} />}
+          {tagParam.length > 0 && <input type="hidden" name="tag" value={tagParam.join(',')} />}
           
           <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-ancient-accent dark:text-ancient-accent-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -326,16 +343,27 @@ const buildUrl = (params: Record<string, string | null>) => {
               <div class="flex flex-wrap gap-2">
                 {categories.slice(0, 6).map((category) => (
                   <a 
-                    href={buildUrl({ category: category.name === activeCategory ? null : category.name })}
+                    href={buildUrl({ 
+                      category: activeCategories.includes(category.name) 
+                        ? activeCategories.filter(c => c !== category.name) 
+                        : [...activeCategories, category.name]
+                    })}
                     class:list={[
-                      "px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-sm font-ancient-small border rounded-md",
-                      category.name === activeCategory 
-                        ? "border-ancient-accent dark:border-ancient-accent-dark text-ancient-accent dark:text-ancient-accent-dark font-medium"
-                        : "border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50"
+                      "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-800/20 p-1.5 rounded",
+                      { "bg-amber-100/80 dark:bg-amber-800/30": activeCategories.includes(category.name) }
                     ]}
                   >
-                    {category.name}
-                    <span class="ml-1 text-xs text-ancient-black/60 dark:text-ancient-white/60">({category.count})</span>
+                    <div class={`w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30 relative`}>
+                      {activeCategories.includes(category.name) && (
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <div class="w-2 h-3 border-r-2 border-b-2 border-amber-400 dark:border-amber-600 transform rotate-45 -translate-y-1/4"></div>
+                        </div>
+                      )}
+                    </div>
+                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-amber-700 dark:group-hover:text-amber-300">
+                      <span>{category.name}</span>
+                      <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({category.count})</span>
+                    </div>
                   </a>
                 ))}
               </div>
@@ -353,16 +381,27 @@ const buildUrl = (params: Record<string, string | null>) => {
               <div class="flex flex-wrap gap-2">
                 {cities.slice(0, 6).map((city) => (
                   <a 
-                    href={buildUrl({ city: city.name === activeCity ? null : city.name })}
+                    href={buildUrl({ 
+                      city: activeCities.includes(city.name) 
+                        ? activeCities.filter(c => c !== city.name) 
+                        : [...activeCities, city.name]
+                    })}
                     class:list={[
-                      "px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-sm font-ancient-small border rounded-md",
-                      city.name === activeCity 
-                        ? "border-ancient-accent dark:border-ancient-accent-dark text-ancient-accent dark:text-ancient-accent-dark font-medium"
-                        : "border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50"
+                      "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-800/20 p-1.5 rounded",
+                      { "bg-amber-100/80 dark:bg-amber-800/30": activeCities.includes(city.name) }
                     ]}
                   >
-                    {city.name}
-                    <span class="ml-1 text-xs text-ancient-black/60 dark:text-ancient-white/60">({city.count})</span>
+                    <div class={`w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30 relative`}>
+                      {activeCities.includes(city.name) && (
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <div class="w-2 h-3 border-r-2 border-b-2 border-amber-400 dark:border-amber-600 transform rotate-45 -translate-y-1/4"></div>
+                        </div>
+                      )}
+                    </div>
+                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-amber-700 dark:group-hover:text-amber-300">
+                      <span>{city.name}</span>
+                      <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({city.count})</span>
+                    </div>
                   </a>
                 ))}
               </div>
@@ -377,17 +416,21 @@ const buildUrl = (params: Record<string, string | null>) => {
                 特色标签
               </h3>
               <div class="flex flex-wrap gap-2">
-                {allTags.slice(0, 12).map((tag) => (
+                {allTags.slice(0, 6).map((tag) => (
                   <a 
-                    href={buildUrl({ tag: tag.name === activeTag ? null : tag.name })}
+                    href={buildUrl({ 
+                      tag: activeTags.includes(tag.name) 
+                        ? activeTags.filter(t => t !== tag.name) 
+                        : [...activeTags, tag.name]
+                    })}
                     class:list={[
-                      "px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-sm font-ancient-small border rounded-md",
-                      tag.name === activeTag 
-                        ? "border-ancient-accent dark:border-ancient-accent-dark text-ancient-accent dark:text-ancient-accent-dark font-medium"
+                      "px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-sm font-ancient-small border rounded-md flex items-center",
+                      activeTags.includes(tag.name)
+                        ? "border-ancient-accent dark:border-ancient-accent-dark text-ancient-accent dark:text-ancient-accent-dark font-medium bg-ancient-accent/20 dark:bg-ancient-accent-dark/20"
                         : "border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50"
                     ]}
                   >
-                    {tag.name}
+                    <span>{tag.name}</span>
                     <span class="ml-1 text-xs text-ancient-black/60 dark:text-ancient-white/60">({tag.count})</span>
                   </a>
                 ))}
@@ -426,9 +469,9 @@ const buildUrl = (params: Record<string, string | null>) => {
                   class="w-full px-4 py-2 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 placeholder-ancient-black/50 dark:placeholder-ancient-white/50 text-ancient-black dark:text-ancient-white font-ancient-body focus:outline-none focus:border-ancient-accent dark:focus:border-ancient-accent-dark"
                 />
                 <!-- 保留现有参数 -->
-                {categoryParam && <input type="hidden" name="category" value={categoryParam} />}
-                {cityParam && <input type="hidden" name="city" value={cityParam} />}
-                {tagParam && <input type="hidden" name="tag" value={tagParam} />}
+                {categoryParam.length > 0 && <input type="hidden" name="category" value={categoryParam.join(',')} />}
+                {cityParam.length > 0 && <input type="hidden" name="city" value={cityParam.join(',')} />}
+                {tagParam.length > 0 && <input type="hidden" name="tag" value={tagParam.join(',')} />}
                 
                 <button type="submit" class="absolute right-3 top-2 text-ancient-accent/70 dark:text-ancient-accent-dark/70">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -450,20 +493,24 @@ const buildUrl = (params: Record<string, string | null>) => {
               <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 pr-2">
                 {categories.map((category) => (
                   <a 
-                    href={buildUrl({ category: category.name === activeCategory ? null : category.name })}
+                    href={buildUrl({ 
+                      category: activeCategories.includes(category.name) 
+                        ? activeCategories.filter(c => c !== category.name) 
+                        : [...activeCategories, category.name]
+                    })}
                     class:list={[
-                      "flex items-center group cursor-pointer hover:bg-ancient-accent/10 dark:hover:bg-ancient-accent-dark/10 p-1.5 rounded",
-                      { "bg-ancient-accent/20 dark:bg-ancient-accent-dark/20": category.name === activeCategory }
+                      "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-800/20 p-1.5 rounded",
+                      { "bg-amber-100/80 dark:bg-amber-800/30": activeCategories.includes(category.name) }
                     ]}
                   >
-                    <div class="w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20 relative">
-                      {category.name === activeCategory && (
+                    <div class={`w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30 relative`}>
+                      {activeCategories.includes(category.name) && (
                         <div class="absolute inset-0 flex items-center justify-center">
-                          <div class="w-2 h-3 border-r-2 border-b-2 border-ancient-accent dark:border-ancient-accent-dark transform rotate-45 -translate-y-1/4"></div>
+                          <div class="w-2 h-3 border-r-2 border-b-2 border-amber-400 dark:border-amber-600 transform rotate-45 -translate-y-1/4"></div>
                         </div>
                       )}
                     </div>
-                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-ancient-accent dark:group-hover:text-ancient-accent-dark">
+                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-amber-700 dark:group-hover:text-amber-300">
                       <span>{category.name}</span>
                       <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({category.count})</span>
                     </div>
@@ -485,14 +532,18 @@ const buildUrl = (params: Record<string, string | null>) => {
               <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 pr-2">
                 {cities.map((city) => (
                   <a 
-                    href={buildUrl({ city: city.name === activeCity ? null : city.name })}
+                    href={buildUrl({ 
+                      city: activeCities.includes(city.name) 
+                        ? activeCities.filter(c => c !== city.name) 
+                        : [...activeCities, city.name]
+                    })}
                     class:list={[
                       "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-800/20 p-1.5 rounded",
-                      { "bg-amber-100/80 dark:bg-amber-800/30": city.name === activeCity }
+                      { "bg-amber-100/80 dark:bg-amber-800/30": activeCities.includes(city.name) }
                     ]}
                   >
-                    <div class="w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30 relative">
-                      {city.name === activeCity && (
+                    <div class={`w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30 relative`}>
+                      {activeCities.includes(city.name) && (
                         <div class="absolute inset-0 flex items-center justify-center">
                           <div class="w-2 h-3 border-r-2 border-b-2 border-amber-400 dark:border-amber-600 transform rotate-45 -translate-y-1/4"></div>
                         </div>
@@ -517,17 +568,21 @@ const buildUrl = (params: Record<string, string | null>) => {
               </h3>
 
               <div class="flex flex-wrap gap-2">
-                {allTags.slice(0, 12).map((tag) => (
+                {allTags.slice(0, 6).map((tag) => (
                   <a 
-                    href={buildUrl({ tag: tag.name === activeTag ? null : tag.name })}
+                    href={buildUrl({ 
+                      tag: activeTags.includes(tag.name) 
+                        ? activeTags.filter(t => t !== tag.name) 
+                        : [...activeTags, tag.name]
+                    })}
                     class:list={[
-                      "px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-sm font-ancient-small border rounded-md",
-                      tag.name === activeTag 
-                        ? "border-ancient-accent dark:border-ancient-accent-dark text-ancient-accent dark:text-ancient-accent-dark font-medium"
+                      "px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-sm font-ancient-small border rounded-md flex items-center",
+                      activeTags.includes(tag.name)
+                        ? "border-ancient-accent dark:border-ancient-accent-dark text-ancient-accent dark:text-ancient-accent-dark font-medium bg-ancient-accent/20 dark:bg-ancient-accent-dark/20"
                         : "border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50"
                     ]}
                   >
-                    {tag.name}
+                    <span>{tag.name}</span>
                     <span class="ml-1 text-xs text-ancient-black/60 dark:text-ancient-white/60">({tag.count})</span>
                   </a>
                 ))}
@@ -557,9 +612,17 @@ const buildUrl = (params: Record<string, string | null>) => {
                     <div class="absolute top-2 left-2 w-8 h-8 bg-ink-decoration opacity-10 dark:opacity-15"></div>
                     <div class="absolute bottom-2 right-2 w-8 h-8 bg-ink-decoration opacity-10 dark:opacity-15 rotate-180"></div>
 
-                    <!-- 默认内容显示 -->
+                    <!-- 内容显示 -->
                     <div class="absolute inset-0 flex items-center justify-center">
-                      <span class="text-ancient-black/40 dark:text-amber-100/60 font-ancient">{culture.data.title}</span>
+                      {culture.data.image ? (
+                        <img 
+                          src={culture.data.image} 
+                          alt={culture.data.title}
+                          class="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span class="text-ancient-black/40 dark:text-amber-100/60 font-ancient">{culture.data.title}</span>
+                      )}
                     </div>
 
                     <!-- 印章效果 -->
@@ -591,33 +654,23 @@ const buildUrl = (params: Record<string, string | null>) => {
                       {culture.data.description}
                     </p>
 
-                    <div class="flex flex-wrap gap-1.5 mb-4 min-h-[2rem]">
-                      {culture.data.tags.slice(0, 3).map((tag: string) => (
-                        <span class="px-2 py-1 bg-ancient-paper-light/50 dark:bg-dark-surface text-ancient-black/70 dark:text-amber-100/90 text-xs font-ancient-small border border-ancient-accent/20 dark:border-amber-700/40 tag-item" data-tag-value={tag.toLowerCase()}>
+                    <div class="flex overflow-x-auto gap-1.5 mb-4 min-h-[2rem] scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 scrollbar-track-ancient-paper/20 dark:scrollbar-track-ancient-paper-dark/20 pb-2">
+                      {culture.data.tags.map((tag: string) => (
+                        <span class="flex-shrink-0 px-2 py-1 bg-ancient-paper-light/50 dark:bg-dark-surface text-ancient-black/70 dark:text-amber-100/90 text-xs font-ancient-small border border-ancient-accent/20 dark:border-amber-700/40" data-tag-value={tag.toLowerCase()}>
                           {tag}
                         </span>
                       ))}
-                      {culture.data.tags.length > 3 && (
-                        <span class="px-2 py-1 bg-ancient-paper-light/50 dark:bg-dark-surface text-ancient-black/70 dark:text-amber-100/90 text-xs font-ancient-small border border-ancient-accent/20 dark:border-amber-700/40">
-                          +{culture.data.tags.length - 3}
-                        </span>
-                      )}
                     </div>
 
                     {/* 在卡片中添加城市信息显示 */}
                     <div class="min-h-[1.5rem]">
                       {culture.data.city && culture.data.city.length > 0 && (
-                        <div class="flex flex-wrap gap-1.5 mt-1 mb-2">
-                          {culture.data.city.slice(0, 2).map((cityName: string) => (
-                            <span class="px-2 py-1 bg-amber-100/50 dark:bg-amber-900/50 text-ancient-black/70 dark:text-amber-100 text-xs font-ancient-small border border-amber-200/50 dark:border-amber-600/50 city-tag" data-city-value={cityName.toLowerCase()}>
+                        <div class="flex overflow-x-auto gap-1.5 mt-1 mb-2 scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 scrollbar-track-ancient-paper/20 dark:scrollbar-track-ancient-paper-dark/20 pb-2">
+                          {culture.data.city.map((cityName: string) => (
+                            <span class="flex-shrink-0 px-2 py-1 bg-amber-100/50 dark:bg-amber-900/50 text-ancient-black/70 dark:text-amber-100 text-xs font-ancient-small border border-amber-200/50 dark:border-amber-600/50 city-tag" data-city-value={cityName.toLowerCase()}>
                               {cityName}
                             </span>
                           ))}
-                          {culture.data.city.length > 2 && (
-                            <span class="px-2 py-1 bg-amber-100/50 dark:bg-amber-900/50 text-ancient-black/70 dark:text-amber-100 text-xs font-ancient-small border border-amber-200/50 dark:border-amber-600/50">
-                              +{culture.data.city.length - 2}
-                            </span>
-                          )}
                         </div>
                       )}
                     </div>
@@ -748,9 +801,6 @@ const buildUrl = (params: Record<string, string | null>) => {
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-
-
-
     // 移动端筛选抽屉
     const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
     const mobileFilterDrawer = document.getElementById('mobile-filter-drawer');
@@ -761,7 +811,7 @@ const buildUrl = (params: Record<string, string | null>) => {
     if (mobileFilterToggle && mobileFilterDrawer) {
       mobileFilterToggle.addEventListener('click', () => {
         mobileFilterDrawer.classList.remove('translate-x-full');
-        document.body.classList.add('overflow-hidden'); // 防止背景滚动
+        document.body.classList.add('overflow-hidden');
       });
     }
 
@@ -783,70 +833,35 @@ const buildUrl = (params: Record<string, string | null>) => {
       mobileFilterClose.addEventListener('click', closeFilterDrawer);
     }
 
-    // 获取所有筛选链接
-    const filterLinks = document.querySelectorAll('a[href*="?category"], a[href*="?city"], a[href*="?taste"], a[href*="?tag"], a[href*="?ingredient"]');
-    
-    // 为每个筛选链接添加点击事件监听器
-    filterLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault(); // 阻止默认行为
-        
-        const href = (link as HTMLAnchorElement).href;
-        const url = new URL(href);
-        
-        // 获取当前的筛选参数
-        const params = new URLSearchParams(window.location.search);
-        const clickedParam = Array.from(url.searchParams.entries())[0];
-        
-        if (clickedParam) {
-          const [paramName, paramValue] = clickedParam;
-          
-          // 如果当前参数值与点击的值相同，则移除该参数
-          if (params.get(paramName) === paramValue) {
-            params.delete(paramName);
-          } else {
-            // 否则设置新的参数值
-            params.set(paramName, paramValue);
-          }
-          
-          // 更新 URL，但不刷新页面
-          const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
-          window.history.pushState({}, '', newUrl);
-          
-          // 应用筛选
-          applyFilters();
-        }
-      });
-    });
-
     // 应用筛选函数
     function applyFilters() {
       const params = new URLSearchParams(window.location.search);
-      const category = params.get('category')?.toLowerCase();
-      const city = params.get('city')?.toLowerCase();
-      const tag = params.get('tag')?.toLowerCase();
-      const search = params.get('search')?.toLowerCase();
+      const category = params.getAll('category');
+      const city = params.getAll('city');
+      const tag = params.getAll('tag');
+      const search = params.get('search');
       
       // 获取所有文化卡片
       const cards = document.querySelectorAll('.ancient-card');
+      
       let visibleCount = 0;
       
-      cards.forEach(card => {
+      cards.forEach((card, index) => {
         let shouldShow = true;
         
         // 检查分类
-        if (category && shouldShow) {
+        if (category.length > 0 && shouldShow) {
           const cardCategory = card.getAttribute('data-category');
-          if (cardCategory !== category) {
+          if (!category.some(cat => cat.toLowerCase() === cardCategory)) {
             shouldShow = false;
           }
         }
         
         // 检查城市
-        if (city && shouldShow) {
+        if (city.length > 0 && shouldShow) {
           try {
             const cardCities = JSON.parse(card.getAttribute('data-cities') || '[]');
-            if (!cardCities.includes(city)) {
+            if (!city.some(city => cardCities.includes(city))) {
               shouldShow = false;
             }
           } catch (e) {
@@ -855,10 +870,10 @@ const buildUrl = (params: Record<string, string | null>) => {
         }
         
         // 检查标签
-        if (tag && shouldShow) {
+        if (tag.length > 0 && shouldShow) {
           try {
             const cardTags = JSON.parse(card.getAttribute('data-tags') || '[]');
-            if (!cardTags.includes(tag)) {
+            if (!tag.some(tag => cardTags.includes(tag))) {
               shouldShow = false;
             }
           } catch (e) {
@@ -881,18 +896,18 @@ const buildUrl = (params: Record<string, string | null>) => {
           }
         }
         
-        // 更新卡片显示状态
-        const cardContainer = card.closest('a')?.parentElement;
-        if (cardContainer) {
+        // 更新卡片显示状态 - 修复隐藏逻辑
+        const cardLink = card.closest('a');
+        if (cardLink) {
           if (shouldShow) {
-            cardContainer.style.display = '';
+            cardLink.style.display = '';
             visibleCount++;
           } else {
-            cardContainer.style.display = 'none';
+            cardLink.style.display = 'none';
           }
         }
       });
-
+      
       // 更新 UI 显示
       updateFilterUI();
       
@@ -910,19 +925,19 @@ const buildUrl = (params: Record<string, string | null>) => {
             if (search) {
               message += `没有找到包含"${search}"的内容。`;
             }
-            if (category) {
-              message += `没有找到分类为"${category}"的内容。`;
+            if (category.length > 0) {
+              message += `没有找到分类为"${category.join(', ')}"的内容。`;
             }
-            if (city) {
-              message += `没有找到位于"${city}"的内容。`;
+            if (city.length > 0) {
+              message += `没有找到位于"${city.join(', ')}"的内容。`;
             }
-            if (tag) {
-              message += `没有找到标签为"${tag}"的内容。`;
+            if (tag.length > 0) {
+              message += `没有找到标签为"${tag.join(', ')}"的内容。`;
             }
             searchTermMessage.textContent = message;
           }
         }
-          } else {
+      } else {
         if (gridContainer) gridContainer.style.display = 'grid';
         if (noResultsMessage) noResultsMessage.style.display = 'none';
       }
@@ -931,125 +946,136 @@ const buildUrl = (params: Record<string, string | null>) => {
     // 更新筛选 UI
     function updateFilterUI() {
       const params = new URLSearchParams(window.location.search);
-      const currentCategory = params.get('category');
-      const currentCity = params.get('city');
-      const currentTag = params.get('tag');
+      const currentCategory = params.getAll('category');
+      const currentCity = params.getAll('city');
+      const currentTag = params.getAll('tag');
       const currentSearch = params.get('search');
       
-      console.log('当前筛选参数:', {
-        category: currentCategory,
-        city: currentCity,
-        tag: currentTag,
-        search: currentSearch
+      // 更新标签选中状态
+      const tagLinks = document.querySelectorAll('a[href*="?tag"]');
+      
+      tagLinks.forEach((link, index) => {
+        try {
+          const url = new URL((link as HTMLAnchorElement).href);
+          const linkTag = url.searchParams.getAll('tag');
+          
+          // 检查是否选中
+          const isSelected = currentTag.some(tag => linkTag.includes(tag));
+          
+          // 更新标签样式
+          if (isSelected) {
+            link.classList.add('border-ancient-accent', 'dark:border-ancient-accent-dark');
+            link.classList.remove('border-ancient-accent/30', 'dark:border-ancient-accent-dark/30');
+          } else {
+            link.classList.remove('border-ancient-accent', 'dark:border-ancient-accent-dark');
+            link.classList.add('border-ancient-accent/30', 'dark:border-ancient-accent-dark/30');
+          }
+        } catch (e) {
+          // 处理错误
+        }
       });
       
       // 更新分类选中状态
-      document.querySelectorAll('a[href*="?category"]').forEach(link => {
+      const categoryLinks = document.querySelectorAll('a[href*="?category"]');
+      
+      categoryLinks.forEach((link, index) => {
         try {
           const url = new URL((link as HTMLAnchorElement).href);
-          const linkCategory = url.searchParams.get('category');
+          const linkCategory = url.searchParams.getAll('category');
           
           // 检查是否选中
-          const isSelected = currentCategory === linkCategory;
-          console.log('分类项:', linkCategory, '是否选中:', isSelected);
+          const isSelected = currentCategory.some(cat => linkCategory.includes(cat));
           
           // 处理带复选框的分类项（桌面端左侧栏）
           const checkbox = link.querySelector('div.w-4.h-4');
           if (checkbox) {
-            console.log('找到分类复选框:', checkbox);
             if (isSelected) {
-              checkbox.className = 'w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 relative';
+              checkbox.className = 'w-4 h-4 border border-ancient-accent dark:border-ancient-accent-dark mr-2 flex-shrink-0 relative';
               checkbox.innerHTML = '<div class="absolute inset-0 flex items-center justify-center"><div class="w-2 h-3 border-r-2 border-b-2 border-ancient-accent dark:border-ancient-accent-dark transform rotate-45 -translate-y-1/4"></div></div>';
-              // 同时更新父元素背景
-              link.classList.add('bg-ancient-accent/10', 'dark:bg-ancient-accent-dark/10');
+              link.classList.add('bg-ancient-accent/20', 'dark:bg-ancient-accent-dark/20');
             } else {
-              checkbox.className = 'w-4 h-4 border border-ancient-accent/50 dark:border-ancient-accent-dark/50 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20';
+              checkbox.className = 'w-4 h-4 border border-ancient-accent/30 dark:border-ancient-accent-dark/30 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20';
               checkbox.innerHTML = '';
-              link.classList.remove('bg-ancient-accent/10', 'dark:bg-ancient-accent-dark/10');
+              link.classList.remove('bg-ancient-accent/20', 'dark:bg-ancient-accent-dark/20');
             }
           } 
         } catch (e) {
-          console.error('Error updating category UI:', e);
+          // 处理错误
         }
       });
       
       // 更新城市选中状态
-      document.querySelectorAll('a[href*="?city"]').forEach(link => {
+      const cityLinks = document.querySelectorAll('a[href*="?city"]');
+      
+      cityLinks.forEach((link, index) => {
         try {
           const url = new URL((link as HTMLAnchorElement).href);
-          const linkCity = url.searchParams.get('city');
+          const linkCity = url.searchParams.getAll('city');
           
           // 检查是否选中
-          const isSelected = currentCity === linkCity;
-          console.log('城市项:', linkCity, '是否选中:', isSelected);
+          const isSelected = currentCity.some(city => linkCity.includes(city));
           
           // 处理带复选框的城市项（桌面端左侧栏）
           const checkbox = link.querySelector('div.w-4.h-4');
           if (checkbox) {
-            console.log('找到城市复选框:', checkbox);
             if (isSelected) {
-              checkbox.className = 'w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 relative';
-              checkbox.innerHTML = '<div class="absolute inset-0 flex items-center justify-center"><div class="w-2 h-3 border-r-2 border-b-2 border-amber-400 dark:border-amber-600 transform rotate-45 -translate-y-1/4"></div></div>';
-              // 移除橙色背景的添加
+              checkbox.className = 'w-4 h-4 border border-ancient-accent dark:border-ancient-accent-dark mr-2 flex-shrink-0 relative';
+              checkbox.innerHTML = '<div class="absolute inset-0 flex items-center justify-center"><div class="w-2 h-3 border-r-2 border-b-2 border-ancient-accent dark:border-ancient-accent-dark transform rotate-45 -translate-y-1/4"></div></div>';
+              link.classList.add('bg-ancient-accent/20', 'dark:bg-ancient-accent-dark/20');
             } else {
-              checkbox.className = 'w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30';
+              checkbox.className = 'w-4 h-4 border border-ancient-accent/30 dark:border-ancient-accent-dark/30 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20';
               checkbox.innerHTML = '';
-              // 移除背景移除代码，因为不再添加背景
+              link.classList.remove('bg-ancient-accent/20', 'dark:bg-ancient-accent-dark/20');
             }
           } 
         } catch (e) {
-          console.error('Error updating city UI:', e);
+          // 处理错误
         }
       });
-      
-      // 更新标签选中状态
-      document.querySelectorAll('a[href*="?tag"]').forEach(link => {
-        try {
-          const url = new URL((link as HTMLAnchorElement).href);
-          const linkTag = url.searchParams.get('tag');
-          
-          // 检查是否选中
-          const isSelected = currentTag === linkTag;
-          
-          // 标签可能有多种不同的样式结构，需要针对不同结构进行处理
-          // 处理带有类名px-3的标签（桌面端和移动端通用标签样式）
-          if (link.classList.contains('px-3')) {
-            if (isSelected) {
-              link.classList.add('border-ancient-accent', 'dark:border-ancient-accent-dark', 'text-ancient-accent', 'dark:text-ancient-accent-dark', 'font-medium', 'bg-ancient-accent/10', 'dark:bg-ancient-accent-dark/10', 'shadow-sm');
-              link.classList.remove('border-ancient-accent/30', 'dark:border-ancient-accent-dark/30');
-            } else {
-              link.classList.remove('border-ancient-accent', 'dark:border-ancient-accent-dark', 'text-ancient-accent', 'dark:text-ancient-accent-dark', 'font-medium', 'bg-ancient-accent/10', 'dark:bg-ancient-accent-dark/10', 'shadow-sm');
-              link.classList.add('border-ancient-accent/30', 'dark:border-ancient-accent-dark/30');
-            }
-          }
-        } catch (e) {
-          console.error('Error updating tag UI:', e);
-        }
-      });
-      
-      // 高亮显示当前筛选条件摘要（顶部筛选状态栏）
-      if (currentCategory || currentCity || currentTag || currentSearch) {
-        const filterSummary = document.querySelector('.flex.flex-wrap.gap-2.items-center');
-        if (filterSummary) {
-          filterSummary.classList.add('animate-pulse-once');
-      setTimeout(() => {
-            filterSummary.classList.remove('animate-pulse-once');
-          }, 500);
-        }
-      }
     }
 
-    // 初始化：如果 URL 中有筛选参数，应用筛选
-    if (window.location.search) {
-      applyFilters();
-    }
+    // 获取所有筛选链接
+    const filterLinks = document.querySelectorAll('a[href*="?category"], a[href*="?city"], a[href*="?tag"]');
+    
+    // 为每个筛选链接添加点击事件监听器
+    filterLinks.forEach((link, index) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault(); // 阻止默认行为
+        
+        const href = (link as HTMLAnchorElement).href;
+        const url = new URL(href);
+        
+        // 获取当前的筛选参数
+        const params = new URLSearchParams(window.location.search);
+        const clickedParam = Array.from(url.searchParams.entries())[0];
+        
+        if (clickedParam) {
+          const [paramName, paramValue] = clickedParam;
+          
+          // 如果当前参数值与点击的值相同，则移除该参数
+          if (params.getAll(paramName).includes(paramValue)) {
+            params.delete(paramName, paramValue);
+          } else {
+            // 否则设置新的参数值
+            params.append(paramName, paramValue);
+          }
+          
+          // 更新 URL，但不刷新页面
+          const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+          window.history.pushState({}, '', newUrl);
+          
+          // 应用筛选
+          applyFilters();
+        }
+      });
+    });
 
     // 处理搜索表单提交
     const searchForm = document.getElementById('search-form');
     const searchFormMobile = document.getElementById('search-form-mobile');
 
     function handleSearch(e: Event) {
-        e.preventDefault();
+      e.preventDefault();
       const form = e.target as HTMLFormElement;
       const searchInput = form.querySelector('input[name="search"]') as HTMLInputElement;
       
@@ -1059,7 +1085,7 @@ const buildUrl = (params: Record<string, string | null>) => {
       // 更新或删除搜索参数
       if (searchInput.value.trim()) {
         params.set('search', searchInput.value.trim());
-        } else {
+      } else {
         params.delete('search');
       }
       
@@ -1085,6 +1111,11 @@ const buildUrl = (params: Record<string, string | null>) => {
       resetFiltersBtn.addEventListener('click', () => {
         window.location.href = '/culture';
       });
+    }
+
+    // 初始化：如果 URL 中有筛选参数，应用筛选
+    if (window.location.search) {
+      applyFilters();
     }
   });
 </script>
@@ -1865,56 +1896,52 @@ const buildUrl = (params: Record<string, string | null>) => {
   }
 
   /* 文化分类样式 - 明亮模式 */
-
-
   .font-ancient-body.max-h-48 a[href*="?category"]:hover {
-    background-color: rgba(139, 90, 43, 0.1);
+    background-color: rgba(251, 191, 36, 0.1);
   }
 
   .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4 {
-    border-color: rgba(139, 90, 43, 0.5);
+    border-color: rgba(251, 191, 36, 0.5);
   }
 
   .font-ancient-body.max-h-48 a[href*="?category"]:hover .w-4.h-4 {
-    border-color: rgba(139, 90, 43, 0.8);
-    background-color: rgba(139, 90, 43, 0.1);
+    border-color: rgba(251, 191, 36, 0.8);
+    background-color: rgba(251, 191, 36, 0.1);
   }
 
-  .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 {
-    background-color: rgba(139, 90, 43, 0.15);
+  .font-ancient-body.max-h-48 a[href*="?category"].bg-amber-100\/80 {
+    background-color: rgba(251, 191, 36, 0.15);
   }
 
-  .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 .w-4.h-4 {
-    border-color: rgba(139, 90, 43, 0.8);
-    background-color: rgba(139, 90, 43, 0.2);
+  .font-ancient-body.max-h-48 a[href*="?category"].bg-amber-100\/80 .w-4.h-4 {
+    border-color: rgba(251, 191, 36, 0.8);
+    background-color: rgba(251, 191, 36, 0.2);
   }
 
   /* 文化分类样式 - 暗黑模式 */
-
   [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"]:hover {
-    background-color: rgba(215, 171, 101, 0.1);
+    background-color: rgba(180, 83, 9, 0.2);
   }
 
   [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4 {
-    border-color: rgba(215, 171, 101, 0.5);
+    border-color: rgba(180, 83, 9, 0.5);
   }
 
   [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"]:hover .w-4.h-4 {
-    border-color: rgba(215, 171, 101, 0.8);
-    background-color: rgba(215, 171, 101, 0.1);
+    border-color: rgba(180, 83, 9, 0.8);
+    background-color: rgba(180, 83, 9, 0.2);
   }
 
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 {
-    background-color: rgba(215, 171, 101, 0.15);
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-amber-100\/80 {
+    background-color: rgba(180, 83, 9, 0.25);
   }
 
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 .w-4.h-4 {
-    border-color: rgba(215, 171, 101, 0.8);
-    background-color: rgba(215, 171, 101, 0.2);
+  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-amber-100\/80 .w-4.h-4 {
+    border-color: rgba(180, 83, 9, 0.8);
+    background-color: rgba(180, 83, 9, 0.3);
   }
 
   /* 地域分布样式 - 暗黑模式 */
-
   [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"]:hover {
     background-color: rgba(180, 83, 9, 0.2);
   }
@@ -1974,14 +2001,8 @@ const buildUrl = (params: Record<string, string | null>) => {
   }
 
   /* 文化分类选中状态 */
-  .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 {
-    background-color: rgba(139, 90, 43, 0.1);
-  }
 
-  .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 .w-4.h-4 {
-    border-color: rgba(139, 90, 43, 0.8);
-    color: rgba(139, 90, 43, 0.8);
-  }
+
 
   /* 地域分布选中状态 */
   .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 {
@@ -1997,6 +2018,7 @@ const buildUrl = (params: Record<string, string | null>) => {
   .flex.flex-wrap.gap-2 a[href*="?tag"] {
     position: relative;
     overflow: hidden;
+    transition: all 0.3s ease;
   }
 
   .flex.flex-wrap.gap-2 a[href*="?tag"]:hover {
@@ -2008,28 +2030,10 @@ const buildUrl = (params: Record<string, string | null>) => {
     background-color: rgba(139, 90, 43, 0.15);
     border-color: rgba(139, 90, 43, 0.8);
     color: rgba(139, 90, 43, 1);
-    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
   /* 暗黑模式样式 */
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 {
-    background-color: rgba(215, 171, 101, 0.15);
-  }
-
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-ancient-accent\/20 .w-4.h-4 {
-    border-color: rgba(215, 171, 101, 0.8);
-    color: rgba(215, 171, 101, 0.8);
-  }
-
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 {
-    background-color: rgba(180, 83, 9, 0.2);
-  }
-
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 .w-4.h-4 {
-    border-color: rgba(180, 83, 9, 0.8);
-    color: rgba(180, 83, 9, 0.8);
-  }
-
   [data-theme='dark'] .flex.flex-wrap.gap-2 a[href*="?tag"]:hover {
     background-color: rgba(215, 171, 101, 0.1);
     border-color: rgba(215, 171, 101, 0.5);
@@ -2039,6 +2043,41 @@ const buildUrl = (params: Record<string, string | null>) => {
     background-color: rgba(215, 171, 101, 0.15);
     border-color: rgba(215, 171, 101, 0.8);
     color: rgba(215, 171, 101, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
+
+  /* 自定义滚动条样式 */
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgba(248, 245, 232, 0.2);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(139, 90, 43, 0.3);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 90, 43, 0.4);
+  }
+
+  /* 暗色模式下的滚动条样式 */
+  [data-theme='dark'] .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgba(30, 26, 33, 0.2);
+  }
+
+  [data-theme='dark'] .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(215, 171, 101, 0.3);
+  }
+
+  [data-theme='dark'] .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(215, 171, 101, 0.4);
+  }
+
+  /* 其他现有样式 */
 
 </style>
