@@ -10,7 +10,7 @@ export interface Props {
 // 生成静态路径
 export async function getStaticPaths() {
   const cuisines = await getCollection("cuisine");
-  return cuisines.map((entry) => ({
+  return cuisines.map((entry: CollectionEntry<"cuisine">) => ({
     params: { slug: entry.slug },
     props: { entry },
   }));
@@ -24,10 +24,10 @@ const { Content } = await entry.render();
 const allCuisines = await getCollection("cuisine");
 const relatedCuisines = allCuisines
   .filter(
-    (item) => 
-      item.slug !== entry.slug && 
-      (item.data.category === entry.data.category || 
-      item.data.tags.some((tag) => entry.data.tags.includes(tag)))
+    (item: CollectionEntry<"cuisine">) =>
+      item.slug !== entry.slug &&
+      (item.data.category === entry.data.category ||
+        item.data.tags.some((tag: string) => entry.data.tags.includes(tag))),
   )
   .slice(0, 3);
 ---
@@ -37,165 +37,222 @@ const relatedCuisines = allCuisines
   <div class="relative h-[50vh] min-h-[400px]">
     <!-- 背景图片 -->
     <div class="absolute inset-0">
-      <img 
-        src={entry.data.image} 
+      <img
+        src={entry.data.image}
         alt={entry.data.title}
         class="w-full h-full object-cover"
       />
-      <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-black/30"></div>
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-amber-900/80 to-amber-800/30"
+      >
+      </div>
     </div>
-    
+
     <!-- 内容 -->
     <div class="absolute inset-0">
-      <div class="max-w-7xl h-full flex flex-col justify-end px-4 sm:px-6 lg:px-8 pb-12 mx-auto">
+      <div
+        class="max-w-7xl h-full flex flex-col justify-end px-4 sm:px-6 lg:px-8 pb-12 mx-auto"
+      >
         <!-- 面包屑导航 -->
-        <div class="flex items-center gap-2 text-white/80 mb-4">
-          <a href="/" class="hover:text-white transition-colors">首页</a>
+        <div class="flex items-center gap-2 text-amber-50/90 mb-4">
+          <a
+            href="/"
+            class="hover:text-white transition-colors"
+            >首页</a
+          >
           <span>/</span>
-          <a href="/cuisine" class="hover:text-white transition-colors">美食</a>
+          <a
+            href="/cuisine"
+            class="hover:text-white transition-colors"
+            >美食</a
+          >
           <span>/</span>
           <span class="text-white">{entry.data.title}</span>
         </div>
 
-        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">{entry.data.title}</h1>
-        
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+          {entry.data.title}
+        </h1>
+
         <!-- 标签 -->
         <div class="flex flex-wrap gap-2 mb-6">
-          {entry.data.tags.map((tag) => (
-            <span class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full">
-              {tag}
-            </span>
-          ))}
+          {
+            entry.data.tags.map((tag: string) => (
+              <span class="px-3 py-1 bg-amber-500/30 backdrop-blur-sm text-white text-sm rounded-full">
+                {tag}
+              </span>
+            ))
+          }
         </div>
-        
+
         <p class="text-xl text-white/90 max-w-3xl">{entry.data.description}</p>
       </div>
     </div>
   </div>
 
   <!-- 主要内容区域 -->
-  <div class="py-12 bg-gray-50 dark:bg-gray-900">
+  <div class="py-12 bg-amber-50 dark:bg-amber-950">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
         <!-- 左侧内容 -->
         <div class="lg:col-span-8">
-          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+          <div class="bg-white dark:bg-amber-900/40 rounded-2xl shadow-lg p-8">
             <!-- 添加城市信息展示 -->
-            {entry.data.city && entry.data.city.length > 0 && (
-              <div class="mb-6 flex flex-wrap gap-2">
-                <span class="text-gray-600 dark:text-gray-400">地域：</span>
-                {entry.data.city.map((cityName: string) => (
-                  <span class="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 text-sm rounded-full">
-                    {cityName}
-                  </span>
-                ))}
-              </div>
-            )}
-            <div class="prose prose-lg dark:prose-invert max-w-none">
+            {
+              entry.data.city && entry.data.city.length > 0 && (
+                <div class="mb-6 flex flex-wrap gap-2">
+                  <span class="text-amber-800 dark:text-amber-200">地域：</span>
+                  {entry.data.city.map((cityName: string) => (
+                    <span class="px-3 py-1 bg-amber-100 dark:bg-amber-800/50 text-amber-800 dark:text-amber-100 text-sm rounded-full">
+                      {cityName}
+                    </span>
+                  ))}
+                </div>
+              )
+            }
+            <div class="prose prose-amber dark:prose-invert max-w-none">
               <Content />
             </div>
           </div>
         </div>
-        
+
         <!-- 右侧边栏 -->
         <div class="lg:col-span-4 space-y-8">
           <!-- 食材信息卡片 -->
-          {entry.data.ingredients && entry.data.ingredients.length > 0 && (
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-              <h3 class="text-xl font-bold mb-6 flex items-center">
-                <span class="text-2xl mr-2">🥘</span>
-                主要食材
-              </h3>
-              <div class="grid grid-cols-2 gap-4">
-                {entry.data.ingredients.map((ingredient) => (
-                  <div class="flex items-center bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                    <span class="text-amber-600 dark:text-amber-400 mr-2">•</span>
-                    <span>{ingredient}</span>
-                  </div>
-                ))}
+          {
+            entry.data.ingredients && entry.data.ingredients.length > 0 && (
+              <div class="bg-white dark:bg-amber-900/40 rounded-2xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-6 flex items-center text-amber-800 dark:text-amber-100">
+                  <span class="text-2xl mr-2">🥘</span>
+                  主要食材
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                  {entry.data.ingredients.map((ingredient: string) => (
+                    <div class="flex items-center bg-amber-50 dark:bg-amber-800/30 rounded-lg p-3">
+                      <span class="text-amber-600 dark:text-amber-300 mr-2">
+                        •
+                      </span>
+                      <span class="text-amber-700 dark:text-amber-100">
+                        {ingredient}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          }
 
           <!-- 烹饪信息卡片 -->
-          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-            <h3 class="text-xl font-bold mb-6 flex items-center">
+          <div class="bg-white dark:bg-amber-900/40 rounded-2xl shadow-lg p-6">
+            <h3
+              class="text-xl font-bold mb-6 flex items-center text-amber-800 dark:text-amber-100"
+            >
               <span class="text-2xl mr-2">⏱️</span>
               烹饪信息
             </h3>
             <div class="space-y-4">
-              <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <span class="text-gray-600 dark:text-gray-300">烹饪时间</span>
-                <span class="font-medium">{entry.data.cookTime || '45分钟'}</span>
+              <div
+                class="flex justify-between items-center p-3 bg-amber-50 dark:bg-amber-800/30 rounded-lg"
+              >
+                <span class="text-amber-700 dark:text-amber-200">烹饪时间</span>
+                <span class="font-medium text-amber-900 dark:text-amber-100"
+                  >{entry.data.cookTime || "45分钟"}</span
+                >
               </div>
-              <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <span class="text-gray-600 dark:text-gray-300">难度等级</span>
-                <span class="font-medium">{entry.data.difficulty || '中等'}</span>
+              <div
+                class="flex justify-between items-center p-3 bg-amber-50 dark:bg-amber-800/30 rounded-lg"
+              >
+                <span class="text-amber-700 dark:text-amber-200">难度等级</span>
+                <span class="font-medium text-amber-900 dark:text-amber-100"
+                  >{entry.data.difficulty || "中等"}</span
+                >
               </div>
             </div>
           </div>
 
           <!-- 返回按钮 -->
-          <a 
-            href="/cuisine" 
-            class="hidden lg:block w-full text-center px-4 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors shadow-sm border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+          <a
+            href="/cuisine"
+            class="hidden lg:block w-full text-center px-4 py-3 bg-white dark:bg-amber-900/40 text-amber-700 dark:text-amber-100 hover:bg-amber-50 dark:hover:bg-amber-800/60 rounded-lg transition-colors shadow-sm border border-amber-200 dark:border-amber-800 hover:border-amber-300 dark:hover:border-amber-700"
           >
             <span class="inline-flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                  clip-rule="evenodd"
+                ></path>
               </svg>
               返回所有美食
             </span>
           </a>
 
           <!-- 移动端悬浮返回按钮 -->
-          <a 
-            href="/cuisine" 
-            class="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors shadow-lg border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 z-50"
+          <a
+            href="/cuisine"
+            class="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 bg-white dark:bg-amber-900 text-amber-700 dark:text-amber-100 hover:bg-amber-50 dark:hover:bg-amber-800 rounded-full transition-colors shadow-lg border border-amber-200 dark:border-amber-700 hover:border-amber-300 dark:hover:border-amber-600 z-50"
           >
             <span class="inline-flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                  clip-rule="evenodd"
+                ></path>
               </svg>
               返回所有美食
             </span>
           </a>
 
           <!-- 相关美食推荐 -->
-          {relatedCuisines.length > 0 && (
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-              <h3 class="text-xl font-bold mb-6 flex items-center">
-                <span class="text-2xl mr-2">🍽️</span>
-                相关美食
-              </h3>
-              <div class="space-y-4">
-                {relatedCuisines.map((cuisine) => (
-                  <a 
-                    href={`/cuisine/${cuisine.slug}`}
-                    class="block group"
-                  >
-                    <div class="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-600">
-                      <img 
-                        src={cuisine.data.image} 
-                        alt={cuisine.data.title}
-                        class="w-16 h-16 rounded-lg object-cover"
-                      />
-                      <div>
-                        <h4 class="font-medium group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                          {cuisine.data.title}
-                        </h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                          {cuisine.data.category}
-                        </p>
-                      </div>
-                    </div>
-                  </a>
-                ))}
+          {
+            relatedCuisines.length > 0 && (
+              <div class="bg-white dark:bg-amber-900/40 rounded-2xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-6 flex items-center text-amber-800 dark:text-amber-100">
+                  <span class="text-2xl mr-2">🍽️</span>
+                  相关美食
+                </h3>
+                <div class="space-y-4">
+                  {relatedCuisines.map(
+                    (cuisine: CollectionEntry<"cuisine">) => (
+                      <a
+                        href={`/cuisine/${cuisine.slug}`}
+                        class="block group"
+                      >
+                        <div class="flex items-center gap-4 p-3 bg-amber-50 dark:bg-amber-800/30 rounded-lg transition-colors hover:bg-amber-100 dark:hover:bg-amber-800/50">
+                          <img
+                            src={cuisine.data.image}
+                            alt={cuisine.data.title}
+                            class="w-16 h-16 rounded-lg object-cover"
+                          />
+                          <div>
+                            <h4 class="font-medium group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors text-amber-800 dark:text-amber-100">
+                              {cuisine.data.title}
+                            </h4>
+                            <p class="text-sm text-amber-600 dark:text-amber-300">
+                              {cuisine.data.category}
+                            </p>
+                          </div>
+                        </div>
+                      </a>
+                    ),
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          }
         </div>
       </div>
     </div>
   </div>
-</MainLayout> 
+</MainLayout>

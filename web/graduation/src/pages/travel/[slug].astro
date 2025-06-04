@@ -10,7 +10,7 @@ export interface Props {
 // 生成静态路径
 export async function getStaticPaths() {
   const travels = await getCollection("travel");
-  return travels.map((entry) => ({
+  return travels.map((entry: CollectionEntry<"travel">) => ({
     params: { slug: entry.slug },
     props: { entry },
   }));
@@ -24,229 +24,323 @@ const { Content } = await entry.render();
 const allTravels = await getCollection("travel");
 const relatedTravels = allTravels
   .filter(
-    (item) => 
-      item.slug !== entry.slug && 
-      (item.data.season === entry.data.season || 
-       item.data.type === entry.data.type ||
-       item.data.tags.some((tag) => entry.data.tags.includes(tag)))
+    (item: CollectionEntry<"travel">) =>
+      item.slug !== entry.slug &&
+      (item.data.season === entry.data.season ||
+        item.data.type === entry.data.type ||
+        item.data.tags.some((tag: string) => entry.data.tags.includes(tag))),
   )
   .slice(0, 3);
 ---
 
 <MainLayout title={`${entry.data.title} - 河北游礼`}>
   <!-- 页面标题区域 -->
-  <div class="relative py-16 bg-gradient-to-br from-color-primary-700 via-color-primary-600 to-color-primary-800 text-white dark:from-color-dark-primary-900 dark:via-color-dark-primary-800 dark:to-color-dark-primary-950">
+  <div
+    class="relative py-16 bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-950"
+  >
     <div class="absolute inset-0 bg-black/30"></div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <div class="flex flex-wrap items-center gap-2 mb-4">
-        <a href="/" class="text-white/80 hover:text-white transition-colors">首页</a>
+        <a
+          href="/"
+          class="text-white/80 hover:text-white transition-colors"
+          >首页</a
+        >
         <span class="text-white/60">/</span>
-        <a href="/travel" class="text-white/80 hover:text-white transition-colors">旅行攻略</a>
+        <a
+          href="/travel"
+          class="text-white/80 hover:text-white transition-colors"
+          >旅行攻略</a
+        >
         <span class="text-white/60">/</span>
         <span class="text-white/60">{entry.data.title}</span>
       </div>
-      
+
       <h1 class="text-4xl md:text-5xl font-bold mb-4">{entry.data.title}</h1>
-      
+
       <div class="flex flex-wrap items-center gap-4 mb-4">
-        {entry.data.season && (
-          <div class="flex items-center text-white/90">
-            <span class="mr-1">🌤️</span> {entry.data.season}
-          </div>
-        )}
-        
-        {entry.data.type && (
-          <div class="flex items-center text-white/90">
-            <span class="mr-1">📋</span> {entry.data.type}
-          </div>
-        )}
-        
-        {entry.data.days && (
-          <div class="flex items-center text-white/90">
-            <span class="mr-1">⏱️</span> {entry.data.days}天行程
-          </div>
-        )}
-        
-        {entry.data.difficulty && (
-          <div class="flex items-center text-white/90">
-            <span class="mr-1">🏔️</span> 难度：{entry.data.difficulty}
-          </div>
-        )}
+        {
+          entry.data.season && (
+            <div class="flex items-center text-white/90">
+              <span class="mr-1">🌤️</span> {entry.data.season}
+            </div>
+          )
+        }
+
+        {
+          entry.data.type && (
+            <div class="flex items-center text-white/90">
+              <span class="mr-1">📋</span> {entry.data.type}
+            </div>
+          )
+        }
+
+        {
+          entry.data.days && (
+            <div class="flex items-center text-white/90">
+              <span class="mr-1">⏱️</span> {entry.data.days}天行程
+            </div>
+          )
+        }
+
+        {
+          entry.data.difficulty && (
+            <div class="flex items-center text-white/90">
+              <span class="mr-1">🏔️</span> 难度：{entry.data.difficulty}
+            </div>
+          )
+        }
       </div>
-      
+
       <div class="flex flex-wrap gap-2 mb-6">
-        {entry.data.tags.map((tag) => (
-          <span class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full">
-            {tag}
-          </span>
-        ))}
+        {
+          entry.data.tags.map((tag: string) => (
+            <span class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full">
+              {tag}
+            </span>
+          ))
+        }
       </div>
-      
+
       <p class="text-xl text-white/90 max-w-3xl">{entry.data.description}</p>
     </div>
   </div>
-  
+
   <!-- 主要内容区域 -->
-  <div class="py-12 bg-white dark:bg-color-dark-bg">
+  <div class="py-12 bg-theme-primary-bg dark:bg-slate-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- 左侧内容 -->
         <div class="lg:col-span-8">
-          <div class="prose prose-lg dark:prose-invert max-w-none">
-            <Content />
+          <div
+            class="bg-white dark:bg-slate-800 rounded-sm shadow-md p-8 border border-slate-200 dark:border-slate-700"
+          >
+            <div class="prose prose-lg dark:prose-invert max-w-none">
+              <Content />
+            </div>
           </div>
         </div>
-        
+
         <!-- 右侧边栏 -->
         <div class="lg:col-span-4 space-y-6">
           <!-- 旅行图片 -->
-          <div class="rounded-lg overflow-hidden shadow-md">
-            <div class="h-64 bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
-              {entry.data.image ? (
-                <img 
-                  src={entry.data.image} 
-                  alt={entry.data.title}
-                  class="w-full h-full object-cover"
-                />
-              ) : (
-                <span class="text-gray-500 dark:text-gray-400">{entry.data.title} 图片</span>
-              )}
+          <div
+            class="rounded-sm overflow-hidden shadow-md border border-slate-200 dark:border-slate-700"
+          >
+            <div
+              class="h-64 bg-slate-100 dark:bg-slate-800 flex items-center justify-center"
+            >
+              {
+                entry.data.image ? (
+                  <img
+                    src={entry.data.image}
+                    alt={entry.data.title}
+                    class="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span class="text-slate-500 dark:text-slate-400">
+                    {entry.data.title} 图片
+                  </span>
+                )
+              }
             </div>
           </div>
-          
+
           <!-- 攻略信息卡片 -->
-          <div class="bg-gray-50 dark:bg-slate-800 dark:border dark:border-slate-700 rounded-lg shadow-md p-6">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-              <span class="inline-block mr-2 w-1 h-6 bg-color-primary-500 rounded"></span>
+          <div
+            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-sm shadow-md p-6"
+          >
+            <h3
+              class="text-xl font-semibold text-slate-800 dark:text-primary-200 mb-4 flex items-center"
+            >
+              <span
+                class="inline-block mr-2 w-1 h-6 bg-primary-500 dark:bg-primary-600 rounded"
+              ></span>
               攻略信息
             </h3>
-            
+
             <div class="space-y-3">
-              {entry.data.season && (
-                <div class="flex">
-                  <span class="w-24 flex-shrink-0 text-gray-600 dark:text-white font-medium">适宜季节:</span>
-                  <span class="text-gray-900 dark:text-color-primary-200">{entry.data.season}</span>
-                </div>
-              )}
-              
-              {entry.data.type && (
-                <div class="flex">
-                  <span class="w-24 flex-shrink-0 text-gray-600 dark:text-white font-medium">攻略类型:</span>
-                  <span class="text-gray-900 dark:text-color-primary-200">{entry.data.type}</span>
-                </div>
-              )}
-              
-              {entry.data.days && (
-                <div class="flex">
-                  <span class="w-24 flex-shrink-0 text-gray-600 dark:text-white font-medium">行程天数:</span>
-                  <span class="text-gray-900 dark:text-color-primary-200">{entry.data.days}天</span>
-                </div>
-              )}
-              
-              {entry.data.difficulty && (
-                <div class="flex">
-                  <span class="w-24 flex-shrink-0 text-gray-600 dark:text-white font-medium">难度级别:</span>
-                  <span class="text-gray-900 dark:text-color-primary-200">{entry.data.difficulty}</span>
-                </div>
-              )}
-              
-              <div class="flex">
-                <span class="w-24 flex-shrink-0 text-gray-600 dark:text-white font-medium">旅行主题:</span>
-                <div class="flex flex-wrap gap-1">
-                  {entry.data.tags.map((tag) => (
-                    <span class="px-2 py-0.5 bg-color-primary-100 text-color-primary-800 text-xs rounded-full dark:bg-color-primary-600 dark:text-white">
-                      {tag}
+              {
+                entry.data.season && (
+                  <div class="flex">
+                    <span class="w-24 flex-shrink-0 text-slate-600 dark:text-slate-300 font-medium">
+                      适宜季节:
                     </span>
-                  ))}
+                    <span class="text-slate-800 dark:text-primary-200">
+                      {entry.data.season}
+                    </span>
+                  </div>
+                )
+              }
+
+              {
+                entry.data.type && (
+                  <div class="flex">
+                    <span class="w-24 flex-shrink-0 text-slate-600 dark:text-slate-300 font-medium">
+                      攻略类型:
+                    </span>
+                    <span class="text-slate-800 dark:text-primary-200">
+                      {entry.data.type}
+                    </span>
+                  </div>
+                )
+              }
+
+              {
+                entry.data.days && (
+                  <div class="flex">
+                    <span class="w-24 flex-shrink-0 text-slate-600 dark:text-slate-300 font-medium">
+                      行程天数:
+                    </span>
+                    <span class="text-slate-800 dark:text-primary-200">
+                      {entry.data.days}天
+                    </span>
+                  </div>
+                )
+              }
+
+              {
+                entry.data.difficulty && (
+                  <div class="flex">
+                    <span class="w-24 flex-shrink-0 text-slate-600 dark:text-slate-300 font-medium">
+                      难度级别:
+                    </span>
+                    <span class="text-slate-800 dark:text-primary-200">
+                      {entry.data.difficulty}
+                    </span>
+                  </div>
+                )
+              }
+
+              <div class="flex">
+                <span
+                  class="w-24 flex-shrink-0 text-slate-600 dark:text-slate-300 font-medium"
+                  >旅行主题:</span
+                >
+                <div class="flex flex-wrap gap-1">
+                  {
+                    entry.data.tags.map((tag: string) => (
+                      <span class="px-2 py-0.5 bg-primary-100 text-primary-800 text-xs rounded-full dark:bg-primary-800/40 dark:text-primary-200">
+                        {tag}
+                      </span>
+                    ))
+                  }
                 </div>
               </div>
-              
-              {entry.data.pubDate && (
-                <div class="flex">
-                  <span class="w-24 flex-shrink-0 text-gray-600 dark:text-white font-medium">发布时间:</span>
-                  <span class="text-gray-900 dark:text-color-primary-200">{new Date(entry.data.pubDate).toLocaleDateString('zh-CN')}</span>
-                </div>
-              )}
-              
+
+              {
+                entry.data.pubDate && (
+                  <div class="flex">
+                    <span class="w-24 flex-shrink-0 text-slate-600 dark:text-slate-300 font-medium">
+                      发布时间:
+                    </span>
+                    <span class="text-slate-800 dark:text-primary-200">
+                      {new Date(entry.data.pubDate).toLocaleDateString("zh-CN")}
+                    </span>
+                  </div>
+                )
+              }
             </div>
           </div>
-          
+
           <!-- 旅行小贴士 -->
-          <div class="bg-color-primary-50 dark:bg-slate-800 dark:border dark:border-color-primary-700 rounded-lg shadow-md p-6">
-            <h3 class="text-xl font-semibold text-color-primary-800 dark:text-color-primary-400 mb-4 flex items-center">
-              <span class="inline-block mr-2 w-1 h-6 bg-color-primary-500 rounded"></span>
+          <div
+            class="bg-primary-50 dark:bg-slate-800/50 border border-primary-200 dark:border-slate-700 rounded-sm shadow-md p-6"
+          >
+            <h3
+              class="text-xl font-semibold text-primary-800 dark:text-primary-400 mb-4 flex items-center"
+            >
+              <span
+                class="inline-block mr-2 w-1 h-6 bg-primary-500 dark:bg-primary-600 rounded"
+              ></span>
               旅行小贴士
             </h3>
-            
-            <div class="space-y-3 text-color-primary-700 dark:text-white">
+
+            <div class="space-y-3 text-primary-700 dark:text-slate-300">
               <div class="flex">
-                <span class="mr-2 text-color-primary-500 dark:text-color-primary-400">✓</span>
+                <span class="mr-2 text-primary-500 dark:text-primary-400"
+                  >✓</span
+                >
                 <p>出行前查看天气预报，准备合适的衣物</p>
               </div>
               <div class="flex">
-                <span class="mr-2 text-color-primary-500 dark:text-color-primary-400">✓</span>
+                <span class="mr-2 text-primary-500 dark:text-primary-400"
+                  >✓</span
+                >
                 <p>提前规划路线，预订住宿和交通</p>
               </div>
               <div class="flex">
-                <span class="mr-2 text-color-primary-500 dark:text-color-primary-400">✓</span>
+                <span class="mr-2 text-primary-500 dark:text-primary-400"
+                  >✓</span
+                >
                 <p>携带必要的药品和紧急联系方式</p>
               </div>
               <div class="flex">
-                <span class="mr-2 text-color-primary-500 dark:text-color-primary-400">✓</span>
+                <span class="mr-2 text-primary-500 dark:text-primary-400"
+                  >✓</span
+                >
                 <p>尊重当地风俗习惯，做文明旅行者</p>
               </div>
             </div>
           </div>
-          
+
           <!-- 相关攻略 -->
-          {relatedTravels.length > 0 && (
-            <div class="bg-gray-50 dark:bg-slate-800 dark:border dark:border-slate-700 rounded-lg shadow-md p-6">
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                <span class="inline-block mr-2 w-1 h-6 bg-color-primary-500 rounded"></span>
-                相关攻略
-              </h3>
-              
-              <div class="space-y-4">
-                {relatedTravels.map((travel) => (
-                  <a 
-                    href={`/travel/${travel.slug}`}
-                    class="block group"
-                  >
-                    <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors">
-                      <div class="w-16 h-16 flex-shrink-0 bg-gray-300 dark:bg-gray-700 rounded flex items-center justify-center">
-                        {travel.data.image ? (
-                          <img 
-                            src={travel.data.image} 
-                            alt={travel.data.title}
-                            class="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span class="text-xs text-gray-500 dark:text-gray-300">图片</span>
-                        )}
-                      </div>
-                      <div>
-                        <h4 class="text-base font-medium text-gray-900 dark:text-white group-hover:text-color-primary-600 dark:group-hover:text-color-primary-400 transition-colors">
-                          {travel.data.title}
-                        </h4>
-                        <div class="flex items-center text-xs text-gray-500 dark:text-color-primary-300 mt-1 space-x-2">
-                          {travel.data.season && <span>{travel.data.season}</span>}
-                          {travel.data.days && <span>• {travel.data.days}天行程</span>}
+          {
+            relatedTravels.length > 0 && (
+              <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-sm shadow-md p-6">
+                <h3 class="text-xl font-semibold text-slate-800 dark:text-primary-200 mb-4 flex items-center">
+                  <span class="inline-block mr-2 w-1 h-6 bg-primary-500 dark:bg-primary-600 rounded" />
+                  相关攻略
+                </h3>
+
+                <div class="space-y-4">
+                  {relatedTravels.map((travel: CollectionEntry<"travel">) => (
+                    <a
+                      href={`/travel/${travel.slug}`}
+                      class="block group"
+                    >
+                      <div class="flex items-start space-x-3 p-3 rounded-sm border border-transparent hover:border-slate-200 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                        <div class="w-16 h-16 flex-shrink-0 bg-slate-100 dark:bg-slate-700 rounded-sm flex items-center justify-center overflow-hidden">
+                          {travel.data.image ? (
+                            <img
+                              src={travel.data.image}
+                              alt={travel.data.title}
+                              class="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span class="text-xs text-slate-500 dark:text-slate-400">
+                              图片
+                            </span>
+                          )}
                         </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mt-1">
-                          {travel.data.description.substring(0, 60)}...
-                        </p>
+                        <div>
+                          <h4 class="text-base font-medium text-slate-800 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                            {travel.data.title}
+                          </h4>
+                          <div class="flex items-center text-xs text-slate-500 dark:text-slate-400 mt-1 space-x-2">
+                            {travel.data.season && (
+                              <span>{travel.data.season}</span>
+                            )}
+                            {travel.data.days && (
+                              <span>• {travel.data.days}天行程</span>
+                            )}
+                          </div>
+                          <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mt-1">
+                            {travel.data.description.substring(0, 60)}...
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </a>
-                ))}
+                    </a>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          
+            )
+          }
+
           <!-- 返回按钮 -->
-          <a 
+          <a
             href="/travel"
-            class="block w-full py-3 text-center bg-color-primary-600 text-white rounded-md hover:bg-color-primary-700 transition-colors dark:bg-color-dark-primary-600 dark:hover:bg-color-dark-primary-500"
+            class="block w-full py-3 text-center bg-primary-600 text-white rounded-sm hover:bg-primary-700 transition-colors dark:bg-primary-700 dark:hover:bg-primary-600 border border-primary-700 dark:border-primary-800"
           >
             返回所有攻略
           </a>
@@ -254,4 +348,4 @@ const relatedTravels = allTravels
       </div>
     </div>
   </div>
-</MainLayout> 
+</MainLayout>

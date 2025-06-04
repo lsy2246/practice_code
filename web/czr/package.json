@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "remix vite:dev",
-    "build": "vite build",
+    "build": "cross-env NODE_ENV=production vite build",
     "preview": "vite preview",
     "serve:static": "node server/static.js",
     "typecheck": "tsc",
@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@remix-run/dev": "^2.14.0",
+    "@remix-run/vercel": "^1.19.3",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/lodash": "^4.17.13",

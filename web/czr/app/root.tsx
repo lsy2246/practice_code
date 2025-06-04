@@ -6,6 +6,8 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
+// 导入Radix UI主题样式
+import "@radix-ui/themes/styles.css";
 import "./index.css"
 import Navigation from '~/components/Navigation';
 

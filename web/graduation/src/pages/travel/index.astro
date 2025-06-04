@@ -6,9 +6,15 @@ import MainLayout from "../../components/MainLayout.astro";
 const allTravels = await getCollection("travel");
 
 // 按发布日期排序
-const sortByDate = (a: CollectionEntry<"travel">, b: CollectionEntry<"travel">) => {
-  return new Date(b.data.pubDate || 0).getTime() - new Date(a.data.pubDate || 0).getTime();
-}
+const sortByDate = (
+  a: CollectionEntry<"travel">,
+  b: CollectionEntry<"travel">,
+) => {
+  return (
+    new Date(b.data.pubDate || 0).getTime() -
+    new Date(a.data.pubDate || 0).getTime()
+  );
+};
 
 const sortedTravels = [...allTravels].sort(sortByDate);
 
@@ -16,10 +22,10 @@ const sortedTravels = [...allTravels].sort(sortByDate);
 const hasTravels = allTravels.length > 0;
 
 // 提取所有标签并按数量排序
-const allTags: {name: string, count: number}[] = [];
+const allTags: { name: string; count: number }[] = [];
 allTravels.forEach((travel: CollectionEntry<"travel">) => {
   travel.data.tags.forEach((tag: string) => {
-    const existing = allTags.find(t => t.name === tag);
+    const existing = allTags.find((t) => t.name === tag);
     if (existing) {
       existing.count += 1;
     } else {
@@ -73,61 +79,66 @@ const totalPages = Math.ceil(totalTravels / itemsPerPage);
 // 获取当前页面的旅行攻略
 const visibleTravels = sortedTravels.slice(
   (currentPage - 1) * itemsPerPage,
-  currentPage * itemsPerPage
+  currentPage * itemsPerPage,
 );
 ---
 
 <MainLayout title="旅行攻略 - 河北游礼">
   <!-- 手绘旅行日记本风格的头部 -->
-  <div class="bg-theme-primary-bg dark:bg-slate-900 pt-28 pb-16 md:pt-32 md:pb-20 relative overflow-hidden">
-    <!-- 装饰性笔触元素 -->
-    <div class="absolute top-16 right-0 w-40 h-40 bg-[url('/images/ink-splash.png')] bg-no-repeat opacity-10"></div>
-    <div class="absolute bottom-0 left-0 w-32 h-32 bg-[url('/images/coffee-stain.png')] bg-no-repeat opacity-5"></div>
-    
+  <div
+    class="bg-theme-primary-bg dark:bg-slate-900 pt-28 pb-16 md:pt-32 md:pb-20 relative overflow-hidden"
+  >
+    <!-- 删除装饰性笔触元素 -->
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
       <div class="max-w-4xl mx-auto">
         <!-- 手绘风格标题 -->
         <div class="mb-10 relative">
-          <div class="absolute -top-8 -left-8 w-16 h-16 bg-[url('/images/paper-clip.png')] bg-no-repeat opacity-70 transform -rotate-12"></div>
+          <!-- 删除装饰性元素 -->
           <div class="relative inline-block">
-            <h1 class="text-5xl font-handwriting text-slate-800 dark:text-primary-200 leading-tight transform -rotate-1 relative z-10">
+            <h1
+              class="text-5xl text-slate-800 dark:text-primary-200 leading-tight transform -rotate-1 relative z-10"
+            >
               河北私人旅行笔记
             </h1>
-            <div class="absolute -bottom-3 left-0 w-full h-3 bg-primary-300 dark:bg-primary-600 opacity-40 transform rotate-1"></div>
+            <div
+              class="absolute -bottom-3 left-0 w-full h-3 bg-primary-300 dark:bg-primary-600 opacity-40 transform rotate-1"
+            >
+            </div>
           </div>
         </div>
-        
+
         <div class="flex flex-col md:flex-row gap-8 items-start">
           <!-- 左侧类似日记本的介绍 -->
-          <div class="md:w-1/2 bg-white dark:bg-slate-800 p-6 border border-slate-200 dark:border-slate-700 rounded-sm shadow-md transform rotate-1 relative">
-            <!-- 装饰性贴纸 -->
-            <div class="absolute -top-3 -right-3 w-12 h-12 bg-[url('/images/washi-tape.png')] bg-no-repeat opacity-80 transform -rotate-15"></div>
-            <p class="font-handwriting text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
+          <div
+            class="md:w-1/2 bg-white dark:bg-slate-800 p-6 border border-slate-200 dark:border-slate-700 rounded-sm shadow-md transform rotate-1 relative"
+          >
+            <!-- 删除装饰性贴纸 -->
+            <p
+              class="text-lg text-slate-700 dark:text-slate-300 leading-relaxed"
+            >
               河北的每一处风景都有自己的故事，我带着好奇心和相机，在乡间小路、古老城墙和山林溪流间留下足迹。现在，我愿与你分享这些未经商业包装的真实体验。
             </p>
           </div>
-          
+
           <!-- 右侧似手绘地图的概述 -->
-          <div class="md:w-1/2 bg-theme-primary-bg dark:bg-slate-800/50 p-5 border border-primary-200 dark:border-slate-700 rounded-sm shadow-md transform -rotate-1">
-            <h2 class="font-handwriting text-2xl text-slate-800 dark:text-primary-200 mb-3 flex items-center">
-              <span class="inline-block w-6 h-6 mr-2 bg-[url('/images/compass-icon.png')] bg-contain bg-no-repeat"></span>
+          <div
+            class="md:w-1/2 bg-theme-primary-bg dark:bg-slate-800/50 p-5 border border-primary-200 dark:border-slate-700 rounded-sm shadow-md transform -rotate-1"
+          >
+            <h2 class="text-2xl text-slate-800 dark:text-primary-200 mb-3">
               地域指南
             </h2>
-            <div class="space-y-2 font-handwriting text-slate-700 dark:text-slate-300">
+            <div class="space-y-2 text-slate-700 dark:text-slate-300">
               <div class="flex items-start">
-                <span class="inline-block w-4 h-4 mr-2 mt-1 bg-[url('/images/marker-dot.png')] bg-contain bg-no-repeat"></span>
                 <p>北部：长城脚下的古朴村落</p>
               </div>
               <div class="flex items-start">
-                <span class="inline-block w-4 h-4 mr-2 mt-1 bg-[url('/images/marker-dot.png')] bg-contain bg-no-repeat"></span>
                 <p>南部：太行山下的幽静峡谷</p>
               </div>
               <div class="flex items-start">
-                <span class="inline-block w-4 h-4 mr-2 mt-1 bg-[url('/images/marker-dot.png')] bg-contain bg-no-repeat"></span>
                 <p>东部：渤海湾的日出时分</p>
               </div>
               <div class="flex items-start">
-                <span class="inline-block w-4 h-4 mr-2 mt-1 bg-[url('/images/marker-dot.png')] bg-contain bg-no-repeat"></span>
                 <p>西部：坝上草原的风与云</p>
               </div>
             </div>
@@ -136,58 +147,100 @@ const visibleTravels = sortedTravels.slice(
       </div>
     </div>
   </div>
-  
+
   <!-- 主要内容区域 - 手账风格布局 -->
   <div class="bg-theme-primary-bg dark:bg-slate-900 py-16 relative">
-    <!-- 装饰性背景元素 -->
-    <div class="absolute top-20 right-20 w-60 h-60 bg-[url('/images/map-element.png')] bg-no-repeat opacity-5"></div>
-    <div class="absolute bottom-40 left-40 w-48 h-48 bg-[url('/images/compass-rose.png')] bg-no-repeat opacity-5 transform rotate-15"></div>
-    
+    <!-- 删除装饰性背景元素 -->
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- 移动端筛选切换按钮 -->
       <div class="lg:hidden mb-6">
-        <button id="mobile-filter-toggle" class="w-full py-3 px-4 flex items-center justify-between bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 shadow-md transform -rotate-1 relative">
-          <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-12 h-4 bg-[url('/images/binding-tape.png')] bg-contain bg-no-repeat"></div>
-          <span class="font-handwriting text-xl text-slate-800 dark:text-primary-200">旅行者笔记本</span>
-          <svg id="filter-arrow-down" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600 dark:text-slate-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+        <button
+          id="mobile-filter-toggle"
+          class="w-full py-3 px-4 flex items-center justify-between bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 shadow-md transform -rotate-1 relative transition-all duration-300 hover:rotate-0 hover:scale-102"
+        >
+          <span class="text-xl text-slate-800 dark:text-primary-200"
+            >旅行者笔记本</span
+          >
+          <svg
+            id="filter-arrow-down"
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-slate-600 dark:text-slate-400"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            ></path>
           </svg>
-          <svg id="filter-arrow-up" xmlns="http://www.w3.org/2000/svg" class="hidden h-5 w-5 text-slate-600 dark:text-slate-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+          <svg
+            id="filter-arrow-up"
+            xmlns="http://www.w3.org/2000/svg"
+            class="hidden h-5 w-5 text-slate-600 dark:text-slate-400"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+              clip-rule="evenodd"
+            ></path>
           </svg>
         </button>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-7 gap-8">
         <!-- 左侧筛选栏 - 旅行者的笔记本风格 -->
-        <div id="mobile-filter-panel" class="lg:col-span-2 hidden lg:block">
+        <div
+          id="mobile-filter-panel"
+          class="lg:col-span-2 hidden lg:block"
+        >
           <div class="sticky top-24 space-y-8">
             <!-- 旅行者的口袋笔记本 -->
-            <div class="bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 p-6 shadow-md transform -rotate-1 relative">
-              <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 w-16 h-5 bg-[url('/images/binding-tape.png')] bg-contain bg-no-repeat"></div>
-              
+            <div
+              class="bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 p-6 shadow-md transform -rotate-1 relative"
+            >
               <!-- 移动端筛选关闭按钮 -->
               <div class="lg:hidden flex justify-between items-center mb-4">
-                <h2 class="font-handwriting text-2xl text-slate-800 dark:text-primary-200">
+                <h2 class="text-2xl text-slate-800 dark:text-primary-200">
                   旅行者笔记
                 </h2>
-                <button id="mobile-filter-close" class="p-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                <button
+                  id="mobile-filter-close"
+                  class="p-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    ></path>
                   </svg>
                 </button>
               </div>
-              
+
               <!-- 仅在桌面显示的筛选标题 -->
               <div class="hidden lg:block">
-                <h2 class="font-handwriting text-2xl text-slate-800 dark:text-primary-200 mb-6 pb-3 border-b border-slate-200 dark:border-slate-700">
+                <h2
+                  class="text-2xl text-slate-800 dark:text-primary-200 mb-6 pb-3 border-b border-slate-200 dark:border-slate-700"
+                >
                   旅行者笔记
                 </h2>
               </div>
-              
+
               <!-- 搜索类似手写字段 -->
               <div class="mb-8">
-                <label class="block font-handwriting text-lg text-slate-700 dark:text-slate-300 mb-2">查找旅程</label>
+                <label
+                  class="block text-lg text-slate-700 dark:text-slate-300 mb-2"
+                  >查找旅程</label
+                >
                 <div class="relative">
                   <input
                     id="search-input"
@@ -199,98 +252,163 @@ const visibleTravels = sortedTravels.slice(
                 </div>
                 <button
                   id="search-button"
-                  class="mt-2 w-full py-2 px-4 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-400 font-handwriting text-sm border border-primary-200 dark:border-primary-800/40 hover:bg-primary-200 dark:hover:bg-primary-800/40 hover:text-primary-900 dark:hover:text-primary-300 hover:shadow-md hover:scale-[1.02] transition-all duration-200 flex items-center justify-center"
+                  class="mt-2 w-full py-2 px-4 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-400 text-sm border border-primary-200 dark:border-primary-800/40 hover:bg-primary-200 dark:hover:bg-primary-800/40 hover:text-primary-900 dark:hover:text-primary-300 hover:shadow-md hover:scale-[1.02] transition-all duration-200 flex items-center justify-center"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clip-rule="evenodd"
+                    ></path>
                   </svg>
                   开始搜索
                 </button>
               </div>
-              
+
               <!-- 移动端筛选分类 -->
               <div class="lg:hidden mb-6">
                 <div class="grid grid-cols-2 gap-2">
-                  <button class="filter-tab-button active py-2 px-2 font-handwriting text-sm bg-theme-primary-bg dark:bg-slate-700/30 border border-primary-200 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300" data-target="seasons-panel">
+                  <button
+                    class="filter-tab-button py-2 px-2 text-sm bg-theme-primary-bg dark:bg-slate-700/30 border border-primary-200 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 relative transition-all duration-200 -rotate-1 hover:rotate-0 active-tab"
+                    data-target="seasons-panel"
+                  >
                     最适季节
                   </button>
-                  <button class="filter-tab-button py-2 px-2 font-handwriting text-sm bg-theme-primary-bg dark:bg-slate-700/30 border border-primary-200 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300" data-target="types-panel">
+                  <button
+                    class="filter-tab-button py-2 px-2 text-sm bg-theme-primary-bg dark:bg-slate-700/30 border border-primary-200 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 relative transition-all duration-200 -rotate-1 hover:rotate-0"
+                    data-target="types-panel"
+                  >
                     旅行方式
                   </button>
-                  <button class="filter-tab-button py-2 px-2 font-handwriting text-sm bg-theme-primary-bg dark:bg-slate-700/30 border border-primary-200 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300" data-target="cities-panel">
+                  <button
+                    class="filter-tab-button py-2 px-2 text-sm bg-theme-primary-bg dark:bg-slate-700/30 border border-primary-200 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 relative transition-all duration-200 -rotate-1 hover:rotate-0"
+                    data-target="cities-panel"
+                  >
                     目的地城市
                   </button>
-                  <button class="filter-tab-button py-2 px-2 font-handwriting text-sm bg-theme-primary-bg dark:bg-slate-700/30 border border-primary-200 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300" data-target="tags-panel">
+                  <button
+                    class="filter-tab-button py-2 px-2 text-sm bg-theme-primary-bg dark:bg-slate-700/30 border border-primary-200 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 relative transition-all duration-200 -rotate-1 hover:rotate-0"
+                    data-target="tags-panel"
+                  >
                     旅行灵感
                   </button>
                 </div>
               </div>
-              
+
               <!-- 季节关联 -->
-              <div id="seasons-panel" class="filter-panel lg:block mb-8">
-                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-200 mb-4 flex items-center">
-                  <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/season-icon.png')] bg-contain bg-no-repeat"></span>
+              <div
+                id="seasons-panel"
+                class="filter-panel lg:block mb-8"
+              >
+                <h3 class="text-xl text-slate-800 dark:text-primary-200 mb-4">
                   最适季节
                 </h3>
                 <div class="stickers-container">
-                  {seasonArray.map((season) => (
-                    <div class="filter-sticker season-sticker" data-value={season}>
-                      {season}
-                    </div>
-                  ))}
+                  {
+                    seasonArray.map((season) => (
+                      <div
+                        class="filter-sticker season-sticker"
+                        data-value={season}
+                      >
+                        {season}
+                      </div>
+                    ))
+                  }
                 </div>
               </div>
-              
+
               <!-- 旅行类型 -->
-              <div id="types-panel" class="filter-panel hidden lg:block mb-8">
-                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-200 mb-4 flex items-center">
-                  <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/travel-type-icon.png')] bg-contain bg-no-repeat"></span>
+              <div
+                id="types-panel"
+                class="filter-panel hidden lg:block mb-8"
+              >
+                <h3 class="text-xl text-slate-800 dark:text-primary-200 mb-4">
                   旅行方式
                 </h3>
                 <div class="stickers-container">
-                  {typeArray.map((type) => (
-                    <div class="filter-sticker type-sticker" data-value={type}>
-                      {type}
-                    </div>
-                  ))}
+                  {
+                    typeArray.map((type) => (
+                      <div
+                        class="filter-sticker type-sticker"
+                        data-value={type}
+                      >
+                        {type}
+                      </div>
+                    ))
+                  }
                 </div>
               </div>
-              
+
               <!-- 城市筛选 - 新增部分 -->
-              <div id="cities-panel" class="filter-panel hidden lg:block mb-8">
-                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-200 mb-4 flex items-center">
-                  <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/city-icon.png')] bg-contain bg-no-repeat"></span>
+              <div
+                id="cities-panel"
+                class="filter-panel hidden lg:block mb-8"
+              >
+                <h3 class="text-xl text-slate-800 dark:text-primary-200 mb-4">
                   目的地城市
                 </h3>
                 <div class="stickers-container">
-                  {cityArray.map((city) => (
-                    <div class="filter-sticker city-sticker" data-value={city}>
-                      {city} <span class="sticker-count">({cityArray.filter(c => c === city).length})</span>
-                    </div>
-                  ))}
+                  {
+                    cityArray.map((city) => (
+                      <div
+                        class="filter-sticker city-sticker"
+                        data-value={city}
+                      >
+                        {city}{" "}
+                        <span class="sticker-count">
+                          ({cityArray.filter((c) => c === city).length})
+                        </span>
+                      </div>
+                    ))
+                  }
                 </div>
               </div>
-              
+
               <!-- 旅行灵感标签 -->
-              <div id="tags-panel" class="filter-panel hidden lg:block mb-4">
-                <h3 class="font-handwriting text-xl text-slate-800 dark:text-primary-200 mb-4 flex items-center">
-                  <span class="inline-block w-5 h-5 mr-2 bg-[url('/images/tag-icon.png')] bg-contain bg-no-repeat"></span>
+              <div
+                id="tags-panel"
+                class="filter-panel hidden lg:block mb-4"
+              >
+                <h3 class="text-xl text-slate-800 dark:text-primary-200 mb-4">
                   旅行灵感
                 </h3>
                 <div class="stickers-container">
-                  {allTags.slice(0, 10).map((tag) => (
-                    <div class="filter-sticker tag-sticker" data-value={tag.name}>
-                      #{tag.name} <span class="sticker-count">({tag.count})</span>
-                    </div>
-                  ))}
+                  {
+                    allTags.slice(0, 10).map((tag) => (
+                      <div
+                        class="filter-sticker tag-sticker"
+                        data-value={tag.name}
+                      >
+                        #{tag.name}{" "}
+                        <span class="sticker-count">({tag.count})</span>
+                      </div>
+                    ))
+                  }
                 </div>
               </div>
-              
+
               <!-- 移动端底部应用筛选按钮 -->
               <div class="lg:hidden mt-6">
-                <button id="apply-filters-mobile" class="w-full py-2 px-4 bg-primary-500 text-white font-handwriting text-base rounded-sm shadow-sm flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                <button
+                  id="apply-filters-mobile"
+                  class="w-full py-2 px-4 bg-primary-500 text-white text-base rounded-sm shadow-sm flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                      clip-rule="evenodd"
+                    ></path>
                   </svg>
                   应用筛选 (<span id="filter-count">0</span>)
                 </button>
@@ -298,1688 +416,1331 @@ const visibleTravels = sortedTravels.slice(
             </div>
           </div>
         </div>
-        
+
         <!-- 右侧内容列表 - 旅行日记页面风格 -->
         <div class="lg:col-span-5">
-          
           <!-- 移动端筛选器指示器 -->
-          <div id="mobile-filter-indicators" class="lg:hidden flex flex-wrap gap-2 mb-6">
+          <div
+            id="mobile-filter-indicators"
+            class="lg:hidden flex flex-wrap gap-2 mb-6"
+          >
             <!-- 筛选标签将在JS中动态添加 -->
           </div>
-          
-          
+
           <!-- 无搜索结果提示 - 在客户端控制显示 -->
-          <div id="no-results-message" class="hidden bg-white dark:bg-slate-800 p-8 text-center rounded-sm border border-slate-200 dark:border-slate-700 shadow-md mb-10 relative transform rotate-1">
-            <div class="absolute -top-3 right-5 w-12 h-12 bg-[url('/images/tape-piece.png')] bg-contain bg-no-repeat opacity-70"></div>
-            
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <div
+            id="no-results-message"
+            class="hidden bg-white dark:bg-slate-800 p-8 text-center rounded-sm border border-slate-200 dark:border-slate-700 shadow-md mb-10 relative transform rotate-1"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-16 w-16 mx-auto text-slate-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="1"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              ></path>
             </svg>
-            
-            <h3 class="mt-4 text-xl font-handwriting text-slate-800 dark:text-slate-200">旅行笔记缺失</h3>
-            <p id="search-term-message" class="mt-2 font-handwriting text-slate-600 dark:text-slate-400">
+
+            <h3 class="mt-4 text-xl text-slate-800 dark:text-slate-200">
+              旅行笔记缺失
+            </h3>
+            <p
+              id="search-term-message"
+              class="mt-2 text-slate-600 dark:text-slate-400"
+            >
               抱歉，未找到相关旅行笔记。请尝试其他关键词或浏览所有旅行记录。
             </p>
-            
+
             <div class="mt-6">
-              <a href="/travel" class="inline-flex items-center text-primary-700 dark:text-primary-500 font-handwriting hover:underline">
+              <a
+                href="/travel"
+                class="inline-flex items-center text-primary-700 dark:text-primary-500 hover:underline"
+              >
                 查看所有旅行笔记
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 ml-1"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                    clip-rule="evenodd"
+                  ></path>
                 </svg>
               </a>
             </div>
           </div>
-          
+
           <!-- 旅行笔记列表 -->
-          <div id="travel-list" class="space-y-10">
-            {hasTravels ? (
-              visibleTravels.map((travel, index) => (
-                <a 
-                  href={`/travel/${travel.slug}`}
-                  class="block group"
-                >
-                  <div class={`bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden shadow-md transform ${index % 2 === 0 ? 'rotate-1' : '-rotate-1'} hover:shadow-lg transition-shadow relative`}
-                       data-tags={JSON.stringify(travel.data.tags)}
-                       data-season={travel.data.season}
-                       data-type={travel.data.type}
-                       data-cities={JSON.stringify(travel.data.city)}
-                       data-title={travel.data.title}
-                       data-description={travel.data.description}
+          <div
+            id="travel-list"
+            class="space-y-10"
+          >
+            {
+              hasTravels ? (
+                visibleTravels.map((travel, index) => (
+                  <a
+                    href={`/travel/${travel.slug}`}
+                    class="block group"
                   >
-                    <!-- 装饰性元素 -->
-                    <div class="absolute top-3 right-3 w-16 h-16 bg-[url('/images/polaroid-corner.png')] bg-contain bg-no-repeat opacity-20"></div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
-                      <div class="md:col-span-1 h-full">
-                        <div class="h-48 md:h-full bg-primary-100 dark:bg-slate-700 relative border-b md:border-r border-slate-200 dark:border-slate-700">
-                          {travel.data.image ? (
-                            <img 
-                              src={travel.data.image} 
-                              alt={travel.data.title}
-                              class="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div class="flex items-center justify-center h-full font-handwriting italic text-slate-500 dark:text-slate-400">
-                              {travel.data.title} 照片
-                            </div>
-                          )}
+                    <div
+                      class={`bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden shadow-md transform ${index % 2 === 0 ? "rotate-1" : "-rotate-1"} hover:shadow-lg transition-shadow relative`}
+                      data-tags={JSON.stringify(travel.data.tags)}
+                      data-season={travel.data.season}
+                      data-type={travel.data.type}
+                      data-cities={JSON.stringify(travel.data.city)}
+                      data-title={travel.data.title}
+                      data-description={travel.data.description}
+                    >
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
+                        <div class="md:col-span-1 h-full">
+                          <div class="h-48 md:h-full bg-primary-100 dark:bg-slate-700 relative border-b md:border-r border-slate-200 dark:border-slate-700">
+                            {travel.data.image ? (
+                              <img
+                                src={travel.data.image}
+                                alt={travel.data.title}
+                                class="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div class="flex items-center justify-center h-full  italic text-slate-500 dark:text-slate-400">
+                                {travel.data.title} 照片
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <div class="md:col-span-2 p-6">
-                        <h3 class="text-2xl font-handwriting text-slate-800 dark:text-primary-200 mb-3 group-hover:text-primary-800 dark:group-hover:text-primary-400 transition-colors">
-                          {travel.data.title}
-                        </h3>
-                        
-                        <div class="flex flex-wrap gap-4 mb-4 text-sm font-handwriting text-slate-600 dark:text-slate-400">
-                          {travel.data.season && (
-                            <div class="flex items-center">
-                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/season-small.png')] bg-contain bg-no-repeat"></span>
-                              {travel.data.season}
-                            </div>
-                          )}
-                          
-                          {travel.data.type && (
-                            <div class="flex items-center">
-                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/type-small.png')] bg-contain bg-no-repeat"></span>
-                              {travel.data.type}
-                            </div>
-                          )}
-                          
-                          {travel.data.days && (
-                            <div class="flex items-center">
-                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/days-small.png')] bg-contain bg-no-repeat"></span>
-                              {travel.data.days}天
-                            </div>
-                          )}
-                          
-                          {travel.data.difficulty && (
-                            <div class="flex items-center">
-                              <span class="inline-block w-4 h-4 mr-1 bg-[url('/images/difficulty-small.png')] bg-contain bg-no-repeat"></span>
-                              难度: {travel.data.difficulty}
-                            </div>
-                          )}
-                        </div>
-                        
-                        <p class="font-handwriting text-slate-600 dark:text-slate-400 leading-relaxed mb-4 line-clamp-3">
-                          {travel.data.description}
-                        </p>
-                        
-                        <div class="flex overflow-x-auto gap-2 mb-3 scrollbar-thin scrollbar-thumb-slate-500/30 dark:scrollbar-thumb-slate-400/30 scrollbar-track-slate-100/20 dark:scrollbar-track-slate-900/20 pb-2">
-                          {travel.data.tags.map((tag: string) => (
-                            <span class="flex-shrink-0 px-2 py-0.5 text-xs font-handwriting bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                        
-                        <div class="text-primary-700 dark:text-primary-500 text-sm font-handwriting group-hover:underline mt-2 flex items-center">
-                          阅读完整笔记
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                          </svg>
+                        <div class="md:col-span-2 p-6">
+                          <h3 class="text-2xl  text-slate-800 dark:text-primary-200 mb-3 group-hover:text-primary-800 dark:group-hover:text-primary-400 transition-colors">
+                            {travel.data.title}
+                          </h3>
+
+                          <div class="flex flex-wrap gap-4 mb-4 text-sm  text-slate-600 dark:text-slate-400">
+                            {travel.data.season && (
+                              <div class="flex items-center">
+                                {travel.data.season}
+                              </div>
+                            )}
+
+                            {travel.data.type && (
+                              <div class="flex items-center">
+                                {travel.data.type}
+                              </div>
+                            )}
+
+                            {travel.data.days && (
+                              <div class="flex items-center">
+                                {travel.data.days}天
+                              </div>
+                            )}
+
+                            {travel.data.difficulty && (
+                              <div class="flex items-center">
+                                难度: {travel.data.difficulty}
+                              </div>
+                            )}
+                          </div>
+
+                          <p class=" text-slate-600 dark:text-slate-400 leading-relaxed mb-4 line-clamp-3">
+                            {travel.data.description}
+                          </p>
+
+                          <div class="flex overflow-x-auto gap-2 mb-3 scrollbar-thin scrollbar-thumb-slate-500/30 dark:scrollbar-thumb-slate-400/30 scrollbar-track-slate-100/20 dark:scrollbar-track-slate-900/20 pb-2">
+                            {travel.data.tags.map((tag: string) => (
+                              <span class="flex-shrink-0 px-2 py-0.5 text-xs  bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+
+                          <div class="text-primary-700 dark:text-primary-500 text-sm  group-hover:underline mt-2 flex items-center">
+                            阅读完整笔记
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-4 w-4 ml-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </a>
-              ))
-            ) : (
-              <div class="bg-white dark:bg-slate-800 p-8 text-center rounded-sm border border-slate-200 dark:border-slate-700 shadow-md mb-10 relative transform rotate-1">
-                <div class="absolute -top-3 right-5 w-12 h-12 bg-[url('/images/tape-piece.png')] bg-contain bg-no-repeat opacity-70"></div>
-                
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                
-                <h3 class="mt-4 text-xl font-handwriting text-slate-800 dark:text-slate-200">暂无旅行笔记</h3>
-                <p class="mt-2 font-handwriting text-slate-600 dark:text-slate-400">
-                  目前还没有发布任何旅行笔记。请稍后再来查看，或探索网站的其他内容。
-                </p>
-              </div>
-            )}
+                  </a>
+                ))
+              ) : (
+                <div class="bg-white dark:bg-slate-800 p-8 text-center rounded-sm border border-slate-200 dark:border-slate-700 shadow-md mb-10 relative transform rotate-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-16 w-16 mx-auto text-slate-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="1"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+
+                  <h3 class="mt-4 text-xl  text-slate-800 dark:text-slate-200">
+                    暂无旅行笔记
+                  </h3>
+                  <p class="mt-2  text-slate-600 dark:text-slate-400">
+                    目前还没有发布任何旅行笔记。请稍后再来查看，或探索网站的其他内容。
+                  </p>
+                </div>
+              )
+            }
           </div>
-          
+
           <!-- 分页 - 手绘风格 -->
-          {hasTravels && totalPages > 1 && (
-            <div class="mt-12 flex justify-center">
-              <div class="inline-flex border border-slate-300 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800">
-                <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
-                  上一页
-                </button>
-                <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-white bg-primary-600 dark:bg-primary-700">
-                  1
-                </button>
-                {totalPages > 1 && (
-                  <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
-                    2
+          {
+            hasTravels && totalPages > 1 && (
+              <div class="mt-12 flex justify-center">
+                <div class="inline-flex border border-slate-300 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800">
+                  <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700  text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
+                    上一页
                   </button>
-                )}
-                {totalPages > 2 && (
-                  <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
-                    3
+                  <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700  text-white bg-primary-600 dark:bg-primary-700">
+                    1
                   </button>
-                )}
-                {totalPages > 1 && (
-                  <button class="px-4 py-2 font-handwriting text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
-                    下一页
-                  </button>
-                )}
+                  {totalPages > 1 && (
+                    <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700  text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
+                      2
+                    </button>
+                  )}
+                  {totalPages > 2 && (
+                    <button class="px-4 py-2 border-r border-slate-300 dark:border-slate-700  text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
+                      3
+                    </button>
+                  )}
+                  {totalPages > 1 && (
+                    <button class="px-4 py-2  text-slate-700 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-slate-700">
+                      下一页
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-          
+            )
+          }
+
           <!-- 底部引言 - 旅行者的话 -->
           <div class="mt-16 text-center max-w-2xl mx-auto">
-            <p class="text-lg font-handwriting text-slate-600 dark:text-slate-400 italic relative">
+            <p
+              class="text-lg text-slate-600 dark:text-slate-400 italic relative"
+            >
               <span class="absolute -top-6 left-0 text-4xl opacity-20">"</span>
               旅行不在于目的地的远近，而在于看世界的眼光。河北的每一处风景，都值得用心发现...
-              <span class="absolute -bottom-6 right-0 text-4xl opacity-20">"</span>
+              <span class="absolute -bottom-6 right-0 text-4xl opacity-20"
+                >"</span
+              >
             </p>
-            <div class="mt-8 flex justify-center">
-              <div class="w-16 h-8 bg-[url('/images/signature.png')] bg-contain bg-no-repeat opacity-70"></div>
-            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</MainLayout>
 
-<style>
-  .font-handwriting {
-    font-family: cursive, sans-serif;
-  }
-
-  .font-adventure {
-    font-family: cursive, sans-serif;
-  }
-  
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  /* 移动端筛选相关样式 */
-  .filter-tab-button {
-    position: relative;
-    transition: all 0.2s ease;
-    transform: rotate(-1deg);
-  }
-  
-  .filter-tab-button.active {
-    transform: rotate(0);
-    font-weight: 600;
-  }
-  
-  .filter-tab-button.active::after {
-    content: '';
-    position: absolute;
-    bottom: -3px;
-    left: 10%;
-    width: 80%;
-    height: 2px;
-    background-color: currentColor;
-    opacity: 0.6;
-  }
-  
-  /* 移动筛选器指示器样式 */
-  #mobile-filter-indicators {
-    font-family: cursive, sans-serif;
-  }
-  
-  /* 移动端筛选切换按钮 */
-  #mobile-filter-toggle {
-    transition: all 0.3s ease;
-  }
-  
-  #mobile-filter-toggle:hover {
-    transform: rotate(0) scale(1.02);
-  }
-  
-  /* 移动端应用筛选按钮 */
-  #apply-filters-mobile {
-    transition: all 0.2s ease;
-  }
-  
-  #apply-filters-mobile:hover,
-  #apply-filters-mobile:focus {
-    transform: translateY(-2px);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  #apply-filters-mobile:active {
-    transform: translateY(0);
-  }
-  
-  /* 移动端筛选面板动画 */
-  @keyframes panel-slide-in {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-  
-  #mobile-filter-panel:not(.hidden) {
-    animation: panel-slide-in 0.3s ease forwards;
-  }
-
-  /* 复选框样式美化 */
-  .travel-checkbox {
-    position: relative;
-    width: 1.25rem;
-    height: 1.25rem;
-    transition: all 0.3s ease;
-  }
-
-  /* 基础复选框样式 - 未选中状态 */
-  .checkbox-custom {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
-    border: 2px solid #94a3b8;
-    border-radius: 2px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease-in-out;
-    transform: rotate(-2deg);
-    overflow: hidden;
-  }
-  
-  /* 暗模式下的基础复选框样式 */
-  .dark .checkbox-custom {
-    background-color: rgba(30, 41, 59, 0.8);
-    border-color: #475569;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  }
-  
-  /* 季节复选框特有样式 */
-  .season-checkbox .checkbox-custom {
-    border-color: #60a5fa;
-    background-color: rgba(219, 234, 254, 0.5);
-  }
-  
-  /* 暗模式下的季节复选框 */
-  .dark .season-checkbox .checkbox-custom {
-    border-color: #3b82f6;
-    background-color: rgba(30, 58, 138, 0.3);
-  }
-  
-  /* 旅行类型复选框特有样式 */
-  .type-checkbox .checkbox-custom {
-    border-color: #f59e0b;
-    background-color: rgba(254, 243, 199, 0.5);
-  }
-  
-  /* 暗模式下的旅行类型复选框 */
-  .dark .type-checkbox .checkbox-custom {
-    border-color: #d97706;
-    background-color: rgba(120, 53, 15, 0.3);
-  }
-  
-  /* 城市复选框特有样式 */
-  .city-checkbox .checkbox-custom {
-    border-color: #10b981;
-    background-color: rgba(209, 250, 229, 0.5);
-  }
-  
-  /* 暗模式下的城市复选框 */
-  .dark .city-checkbox .checkbox-custom {
-    border-color: #059669;
-    background-color: rgba(6, 78, 59, 0.3);
-  }
-  
-  /* 标签复选框特有样式 */
-  .tag-checkbox-container .checkbox-custom {
-    border-color: #8b5cf6;
-    background-color: rgba(237, 233, 254, 0.5);
-  }
-  
-  /* 暗模式下的标签复选框 */
-  .dark .tag-checkbox-container .checkbox-custom {
-    border-color: #7c3aed;
-    background-color: rgba(76, 29, 149, 0.3);
-  }
-  
-  /* 选中状态通用样式 */
-  .travel-checkbox input:checked + .checkbox-custom {
-    transform: rotate(0deg) scale(1.05);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  }
-  
-  /* 季节复选框选中状态 */
-  .season-checkbox input:checked + .checkbox-custom {
-    background-color: rgba(59, 130, 246, 0.2);
-    border-color: #3b82f6;
-    border-width: 2px;
-  }
-  
-  /* 暗模式下季节复选框选中状态 */
-  .dark .season-checkbox input:checked + .checkbox-custom {
-    background-color: rgba(59, 130, 246, 0.3);
-    border-color: #60a5fa;
-    border-width: 2px;
-  }
-  
-  /* 旅行类型复选框选中状态 */
-  .type-checkbox input:checked + .checkbox-custom {
-    background-color: rgba(245, 158, 11, 0.2);
-    border-color: #f59e0b;
-    border-width: 2px;
-  }
-  
-  /* 暗模式下旅行类型复选框选中状态 */
-  .dark .type-checkbox input:checked + .checkbox-custom {
-    background-color: rgba(245, 158, 11, 0.3);
-    border-color: #fbbf24;
-    border-width: 2px;
-  }
-  
-  /* 城市复选框选中状态 */
-  .city-checkbox input:checked + .checkbox-custom {
-    background-color: rgba(16, 185, 129, 0.2);
-    border-color: #10b981;
-    border-width: 2px;
-  }
-  
-  /* 暗模式下城市复选框选中状态 */
-  .dark .city-checkbox input:checked + .checkbox-custom {
-    background-color: rgba(16, 185, 129, 0.3);
-    border-color: #34d399;
-    border-width: 2px;
-  }
-  
-  /* 标签复选框选中状态 */
-  .tag-checkbox-container input:checked + .checkbox-custom {
-    background-color: rgba(139, 92, 246, 0.2);
-    border-color: #8b5cf6;
-    border-width: 2px;
-  }
-  
-  /* 暗模式下标签复选框选中状态 */
-  .dark .tag-checkbox-container input:checked + .checkbox-custom {
-    background-color: rgba(139, 92, 246, 0.3);
-    border-color: #a78bfa;
-    border-width: 2px;
-  }
-  
-  /* 动画效果 */
-  @keyframes checkbox-pop {
-    0% {
-      transform: scale(0.8) rotate(-2deg);
+  <style>
+    /* 移动端筛选相关样式 */
+    .active-tab {
+      transform: rotate(0);
+      font-weight: 600;
     }
-    50% {
-      transform: scale(1.1) rotate(2deg);
-    }
-    100% {
-      transform: scale(1) rotate(0);
-    }
-  }
-  
-  .travel-checkbox input:checked + .checkbox-custom {
-    animation: checkbox-pop 0.3s ease-in-out forwards;
-  }
-  
-  /* 季节特有动画效果 */
-  @keyframes season-sway {
-    0% { transform: rotate(-1deg); }
-    50% { transform: rotate(1deg); }
-    100% { transform: rotate(-1deg); }
-  }
-  
-  .season-checkbox .checkbox-custom:hover {
-    animation: season-sway 2s infinite ease-in-out;
-  }
-  
-  /* 标签特有动画效果 */
-  @keyframes tag-bounce {
-    0% { transform: translateY(0) rotate(-1deg); }
-    50% { transform: translateY(-2px) rotate(1deg); }
-    100% { transform: translateY(0) rotate(-1deg); }
-  }
-  
-  .tag-checkbox-container .checkbox-custom:hover {
-    animation: tag-bounce 1s infinite ease-in-out;
-  }
-  
-  /* 不同类型复选框的勾选标记颜色 */
-  .season-checkbox .checkbox-checkmark {
-    color: #3b82f6;
-  }
-  
-  .dark .season-checkbox .checkbox-checkmark {
-    color: #60a5fa;
-  }
-  
-  .type-checkbox .checkbox-checkmark {
-    color: #f59e0b;
-  }
-  
-  .dark .type-checkbox .checkbox-checkmark {
-    color: #fbbf24;
-  }
-  
-  .city-checkbox .checkbox-checkmark {
-    color: #10b981;
-  }
-  
-  .dark .city-checkbox .checkbox-checkmark {
-    color: #34d399;
-  }
-  
-  .tag-checkbox-container .checkbox-checkmark {
-    color: #8b5cf6;
-  }
-  
-  .dark .tag-checkbox-container .checkbox-checkmark {
-    color: #a78bfa;
-  }
-  
-  /* 复选框勾选标记 */
-  .checkbox-checkmark {
-    position: absolute;
-    top: 45%;
-    left: 50%;
-    width: 0.8rem;
-    height: 0.8rem;
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  
-  /* 选中状态显示勾选标记 */
-  .travel-checkbox input:checked + .checkbox-custom .checkbox-checkmark {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-  
-  /* 鼠标悬停效果 */
-  .travel-checkbox:hover .checkbox-custom {
-    transform: rotate(0deg);
-  }
-  
-  /* 不同类型的复选框背景特效 */
-  .checkbox-bg-effect {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
-  }
 
-  /* 创建贴纸/标签式筛选器样式 */
-  .filter-sticker {
-    display: inline-block;
-    padding: 0.35rem 0.85rem;
-    margin: 0.25rem;
-    font-family: cursive, sans-serif;
-    font-size: 0.9rem;
-    background-color: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 1px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    transform: rotate(-1deg);
-    overflow: hidden;
-    user-select: none;
-  }
-  
-  /* 贴纸选中状态 */
-  .filter-sticker.selected {
-    transform: rotate(0) scale(1.05);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 1;
-  }
-  
-  /* 贴纸悬停效果 */
-  .filter-sticker:hover {
-    transform: rotate(0);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* 不同类型贴纸的样式 */
-  .season-sticker {
-    background-color: rgba(219, 234, 254, 0.7);
-    border-color: #60a5fa;
-    color: #1e40af;
-  }
-  
-  .season-sticker.selected {
-    background-color: rgba(191, 219, 254, 0.9);
-    border-color: #3b82f6;
-  }
-  
-  .type-sticker {
-    background-color: rgba(254, 243, 199, 0.7);
-    border-color: #f59e0b;
-    color: #92400e;
-  }
-  
-  .type-sticker.selected {
-    background-color: rgba(253, 230, 138, 0.9);
-    border-color: #d97706;
-  }
-  
-  .city-sticker {
-    background-color: rgba(209, 250, 229, 0.7);
-    border-color: #10b981;
-    color: #065f46;
-  }
-  
-  .city-sticker.selected {
-    background-color: rgba(167, 243, 208, 0.9);
-    border-color: #059669;
-  }
-  
-  .tag-sticker {
-    background-color: rgba(237, 233, 254, 0.7);
-    border-color: #8b5cf6;
-    color: #5b21b6;
-  }
-  
-  .tag-sticker.selected {
-    background-color: rgba(221, 214, 254, 0.9);
-    border-color: #7c3aed;
-  }
-  
-  /* 装饰性角落胶带效果 */
-  .filter-sticker::before {
-    content: '';
-    position: absolute;
-    top: -3px;
-    left: -3px;
-    width: 8px;
-    height: 8px;
-    background-color: rgba(255, 255, 255, 0.8);
-    border-radius: 0;
-    transform: rotate(45deg);
-    opacity: 0.7;
-  }
-
-  /* 贴纸选中效果 */
-  .filter-sticker.selected::after {
-    content: '✓';
-    position: absolute;
-    top: 1px;
-    right: 3px;
-    font-size: 0.6rem;
-    opacity: 0.8;
-  }
-  
-  /* 贴纸数量指示器 */
-  .sticker-count {
-    font-size: 0.7rem;
-    opacity: 0.7;
-    margin-left: 3px;
-  }
-  
-  /* 暗模式贴纸样式 */
-  .dark .filter-sticker {
-    background-color: rgba(30, 41, 59, 0.8);
-    border-color: #475569;
-  }
-  
-  .dark .season-sticker {
-    background-color: rgba(30, 58, 138, 0.3);
-    border-color: #3b82f6;
-    color: #93c5fd;
-  }
-  
-  .dark .season-sticker.selected {
-    background-color: rgba(30, 58, 138, 0.5);
-    border-color: #60a5fa;
-  }
-  
-  .dark .type-sticker {
-    background-color: rgba(120, 53, 15, 0.3);
-    border-color: #d97706;
-    color: #fcd34d;
-  }
-  
-  .dark .type-sticker.selected {
-    background-color: rgba(120, 53, 15, 0.5);
-    border-color: #f59e0b;
-  }
-  
-  .dark .city-sticker {
-    background-color: rgba(6, 78, 59, 0.3);
-    border-color: #059669;
-    color: #6ee7b7;
-  }
-  
-  .dark .city-sticker.selected {
-    background-color: rgba(6, 78, 59, 0.5);
-    border-color: #10b981;
-  }
-  
-  .dark .tag-sticker {
-    background-color: rgba(76, 29, 149, 0.3);
-    border-color: #7c3aed;
-    color: #c4b5fd;
-  }
-  
-  .dark .tag-sticker.selected {
-    background-color: rgba(76, 29, 149, 0.5);
-    border-color: #8b5cf6;
-  }
-  
-  /* 贴纸集合容器 */
-  .stickers-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    padding: 0.5rem 0;
-  }
-  
-  /* 贴纸旋转变化 */
-  .filter-sticker:nth-child(odd) {
-    transform: rotate(-1deg);
-  }
-  
-  .filter-sticker:nth-child(even) {
-    transform: rotate(1deg);
-  }
-  
-  .filter-sticker:nth-child(3n) {
-    transform: rotate(-0.5deg);
-  }
-  
-  .filter-sticker:nth-child(5n) {
-    transform: rotate(1.5deg);
-  }
-
-  /* 贴纸动画 */
-  @keyframes sticker-pop {
-    0% { transform: scale(0.95); }
-    50% { transform: scale(1.08); }
-    100% { transform: scale(1.05); }
-  }
-  
-  .filter-sticker.selected {
-    animation: sticker-pop 0.3s ease forwards;
-  }
-  
-  /* 移动端适配额外样式 */
-  @media (max-width: 1023px) {
-    .filter-sticker {
-      /* 移动端贴纸适配 */
-      font-size: 0.85rem;
-      padding: 0.3rem 0.7rem;
-    }
-    
-    .stickers-container {
-      gap: 0.3rem;
-      max-height: 50vh;
-      overflow-y: auto;
-      padding: 0.5rem 0.2rem;
-      margin: 0 -0.5rem;
-    }
-    
-    /* 让移动端滚动更流畅 */
-    .stickers-container {
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
-    }
-    
-    .stickers-container::-webkit-scrollbar {
-      width: 4px;
-    }
-    
-    .stickers-container::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
-      border-radius: 10px;
-    }
-    
-    .stickers-container::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 10px;
-    }
-    
-    .dark .stickers-container::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
-    }
-    
-    .dark .stickers-container::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
-    }
-  }
-
-  /* 筛选指示器和按钮样式优化 */
-  #mobile-filter-indicators {
-    position: relative;
-    z-index: 5;
-  }
-
-  .filter-remove-btn {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    min-height: 20px;
-    border-radius: 50%;
-    padding: 2px;
-    transition: all 0.2s;
-    background-color: transparent;
-  }
-
-  .filter-remove-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-    transform: scale(1.1);
-  }
-
-  .dark .filter-remove-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  /* 不同类型标签的关闭按钮特殊样式 */
-  .bg-blue-50 .filter-remove-btn:hover {
-    background-color: rgba(59, 130, 246, 0.2);
-    color: #1e40af;
-  }
-
-  .bg-amber-50 .filter-remove-btn:hover {
-    background-color: rgba(245, 158, 11, 0.2);
-    color: #92400e;
-  }
-
-  .bg-green-50 .filter-remove-btn:hover {
-    background-color: rgba(16, 185, 129, 0.2);
-    color: #065f46;
-  }
-
-  .bg-purple-50 .filter-remove-btn:hover {
-    background-color: rgba(139, 92, 246, 0.2);
-    color: #5b21b6;
-  }
-
-  /* 暗色模式下的不同类型 */
-  .dark .bg-blue-900\\/20 .filter-remove-btn:hover {
-    background-color: rgba(59, 130, 246, 0.3);
-    color: #93c5fd;
-  }
-
-  .dark .bg-amber-900\\/20 .filter-remove-btn:hover {
-    background-color: rgba(245, 158, 11, 0.3);
-    color: #fcd34d;
-  }
-
-  .dark .bg-green-900\\/20 .filter-remove-btn:hover {
-    background-color: rgba(16, 185, 129, 0.3);
-    color: #6ee7b7;
-  }
-
-  .dark .bg-purple-900\\/20 .filter-remove-btn:hover {
-    background-color: rgba(139, 92, 246, 0.3);
-    color: #c4b5fd;
-  }
-
-  /* 增加移动端的点击区域 */
-  @media (max-width: 767px) {
-    .filter-remove-btn {
-      min-width: 24px;
-      min-height: 24px;
-      padding: 4px;
-    }
-    
-    .filter-remove-btn::after {
-      content: '';
+    .active-tab::after {
+      content: "";
       position: absolute;
-      top: -5px;
-      left: -5px;
-      right: -5px;
-      bottom: -5px;
+      bottom: -3px;
+      left: 10%;
+      width: 80%;
+      height: 2px;
+      background-color: currentColor;
+      opacity: 0.6;
+    }
+
+    /* 移动端筛选面板动画 */
+    @keyframes panel-slide-in {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #mobile-filter-panel:not(.hidden) {
+      animation: panel-slide-in 0.3s ease forwards;
+    }
+
+    /* 创建贴纸/标签式筛选器样式 */
+    .filter-sticker {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      margin: 0.25rem;
+      font-family: cursive, sans-serif;
+      font-size: 0.9rem;
+      background-color: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      transform: rotate(-1deg);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* 贴纸选中状态 */
+    .filter-sticker.selected {
+      transform: rotate(0) scale(1.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       z-index: 1;
     }
-    
-    .filter-remove-icon {
+
+    /* 贴纸悬停效果 */
+    .filter-sticker:hover {
+      transform: rotate(0);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 不同类型贴纸的样式 */
+    .season-sticker {
+      background-color: rgba(219, 234, 254, 0.7);
+      border-color: #60a5fa;
+      color: #1e40af;
+    }
+
+    .season-sticker.selected {
+      background-color: rgba(191, 219, 254, 0.9);
+      border-color: #3b82f6;
+    }
+
+    .type-sticker {
+      background-color: rgba(254, 243, 199, 0.7);
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+
+    .type-sticker.selected {
+      background-color: rgba(253, 230, 138, 0.9);
+      border-color: #d97706;
+    }
+
+    .city-sticker {
+      background-color: rgba(209, 250, 229, 0.7);
+      border-color: #10b981;
+      color: #065f46;
+    }
+
+    .city-sticker.selected {
+      background-color: rgba(167, 243, 208, 0.9);
+      border-color: #059669;
+    }
+
+    .tag-sticker {
+      background-color: rgba(237, 233, 254, 0.7);
+      border-color: #8b5cf6;
+      color: #5b21b6;
+    }
+
+    .tag-sticker.selected {
+      background-color: rgba(221, 214, 254, 0.9);
+      border-color: #7c3aed;
+    }
+
+    /* 贴纸选中效果 */
+    .filter-sticker.selected::after {
+      content: "✓";
+      position: absolute;
+      top: 1px;
+      right: 3px;
+      font-size: 0.6rem;
+      opacity: 0.8;
+    }
+
+    /* 贴纸数量指示器 */
+    .sticker-count {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      margin-left: 3px;
+    }
+
+    /* 暗模式贴纸样式 */
+    [data-theme="dark"] .filter-sticker {
+      background-color: rgba(30, 41, 59, 0.8);
+      border-color: #475569;
+    }
+
+    [data-theme="dark"] .season-sticker {
+      background-color: rgba(30, 58, 138, 0.3);
+      border-color: #3b82f6;
+      color: #93c5fd;
+    }
+
+    [data-theme="dark"] .season-sticker.selected {
+      background-color: rgba(30, 58, 138, 0.5);
+      border-color: #60a5fa;
+    }
+
+    [data-theme="dark"] .type-sticker {
+      background-color: rgba(120, 53, 15, 0.3);
+      border-color: #d97706;
+      color: #fcd34d;
+    }
+
+    [data-theme="dark"] .type-sticker.selected {
+      background-color: rgba(120, 53, 15, 0.5);
+      border-color: #f59e0b;
+    }
+
+    [data-theme="dark"] .city-sticker {
+      background-color: rgba(6, 78, 59, 0.3);
+      border-color: #059669;
+      color: #6ee7b7;
+    }
+
+    [data-theme="dark"] .city-sticker.selected {
+      background-color: rgba(6, 78, 59, 0.5);
+      border-color: #10b981;
+    }
+
+    [data-theme="dark"] .tag-sticker {
+      background-color: rgba(76, 29, 149, 0.3);
+      border-color: #7c3aed;
+      color: #c4b5fd;
+    }
+
+    [data-theme="dark"] .tag-sticker.selected {
+      background-color: rgba(76, 29, 149, 0.5);
+      border-color: #8b5cf6;
+    }
+
+    /* 贴纸集合容器 */
+    .stickers-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      padding: 0.5rem 0;
+    }
+
+    /* 贴纸旋转变化 */
+    .filter-sticker:nth-child(odd) {
+      transform: rotate(-1deg);
+    }
+
+    .filter-sticker:nth-child(even) {
+      transform: rotate(1deg);
+    }
+
+    .filter-sticker:nth-child(3n) {
+      transform: rotate(-0.5deg);
+    }
+
+    .filter-sticker:nth-child(5n) {
+      transform: rotate(1.5deg);
+    }
+
+    /* 贴纸动画 */
+    @keyframes sticker-pop {
+      0% {
+        transform: scale(0.95);
+      }
+      50% {
+        transform: scale(1.08);
+      }
+      100% {
+        transform: scale(1.05);
+      }
+    }
+
+    .filter-sticker.selected {
+      animation: sticker-pop 0.3s ease forwards;
+    }
+
+    /* 移动端适配额外样式 */
+    @media (max-width: 1023px) {
+      .filter-sticker {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.7rem;
+      }
+
+      .stickers-container {
+        gap: 0.3rem;
+        max-height: 50vh;
+        overflow-y: auto;
+        padding: 0.5rem 0.2rem;
+        margin: 0 -0.5rem;
+      }
+
+      /* 让移动端滚动更流畅 */
+      .stickers-container {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+      }
+
+      .stickers-container::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .stickers-container::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+      }
+
+      .stickers-container::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+      }
+
+      [data-theme="dark"] .stickers-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      [data-theme="dark"] .stickers-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    /* 筛选指示器和按钮样式优化 */
+    #mobile-filter-indicators {
       position: relative;
-      z-index: 2;
+      z-index: 5;
     }
-  }
 
-  /* 标签移除动画 */
-  @keyframes tag-remove {
-    0% {
-      opacity: 1;
-      transform: scale(1);
+    .filter-remove-btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      min-height: 20px;
+      border-radius: 50%;
+      padding: 2px;
+      transition: all 0.2s;
+      background-color: transparent;
     }
-    100% {
-      opacity: 0;
-      transform: scale(0.8);
+
+    .filter-remove-btn:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+      transform: scale(1.1);
     }
-  }
 
-  .tag-removing {
-    animation: tag-remove 0.3s ease forwards;
-    pointer-events: none;
-  }
-
-  /* 为搜索框添加光标样式 */
-  #search-input {
-    font-family: sans-serif; /* 使用标准字体以确保光标可见 */
-    caret-color: currentColor; /* 确保光标颜色与文本颜色匹配 */
-  }
-  
-  /* 解决光标不可见问题的额外样式 */
-  #search-input:focus {
-    color: var(--slate-900, #1e293b); /* 确保文本颜色足够深以便看到 */
-  }
-  
-  .dark #search-input:focus {
-    color: var(--slate-100, #f1f5f9); /* 暗模式下的文本颜色 */
-  }
-</style>
-
-<script>
-  // 客户端交互逻辑
-  document.addEventListener('DOMContentLoaded', () => {
-    // 基础元素
-    const searchInput = document.getElementById('search-input') as HTMLInputElement;
-    const searchButton = document.getElementById('search-button');
-    const testNoResultsBtn = document.getElementById('test-no-results-btn');
-    const travelCards = document.querySelectorAll('#travel-list div[data-tags]');
-    
-    const noResultsMessage = document.getElementById('no-results-message');
-    const searchTermMessage = document.getElementById('search-term-message');
-    const travelList = document.getElementById('travel-list');
-    
-    // 筛选贴纸元素
-    const seasonStickers = document.querySelectorAll('.season-sticker');
-    const typeStickers = document.querySelectorAll('.type-sticker'); 
-    const cityStickers = document.querySelectorAll('.city-sticker');
-    const tagStickers = document.querySelectorAll('.tag-sticker');
-    
-    // 移动端筛选相关元素
-    const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
-    const mobileFilterPanel = document.getElementById('mobile-filter-panel');
-    const mobileFilterClose = document.getElementById('mobile-filter-close');
-    const filterTabButtons = document.querySelectorAll('.filter-tab-button');
-    const filterPanels = document.querySelectorAll('.filter-panel');
-    const applyFiltersMobile = document.getElementById('apply-filters-mobile');
-    const filterCount = document.getElementById('filter-count');
-    const mobileFilterIndicators = document.getElementById('mobile-filter-indicators');
-    const arrowDown = document.getElementById('filter-arrow-down');
-    const arrowUp = document.getElementById('filter-arrow-up');
-
-    // 初始化移动端筛选面板计数
-    function updateFilterCount() {
-      if (!filterCount) return;
-      
-      const selected = document.querySelectorAll('.filter-sticker.selected');
-      filterCount.textContent = selected.length.toString();
-      
-      updateMobileFilterIndicators();
+    [data-theme="dark"] .filter-remove-btn:hover {
+      background-color: rgba(255, 255, 255, 0.1);
     }
-    
-    // 更新移动端筛选指示器
-    function updateMobileFilterIndicators() {
-      if (!mobileFilterIndicators) return;
-      
-      // 清空现有指示器
-      mobileFilterIndicators.innerHTML = '';
-      
-      const selected = document.querySelectorAll('.filter-sticker.selected');
-      
-      if (selected.length === 0) {
-        // 如果没有选中任何筛选条件，显示"所有旅行"
-        mobileFilterIndicators.innerHTML = `
-          <div class="py-1 px-3 text-xs font-handwriting bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-sm">
+
+    /* 增加移动端的点击区域 */
+    @media (max-width: 767px) {
+      .filter-remove-btn {
+        min-width: 24px;
+        min-height: 24px;
+        padding: 4px;
+      }
+
+      .filter-remove-btn::after {
+        content: "";
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        z-index: 1;
+      }
+
+      .filter-remove-icon {
+        position: relative;
+        z-index: 2;
+      }
+    }
+
+    /* 标签移除动画 */
+    @keyframes tag-remove {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+    }
+
+    .tag-removing {
+      animation: tag-remove 0.3s ease forwards;
+      pointer-events: none;
+    }
+
+    /* 为搜索框添加光标样式 */
+    #search-input {
+      font-family: sans-serif;
+      caret-color: currentColor;
+    }
+
+    #search-input:focus {
+      color: var(--slate-900, #1e293b);
+    }
+
+    [data-theme="dark"] #search-input:focus {
+      color: var(--slate-100, #f1f5f9);
+    }
+  </style>
+
+  <script is:inline>
+    // 客户端交互逻辑
+    document.addEventListener("DOMContentLoaded", () => {
+      // 基础元素
+      const searchInput = document.getElementById("search-input");
+      const searchButton = document.getElementById("search-button");
+      const travelCards = document.querySelectorAll(
+        "#travel-list div[data-tags]",
+      );
+
+      const noResultsMessage = document.getElementById("no-results-message");
+      const searchTermMessage = document.getElementById("search-term-message");
+      const travelList = document.getElementById("travel-list");
+
+      // 筛选贴纸元素
+      const seasonStickers = document.querySelectorAll(".season-sticker");
+      const typeStickers = document.querySelectorAll(".type-sticker");
+      const cityStickers = document.querySelectorAll(".city-sticker");
+      const tagStickers = document.querySelectorAll(".tag-sticker");
+
+      // 移动端筛选相关元素
+      const mobileFilterToggle = document.getElementById(
+        "mobile-filter-toggle",
+      );
+      const mobileFilterPanel = document.getElementById("mobile-filter-panel");
+      const mobileFilterClose = document.getElementById("mobile-filter-close");
+      const filterTabButtons = document.querySelectorAll(".filter-tab-button");
+      const filterPanels = document.querySelectorAll(".filter-panel");
+      const applyFiltersMobile = document.getElementById(
+        "apply-filters-mobile",
+      );
+      const filterCount = document.getElementById("filter-count");
+      const mobileFilterIndicators = document.getElementById(
+        "mobile-filter-indicators",
+      );
+      const arrowDown = document.getElementById("filter-arrow-down");
+      const arrowUp = document.getElementById("filter-arrow-up");
+
+      // 初始化移动端筛选面板计数
+      function updateFilterCount() {
+        if (!filterCount) return;
+
+        const selected = document.querySelectorAll(".filter-sticker.selected");
+        filterCount.textContent = selected.length.toString();
+
+        updateMobileFilterIndicators();
+      }
+
+      // 更新移动端筛选指示器
+      function updateMobileFilterIndicators() {
+        if (!mobileFilterIndicators) return;
+
+        // 清空现有指示器
+        mobileFilterIndicators.innerHTML = "";
+
+        const selected = document.querySelectorAll(".filter-sticker.selected");
+
+        if (selected.length === 0) {
+          // 如果没有选中任何筛选条件，显示"所有旅行"
+          mobileFilterIndicators.innerHTML = `
+          <div class="py-1 px-3 text-xs  bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-sm">
             所有旅行
           </div>
         `;
-        return;
-      }
-      
-      // 为每个选中的贴纸创建一个指示器
-      selected.forEach(sticker => {
-        const value = sticker.getAttribute('data-value') || '';
-        let className = 'py-1 px-3 text-xs font-handwriting rounded-sm flex items-center';
-        
-        // 根据贴纸类型设置不同的样式
-        if (sticker.classList.contains('season-sticker')) {
-          className += ' bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50';
-        } else if (sticker.classList.contains('type-sticker')) {
-          className += ' bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50';
-        } else if (sticker.classList.contains('city-sticker')) {
-          className += ' bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800/50';
-        } else if (sticker.classList.contains('tag-sticker')) {
-          className += ' bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50';
+          return;
         }
-        
-        // 创建指示器元素，使用data-filter-value属性标记关闭按钮
-        const indicator = document.createElement('div');
-        indicator.className = className;
-        indicator.innerHTML = `
-          ${value.startsWith('#') ? '' : ''}${value.replace(/#/g, '')}
+
+        // 为每个选中的贴纸创建一个指示器
+        selected.forEach((sticker) => {
+          const value = sticker.getAttribute("data-value") || "";
+          let className = "py-1 px-3 text-xs  rounded-sm flex items-center";
+
+          // 根据贴纸类型设置不同的样式
+          if (sticker.classList.contains("season-sticker")) {
+            className +=
+              " bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50";
+          } else if (sticker.classList.contains("type-sticker")) {
+            className +=
+              " bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50";
+          } else if (sticker.classList.contains("city-sticker")) {
+            className +=
+              " bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800/50";
+          } else if (sticker.classList.contains("tag-sticker")) {
+            className +=
+              " bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50";
+          }
+
+          // 创建指示器元素，使用data-filter-value属性标记关闭按钮
+          const indicator = document.createElement("div");
+          indicator.className = className;
+          indicator.innerHTML = `
+          ${value.startsWith("#") ? "" : ""}${value.replace(/#/g, "")}
           <button class="filter-remove-btn ml-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" data-filter-value="${value}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 filter-remove-icon" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
             </svg>
           </button>
         `;
-        
-        // 添加到指示器容器
-        mobileFilterIndicators.appendChild(indicator);
-        
-        // 直接绑定事件到这个按钮
-        const button = indicator.querySelector('.filter-remove-btn');
-        button?.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          // 找到对应的贴纸并取消选中
-          document.querySelectorAll('.filter-sticker').forEach(s => {
-            if (s.getAttribute('data-value') === value) {
-              s.classList.remove('selected');
-            }
-          });
 
-          // 更新筛选计数和结果
-          updateFilterCount();
-          filterTravels();
+          // 添加到指示器容器
+          mobileFilterIndicators.appendChild(indicator);
+
+          // 直接绑定事件到这个按钮
+          const button = indicator.querySelector(".filter-remove-btn");
+          button?.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // 找到对应的贴纸并取消选中
+            document.querySelectorAll(".filter-sticker").forEach((s) => {
+              if (s.getAttribute("data-value") === value) {
+                s.classList.remove("selected");
+              }
+            });
+
+            // 更新筛选计数和结果
+            updateFilterCount();
+            filterTravels();
+          });
         });
-      });
-    }
-    
-    // 移动端筛选面板切换
-    if (mobileFilterToggle) {
-      mobileFilterToggle.addEventListener('click', () => {
-        if (mobileFilterPanel) {
-          mobileFilterPanel.classList.toggle('hidden');
-          // 切换箭头图标
-          if (arrowDown && arrowUp) {
-            arrowDown.classList.toggle('hidden');
-            arrowUp.classList.toggle('hidden');
-          }
-          
-          // 添加遮罩层以防止滚动
-          if (!mobileFilterPanel.classList.contains('hidden')) {
-            document.body.style.overflow = 'hidden';
-            
-            // 创建遮罩层
-            const overlay = document.createElement('div');
-            overlay.id = 'filter-overlay';
-            overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden';
-            document.body.appendChild(overlay);
-            
-            // 设置筛选面板样式
-            mobileFilterPanel.style.position = 'fixed';
-            mobileFilterPanel.style.top = '0';
-            mobileFilterPanel.style.left = '0';
-            mobileFilterPanel.style.right = '0';
-            mobileFilterPanel.style.bottom = '0';
-            mobileFilterPanel.style.zIndex = '50';
-            mobileFilterPanel.style.overflowY = 'auto';
-            mobileFilterPanel.style.background = 'var(--theme-primary-bg, #f8fafc)';
-            mobileFilterPanel.style.padding = '1rem';
-            
-            // 暗模式支持
-            if (document.documentElement.classList.contains('dark')) {
-              mobileFilterPanel.style.background = '#0f172a';
+      }
+
+      // 移动端筛选面板切换
+      if (mobileFilterToggle) {
+        mobileFilterToggle.addEventListener("click", () => {
+          if (mobileFilterPanel) {
+            mobileFilterPanel.classList.toggle("hidden");
+            // 切换箭头图标
+            if (arrowDown && arrowUp) {
+              arrowDown.classList.toggle("hidden");
+              arrowUp.classList.toggle("hidden");
             }
-          } else {
+
+            // 添加遮罩层以防止滚动
+            if (!mobileFilterPanel.classList.contains("hidden")) {
+              document.body.style.overflow = "hidden";
+
+              // 创建遮罩层
+              const overlay = document.createElement("div");
+              overlay.id = "filter-overlay";
+              overlay.className =
+                "fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden";
+              document.body.appendChild(overlay);
+
+              // 设置筛选面板样式
+              mobileFilterPanel.style.position = "fixed";
+              mobileFilterPanel.style.top = "0";
+              mobileFilterPanel.style.left = "0";
+              mobileFilterPanel.style.right = "0";
+              mobileFilterPanel.style.bottom = "0";
+              mobileFilterPanel.style.zIndex = "50";
+              mobileFilterPanel.style.overflowY = "auto";
+              mobileFilterPanel.style.background =
+                "var(--theme-primary-bg, #f8fafc)";
+              mobileFilterPanel.style.padding = "1rem";
+
+              // 暗模式支持
+              if (document.documentElement.classList.contains("dark")) {
+                mobileFilterPanel.style.background = "#0f172a";
+              }
+            } else {
+              // 移除遮罩层和样式
+              document.body.style.overflow = "";
+              const overlay = document.getElementById("filter-overlay");
+              if (overlay) {
+                overlay.remove();
+              }
+
+              // 重置筛选面板样式
+              mobileFilterPanel.style.position = "";
+              mobileFilterPanel.style.top = "";
+              mobileFilterPanel.style.left = "";
+              mobileFilterPanel.style.right = "";
+              mobileFilterPanel.style.bottom = "";
+              mobileFilterPanel.style.zIndex = "";
+              mobileFilterPanel.style.overflowY = "";
+              mobileFilterPanel.style.background = "";
+              mobileFilterPanel.style.padding = "";
+            }
+          }
+        });
+      }
+
+      // 移动端筛选面板关闭按钮
+      if (mobileFilterClose) {
+        mobileFilterClose.addEventListener("click", () => {
+          if (mobileFilterPanel) {
+            mobileFilterPanel.classList.add("hidden");
+
             // 移除遮罩层和样式
-            document.body.style.overflow = '';
-            const overlay = document.getElementById('filter-overlay');
+            document.body.style.overflow = "";
+            const overlay = document.getElementById("filter-overlay");
             if (overlay) {
               overlay.remove();
             }
-            
+
             // 重置筛选面板样式
-            mobileFilterPanel.style.position = '';
-            mobileFilterPanel.style.top = '';
-            mobileFilterPanel.style.left = '';
-            mobileFilterPanel.style.right = '';
-            mobileFilterPanel.style.bottom = '';
-            mobileFilterPanel.style.zIndex = '';
-            mobileFilterPanel.style.overflowY = '';
-            mobileFilterPanel.style.background = '';
-            mobileFilterPanel.style.padding = '';
+            mobileFilterPanel.style.position = "";
+            mobileFilterPanel.style.top = "";
+            mobileFilterPanel.style.left = "";
+            mobileFilterPanel.style.right = "";
+            mobileFilterPanel.style.bottom = "";
+            mobileFilterPanel.style.zIndex = "";
+            mobileFilterPanel.style.overflowY = "";
+            mobileFilterPanel.style.background = "";
+            mobileFilterPanel.style.padding = "";
+
+            // 切换箭头图标
+            if (arrowDown && arrowUp) {
+              arrowDown.classList.remove("hidden");
+              arrowUp.classList.add("hidden");
+            }
+          }
+        });
+      }
+
+      // 移动端筛选分类标签切换
+      filterTabButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          // 移除所有标签的活动状态
+          filterTabButtons.forEach((btn) => {
+            btn.classList.remove("active-tab");
+          });
+          // 隐藏所有面板
+          filterPanels.forEach((panel) => panel.classList.add("hidden"));
+
+          // 添加活动状态到当前标签
+          button.classList.add("active-tab");
+
+          // 显示目标面板
+          const targetPanel = document.getElementById(
+            button.getAttribute("data-target") || "",
+          );
+          if (targetPanel) {
+            targetPanel.classList.remove("hidden");
+          }
+        });
+      });
+
+      // 添加贴纸点击事件
+      function setupStickerEvents() {
+        // 为所有贴纸添加点击事件
+        const allStickers = document.querySelectorAll(".filter-sticker");
+        allStickers.forEach((sticker) => {
+          sticker.addEventListener("click", () => {
+            // 切换选中状态
+            sticker.classList.toggle("selected");
+
+            // 更新筛选计数
+            updateFilterCount();
+
+            // PC端直接应用筛选（移动端在"应用筛选"按钮中处理）
+            const isLargeScreen = window.innerWidth >= 1024; // lg断点
+            if (isLargeScreen) {
+              // 更新URL以反映筛选条件
+              updateUrlWithFilters();
+
+              // 应用筛选
+              filterTravels();
+            }
+          });
+        });
+      }
+
+      // 更新URL以反映当前筛选条件
+      function updateUrlWithFilters() {
+        // 构建新的URL参数
+        const newParams = new URLSearchParams();
+
+        // 保留搜索词
+        const searchValue = searchInput?.value.trim() || "";
+        if (searchValue) {
+          newParams.set("search", searchValue);
+        }
+
+        // 获取所有筛选条件
+        const selectedSeasons = [];
+        const selectedTypes = [];
+        const selectedCities = [];
+        const selectedTags = [];
+
+        // 获取选中的季节贴纸
+        seasonStickers.forEach((sticker) => {
+          if (sticker.classList.contains("selected")) {
+            const seasonText = sticker.getAttribute("data-value") || "";
+            if (seasonText) selectedSeasons.push(seasonText);
+          }
+        });
+
+        // 获取选中的旅行类型贴纸
+        typeStickers.forEach((sticker) => {
+          if (sticker.classList.contains("selected")) {
+            const typeText = sticker.getAttribute("data-value") || "";
+            if (typeText) selectedTypes.push(typeText);
+          }
+        });
+
+        // 获取选中的城市贴纸
+        cityStickers.forEach((sticker) => {
+          if (sticker.classList.contains("selected")) {
+            const cityText = sticker.getAttribute("data-value") || "";
+            if (cityText) selectedCities.push(cityText);
+          }
+        });
+
+        // 获取选中的标签贴纸
+        tagStickers.forEach((sticker) => {
+          if (sticker.classList.contains("selected")) {
+            const tagText = sticker.getAttribute("data-value") || "";
+            if (tagText) selectedTags.push(tagText);
+          }
+        });
+
+        // 添加筛选参数到URL
+        if (selectedSeasons.length === 1) {
+          newParams.set("season", selectedSeasons[0]);
+        } else if (selectedSeasons.length > 1) {
+          // 多个季节选择时使用数组表示
+          selectedSeasons.forEach((season) => {
+            newParams.append("seasons", season);
+          });
+        }
+
+        if (selectedTypes.length === 1) {
+          newParams.set("type", selectedTypes[0]);
+        } else if (selectedTypes.length > 1) {
+          selectedTypes.forEach((type) => {
+            newParams.append("types", type);
+          });
+        }
+
+        if (selectedCities.length === 1) {
+          newParams.set("city", selectedCities[0]);
+        } else if (selectedCities.length > 1) {
+          selectedCities.forEach((city) => {
+            newParams.append("cities", city);
+          });
+        }
+
+        if (selectedTags.length === 1) {
+          newParams.set("tag", selectedTags[0]);
+        } else if (selectedTags.length > 1) {
+          selectedTags.forEach((tag) => {
+            newParams.append("tags", tag);
+          });
+        }
+
+        // 更新URL，不刷新页面
+        const newUrl = `/travel${newParams.toString() ? "?" + newParams.toString() : ""}`;
+        window.history.pushState({}, "", newUrl);
+      }
+
+      // 应用筛选按钮点击事件
+      if (applyFiltersMobile) {
+        applyFiltersMobile.addEventListener("click", () => {
+          // 隐藏筛选面板
+          if (mobileFilterPanel) {
+            mobileFilterPanel.classList.add("hidden");
+
+            // 移除遮罩层和样式
+            document.body.style.overflow = "";
+            const overlay = document.getElementById("filter-overlay");
+            if (overlay) {
+              overlay.remove();
+            }
+
+            // 重置筛选面板样式
+            mobileFilterPanel.style.position = "";
+            mobileFilterPanel.style.top = "";
+            mobileFilterPanel.style.left = "";
+            mobileFilterPanel.style.right = "";
+            mobileFilterPanel.style.bottom = "";
+            mobileFilterPanel.style.zIndex = "";
+            mobileFilterPanel.style.overflowY = "";
+            mobileFilterPanel.style.background = "";
+            mobileFilterPanel.style.padding = "";
+
+            // 切换箭头图标
+            if (arrowDown && arrowUp) {
+              arrowDown.classList.remove("hidden");
+              arrowUp.classList.add("hidden");
+            }
+          }
+
+          // 更新URL以反映筛选条件
+          updateUrlWithFilters();
+
+          // 应用筛选
+          filterTravels();
+        });
+      }
+
+      // 客户端解析URL查询参数
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchParamFromUrl = urlParams.get("search");
+      const seasonParam = urlParams.get("season");
+      const typeParam = urlParams.get("type");
+      const cityParam = urlParams.get("city");
+      const tagParam = urlParams.get("tag");
+
+      // 初始化贴纸事件
+      setupStickerEvents();
+      updateFilterCount();
+
+      // 客户端筛选函数
+      function filterTravels() {
+        const searchValue = searchInput?.value.trim().toLowerCase() || "";
+
+        const selectedSeasons = [];
+        const selectedTypes = [];
+        const selectedCities = [];
+        const selectedTags = [];
+
+        seasonStickers.forEach((sticker) => {
+          if (sticker.classList.contains("selected")) {
+            const seasonText =
+              sticker.getAttribute("data-value")?.toLowerCase() || "";
+            if (seasonText) selectedSeasons.push(seasonText);
+          }
+        });
+
+        typeStickers.forEach((sticker) => {
+          if (sticker.classList.contains("selected")) {
+            const typeText =
+              sticker.getAttribute("data-value")?.toLowerCase() || "";
+            if (typeText) selectedTypes.push(typeText);
+          }
+        });
+
+        cityStickers.forEach((sticker) => {
+          if (sticker.classList.contains("selected")) {
+            const cityText =
+              sticker.getAttribute("data-value")?.toLowerCase() || "";
+            if (cityText) selectedCities.push(cityText);
+          }
+        });
+
+        tagStickers.forEach((sticker) => {
+          if (sticker.classList.contains("selected")) {
+            const tagText =
+              sticker.getAttribute("data-value")?.toLowerCase() || "";
+            if (tagText) selectedTags.push(tagText);
+          }
+        });
+
+        let matchCount = 0;
+
+        travelCards.forEach((card) => {
+          // 检查DOM结构
+          const anchor = card.closest("a");
+
+          // 直接使用anchor作为容器
+          const cardContainer = anchor;
+          if (!cardContainer) {
+            return;
+          }
+
+          try {
+            const cardData = {
+              title: card.getAttribute("data-title")?.toLowerCase() || "",
+              description:
+                card.getAttribute("data-description")?.toLowerCase() || "",
+              tags: JSON.parse(card.getAttribute("data-tags") || "[]").map(
+                (tag) => tag.toLowerCase(),
+              ),
+              season: card.getAttribute("data-season")?.toLowerCase() || "",
+              type: card.getAttribute("data-type")?.toLowerCase() || "",
+              cities: JSON.parse(card.getAttribute("data-cities") || "[]").map(
+                (city) => city.toLowerCase(),
+              ),
+            };
+
+            const matchesSearch =
+              !searchValue ||
+              cardData.title.includes(searchValue) ||
+              cardData.description.includes(searchValue) ||
+              cardData.tags.some((tag) => tag.includes(searchValue)) ||
+              cardData.cities.some((city) => city.includes(searchValue));
+
+            const matchesSeasons =
+              selectedSeasons.length === 0 ||
+              selectedSeasons.some((season) =>
+                cardData.season.includes(season),
+              );
+
+            const matchesTypes =
+              selectedTypes.length === 0 ||
+              selectedTypes.some((type) => cardData.type.includes(type));
+
+            const matchesCities =
+              selectedCities.length === 0 ||
+              selectedCities.some((city) =>
+                cardData.cities.some((cardCity) => cardCity.includes(city)),
+              );
+
+            const matchesTags =
+              selectedTags.length === 0 ||
+              selectedTags.some((tag) =>
+                cardData.tags.some((cardTag) => cardTag.includes(tag)),
+              );
+
+            const isMatch =
+              matchesSearch &&
+              matchesSeasons &&
+              matchesTypes &&
+              matchesCities &&
+              matchesTags;
+
+            if (isMatch) {
+              matchCount++;
+              cardContainer.style.display = "block";
+              cardContainer.classList.remove("hidden");
+            } else {
+              cardContainer.style.display = "none";
+              cardContainer.classList.add("hidden");
+            }
+          } catch (error) {
+            cardContainer.style.display = "none";
+          }
+        });
+
+        if (matchCount === 0) {
+          if (travelList) {
+            travelList.classList.add("hidden");
+          }
+          if (noResultsMessage) {
+            noResultsMessage.classList.remove("hidden");
+            if (searchTermMessage) {
+              let message = "抱歉，未找到相关旅行笔记。";
+              if (searchValue)
+                message += `没有找到包含"${searchValue}"的内容。`;
+              if (selectedSeasons.length > 0)
+                message += `没有找到${selectedSeasons.join("、")}季节的内容。`;
+              if (selectedTypes.length > 0)
+                message += `没有找到${selectedTypes.join("、")}类型的内容。`;
+              if (selectedCities.length > 0)
+                message += `没有找到位于${selectedCities.join("、")}的内容。`;
+              if (selectedTags.length > 0)
+                message += `没有找到标签为${selectedTags.join("、")}的内容。`;
+              searchTermMessage.textContent = message;
+            }
+          }
+        } else {
+          if (travelList) {
+            travelList.classList.remove("hidden");
+          }
+          if (noResultsMessage) {
+            noResultsMessage.classList.add("hidden");
           }
         }
-      });
-    }
-    
-    // 移动端筛选面板关闭按钮
-    if (mobileFilterClose) {
-      mobileFilterClose.addEventListener('click', () => {
-        if (mobileFilterPanel) {
-          mobileFilterPanel.classList.add('hidden');
-          
-          // 移除遮罩层和样式
-          document.body.style.overflow = '';
-          const overlay = document.getElementById('filter-overlay');
-          if (overlay) {
-            overlay.remove();
-          }
-          
-          // 重置筛选面板样式
-          mobileFilterPanel.style.position = '';
-          mobileFilterPanel.style.top = '';
-          mobileFilterPanel.style.left = '';
-          mobileFilterPanel.style.right = '';
-          mobileFilterPanel.style.bottom = '';
-          mobileFilterPanel.style.zIndex = '';
-          mobileFilterPanel.style.overflowY = '';
-          mobileFilterPanel.style.background = '';
-          mobileFilterPanel.style.padding = '';
-          
-          // 切换箭头图标
-          if (arrowDown && arrowUp) {
-            arrowDown.classList.remove('hidden');
-            arrowUp.classList.add('hidden');
-          }
+
+        return matchCount;
+      }
+
+      // 初始化筛选状态
+      if (searchInput && searchParamFromUrl) {
+        searchInput.value = searchParamFromUrl;
+        // 触发筛选
+        setTimeout(filterTravels, 100);
+      } else if (tagParam || seasonParam || typeParam || cityParam) {
+        // 如果URL中包含标签或其他筛选参数，也执行筛选
+
+        // 如果有标签参数，选中对应的贴纸
+        if (tagParam) {
+          tagStickers.forEach((sticker) => {
+            const stickerText =
+              sticker.getAttribute("data-value")?.toLowerCase() || "";
+            if (stickerText === tagParam.toLowerCase()) {
+              sticker.classList.add("selected");
+            }
+          });
         }
-      });
-    }
-    
-    // 移动端筛选分类标签切换
-    filterTabButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        // 移除所有标签的活动状态
-        filterTabButtons.forEach(btn => btn.classList.remove('active'));
-        // 隐藏所有面板
-        filterPanels.forEach(panel => panel.classList.add('hidden'));
-        
-        // 添加活动状态到当前标签
-        button.classList.add('active');
-        
-        // 显示目标面板
-        const targetPanel = document.getElementById(button.getAttribute('data-target') || '');
-        if (targetPanel) {
-          targetPanel.classList.remove('hidden');
+
+        // 如果有季节参数，选中对应的贴纸
+        if (seasonParam) {
+          seasonStickers.forEach((sticker) => {
+            const stickerText =
+              sticker.getAttribute("data-value")?.toLowerCase() || "";
+            if (stickerText.toLowerCase() === seasonParam.toLowerCase()) {
+              sticker.classList.add("selected");
+            }
+          });
         }
-      });
-    });
-    
-    // 添加贴纸点击事件
-    function setupStickerEvents() {
-      // 为所有贴纸添加点击事件
-      const allStickers = document.querySelectorAll('.filter-sticker');
-      allStickers.forEach(sticker => {
-        sticker.addEventListener('click', () => {
-          // 切换选中状态
-          sticker.classList.toggle('selected');
-          
-          // 更新筛选计数
-          updateFilterCount();
-          
-          // PC端直接应用筛选（移动端在"应用筛选"按钮中处理）
-          const isLargeScreen = window.innerWidth >= 1024; // lg断点
-          if (isLargeScreen) {
-            // 更新URL以反映筛选条件
+
+        // 如果有类型参数，选中对应的贴纸
+        if (typeParam) {
+          typeStickers.forEach((sticker) => {
+            const stickerText =
+              sticker.getAttribute("data-value")?.toLowerCase() || "";
+            if (stickerText.toLowerCase() === typeParam.toLowerCase()) {
+              sticker.classList.add("selected");
+            }
+          });
+        }
+
+        // 如果有城市参数，选中对应的贴纸
+        if (cityParam) {
+          cityStickers.forEach((sticker) => {
+            const stickerText =
+              sticker.getAttribute("data-value")?.toLowerCase() || "";
+            if (stickerText.toLowerCase() === cityParam.toLowerCase()) {
+              sticker.classList.add("selected");
+            }
+          });
+        }
+
+        // 更新筛选计数
+        updateFilterCount();
+
+        // 触发筛选
+        setTimeout(filterTravels, 100);
+      }
+
+      // 绑定搜索按钮点击事件
+      if (searchButton) {
+        searchButton.addEventListener("click", () => {
+          // 更新URL并应用筛选
+          updateUrlWithFilters();
+
+          // 在客户端应用筛选效果
+          filterTravels();
+        });
+      }
+
+      // 绑定搜索输入框回车事件
+      if (searchInput) {
+        searchInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            // 更新URL并应用筛选
             updateUrlWithFilters();
-            
-            // 应用筛选
+
+            // 在客户端应用筛选效果
             filterTravels();
           }
         });
-      });
-    }
-    
-    // 更新URL以反映当前筛选条件
-    function updateUrlWithFilters() {
-      // 构建新的URL参数
-      const newParams = new URLSearchParams();
-      
-      // 保留搜索词
-      const searchValue = searchInput?.value.trim() || '';
-      if (searchValue) {
-        newParams.set('search', searchValue);
       }
-      
-      // 获取所有筛选条件
-      const selectedSeasons: string[] = [];
-      const selectedTypes: string[] = [];
-      const selectedCities: string[] = [];
-      const selectedTags: string[] = [];
-      
-      // 获取选中的季节贴纸
-      seasonStickers.forEach((sticker: Element) => {
-        if (sticker.classList.contains('selected')) {
-          const seasonText = sticker.getAttribute('data-value') || '';
-          if (seasonText) selectedSeasons.push(seasonText);
-        }
-      });
-      
-      // 获取选中的旅行类型贴纸
-      typeStickers.forEach((sticker: Element) => {
-        if (sticker.classList.contains('selected')) {
-          const typeText = sticker.getAttribute('data-value') || '';
-          if (typeText) selectedTypes.push(typeText);
-        }
-      });
-      
-      // 获取选中的城市贴纸
-      cityStickers.forEach((sticker: Element) => {
-        if (sticker.classList.contains('selected')) {
-          const cityText = sticker.getAttribute('data-value') || '';
-          if (cityText) selectedCities.push(cityText);
-        }
-      });
-      
-      // 获取选中的标签贴纸
-      tagStickers.forEach((sticker: Element) => {
-        if (sticker.classList.contains('selected')) {
-          const tagText = sticker.getAttribute('data-value') || '';
-          if (tagText) selectedTags.push(tagText);
-        }
-      });
-      
-      // 添加筛选参数到URL
-      if (selectedSeasons.length === 1) {
-        newParams.set('season', selectedSeasons[0]);
-      } else if (selectedSeasons.length > 1) {
-        // 多个季节选择时使用数组表示
-        selectedSeasons.forEach(season => {
-          newParams.append('seasons', season);
-        });
-      }
-      
-      if (selectedTypes.length === 1) {
-        newParams.set('type', selectedTypes[0]);
-      } else if (selectedTypes.length > 1) {
-        selectedTypes.forEach(type => {
-          newParams.append('types', type);
-        });
-      }
-      
-      if (selectedCities.length === 1) {
-        newParams.set('city', selectedCities[0]);
-      } else if (selectedCities.length > 1) {
-        selectedCities.forEach(city => {
-          newParams.append('cities', city);
-        });
-      }
-      
-      if (selectedTags.length === 1) {
-        newParams.set('tag', selectedTags[0]);
-      } else if (selectedTags.length > 1) {
-        selectedTags.forEach(tag => {
-          newParams.append('tags', tag);
-        });
-      }
-      
-      // 更新URL，不刷新页面
-      const newUrl = `/travel${newParams.toString() ? '?' + newParams.toString() : ''}`;
-      window.history.pushState({}, '', newUrl);
-    }
-    
-    // 应用筛选按钮点击事件
-    if (applyFiltersMobile) {
-      applyFiltersMobile.addEventListener('click', () => {
-        // 隐藏筛选面板
-        if (mobileFilterPanel) {
-          mobileFilterPanel.classList.add('hidden');
-          
-          // 移除遮罩层和样式
-          document.body.style.overflow = '';
-          const overlay = document.getElementById('filter-overlay');
+
+      // 监听窗口大小变化，处理响应式布局
+      window.addEventListener("resize", () => {
+        const isLargeScreen = window.innerWidth >= 1024; // lg断点
+
+        if (isLargeScreen && mobileFilterPanel) {
+          // 大屏幕上确保筛选面板显示
+          mobileFilterPanel.classList.remove("hidden");
+
+          // 重置筛选面板样式
+          mobileFilterPanel.style.position = "";
+          mobileFilterPanel.style.top = "";
+          mobileFilterPanel.style.left = "";
+          mobileFilterPanel.style.right = "";
+          mobileFilterPanel.style.bottom = "";
+          mobileFilterPanel.style.zIndex = "";
+          mobileFilterPanel.style.overflowY = "";
+          mobileFilterPanel.style.background = "";
+          mobileFilterPanel.style.padding = "";
+
+          // 移除可能存在的遮罩层
+          const overlay = document.getElementById("filter-overlay");
           if (overlay) {
             overlay.remove();
           }
-          
-          // 重置筛选面板样式
-          mobileFilterPanel.style.position = '';
-          mobileFilterPanel.style.top = '';
-          mobileFilterPanel.style.left = '';
-          mobileFilterPanel.style.right = '';
-          mobileFilterPanel.style.bottom = '';
-          mobileFilterPanel.style.zIndex = '';
-          mobileFilterPanel.style.overflowY = '';
-          mobileFilterPanel.style.background = '';
-          mobileFilterPanel.style.padding = '';
-          
-          // 切换箭头图标
+          document.body.style.overflow = "";
+        } else if (!isLargeScreen && mobileFilterPanel) {
+          // 小屏幕上默认隐藏筛选面板
+          mobileFilterPanel.classList.add("hidden");
+
+          // 确保箭头图标状态正确
           if (arrowDown && arrowUp) {
-            arrowDown.classList.remove('hidden');
-            arrowUp.classList.add('hidden');
+            arrowDown.classList.remove("hidden");
+            arrowUp.classList.add("hidden");
           }
         }
-        
-        // 更新URL以反映筛选条件
-        updateUrlWithFilters();
-        
-        // 应用筛选
-        filterTravels();
-      });
-    }
-
-    
-    // 客户端解析URL查询参数
-    const urlParams = new URLSearchParams(window.location.search);
-    const searchParamFromUrl = urlParams.get('search');
-    const seasonParam = urlParams.get('season');
-    const typeParam = urlParams.get('type');
-    const cityParam = urlParams.get('city');
-    const tagParam = urlParams.get('tag');
-    
-    // 初始化贴纸事件
-    setupStickerEvents();
-    updateFilterCount();
-    
-    // 客户端筛选函数
-    function filterTravels() {
-      const searchValue = searchInput?.value.trim().toLowerCase() || '';
-      
-      const selectedSeasons: string[] = [];
-      const selectedTypes: string[] = [];
-      const selectedCities: string[] = [];
-      const selectedTags: string[] = [];
-      
-      seasonStickers.forEach((sticker: Element) => {
-        if (sticker.classList.contains('selected')) {
-          const seasonText = sticker.getAttribute('data-value')?.toLowerCase() || '';
-          if (seasonText) selectedSeasons.push(seasonText);
-        }
-      });
-      
-      typeStickers.forEach((sticker: Element) => {
-        if (sticker.classList.contains('selected')) {
-          const typeText = sticker.getAttribute('data-value')?.toLowerCase() || '';
-          if (typeText) selectedTypes.push(typeText);
-        }
-      });
-      
-      cityStickers.forEach((sticker: Element) => {
-        if (sticker.classList.contains('selected')) {
-          const cityText = sticker.getAttribute('data-value')?.toLowerCase() || '';
-          if (cityText) selectedCities.push(cityText);
-        }
-      });
-      
-      tagStickers.forEach((sticker: Element) => {
-        if (sticker.classList.contains('selected')) {
-          const tagText = sticker.getAttribute('data-value')?.toLowerCase() || '';
-          if (tagText) selectedTags.push(tagText);
-        }
-      });
-      
-      let matchCount = 0;
-      let totalCards = 0;
-      
-      travelCards.forEach((card) => {
-        totalCards++;
-        
-        // 检查DOM结构
-        const anchor = card.closest('a');
-        
-        // 修正这里，直接使用anchor作为容器，而不是anchor.parentElement
-        const cardContainer = anchor;
-        if (!cardContainer) {
-          return;
-        }
-
-        try {
-          const cardData = {
-            title: card.getAttribute('data-title')?.toLowerCase() || '',
-            description: card.getAttribute('data-description')?.toLowerCase() || '',
-            tags: JSON.parse(card.getAttribute('data-tags') || '[]').map((tag: string) => tag.toLowerCase()),
-            season: card.getAttribute('data-season')?.toLowerCase() || '',
-            type: card.getAttribute('data-type')?.toLowerCase() || '',
-            cities: JSON.parse(card.getAttribute('data-cities') || '[]').map((city: string) => city.toLowerCase())
-          };
-
-          const matchesSearch = !searchValue || 
-            cardData.title.includes(searchValue) || 
-            cardData.description.includes(searchValue) ||
-            cardData.tags.some((tag: string) => tag.includes(searchValue)) ||
-            cardData.cities.some((city: string) => city.includes(searchValue));
-
-          const matchesSeasons = selectedSeasons.length === 0 || 
-            selectedSeasons.some(season => cardData.season.includes(season));
-
-          const matchesTypes = selectedTypes.length === 0 || 
-            selectedTypes.some(type => cardData.type.includes(type));
-
-          const matchesCities = selectedCities.length === 0 || 
-            selectedCities.some(city => cardData.cities.some((cardCity: string) => cardCity.includes(city)));
-
-          const matchesTags = selectedTags.length === 0 || 
-            selectedTags.some(tag => cardData.tags.some((cardTag: string) => cardTag.includes(tag)));
-
-          const isMatch = matchesSearch && matchesSeasons && matchesTypes && matchesCities && matchesTags;
-
-          if (isMatch) {
-            matchCount++;
-            
-            // 使用多种方式尝试显示
-            cardContainer.style.cssText = 'display: block !important;'; // 使用内联CSS并添加!important
-            // 添加一个class确保显示
-            cardContainer.classList.remove('hidden');
-          } else {
-            // 使用多种方式尝试隐藏
-            cardContainer.style.cssText = 'display: none !important;'; // 使用内联CSS并添加!important
-            // 添加一个class来隐藏
-            cardContainer.classList.add('hidden');
-          }
-        } catch (error) {
-          cardContainer.style.display = 'none';
-        }
       });
 
-      if (matchCount === 0) {
-        if (travelList) {
-          travelList.classList.add('hidden');
-        }
-        if (noResultsMessage) {
-          noResultsMessage.classList.remove('hidden');
-          if (searchTermMessage) {
-            let message = '抱歉，未找到相关旅行笔记。';
-            if (searchValue) message += `没有找到包含"${searchValue}"的内容。`;
-            if (selectedSeasons.length > 0) message += `没有找到${selectedSeasons.join('、')}季节的内容。`;
-            if (selectedTypes.length > 0) message += `没有找到${selectedTypes.join('、')}类型的内容。`;
-            if (selectedCities.length > 0) message += `没有找到位于${selectedCities.join('、')}的内容。`;
-            if (selectedTags.length > 0) message += `没有找到标签为${selectedTags.join('、')}的内容。`;
-            searchTermMessage.textContent = message;
-          }
-        }
-      } else {
-        if (travelList) {
-          travelList.classList.remove('hidden');
-        }
-        if (noResultsMessage) {
-          noResultsMessage.classList.add('hidden');
-        }
-      }
+      // 使用事件委托处理筛选指示器的关闭按钮点击
+      if (mobileFilterIndicators) {
+        mobileFilterIndicators.addEventListener(
+          "click",
+          (e) => {
+            const target = e.target;
 
-      // 更新匹配数量显示
-      const matchCountDisplay = document.getElementById('match-count-display');
-      const currentMatchCount = document.getElementById('current-match-count');
-      if (matchCountDisplay && currentMatchCount) {
-        if (matchCount === 0) {
-          matchCountDisplay.style.display = 'none';
-        } else {
-          matchCountDisplay.style.display = 'block';
-          currentMatchCount.textContent = matchCount.toString();
-        }
-      }
+            // 寻找可能的关闭按钮
+            let actionButton = null;
 
-      // 额外的DOM验证和修复
-      setTimeout(() => {
-        // 获取所有卡片的a标签容器
-        const allContainers = Array.from(document.querySelectorAll('#travel-list > a'));
-        
-        // 如果没有找到，尝试其他选择器
-        if (allContainers.length === 0) {
-          // 尝试全部a标签
-          const altContainers = Array.from(document.querySelectorAll('#travel-list a'));
-          
-          if (altContainers.length > 0) {
-            allContainers.splice(0, allContainers.length, ...altContainers);
-          }
-        }
-        
-        let visibleCount = 0;
-        
-        allContainers.forEach(container => {
-          const card = container.querySelector('div[data-tags]');
-          if (!card) {
-            return;
-          }
-          
-          const cardTitle = card.getAttribute('data-title') || '未知标题';
-          
-          // 检查这个卡片是否应该显示（通过我们前面的筛选逻辑）
-          const shouldShow = Array.from(travelCards).some(travelCard => {
-            if (travelCard === card) {
-              // 这个卡片的匹配状态
-              const cardData = {
-                title: travelCard.getAttribute('data-title')?.toLowerCase() || '',
-                description: travelCard.getAttribute('data-description')?.toLowerCase() || '',
-                tags: JSON.parse(travelCard.getAttribute('data-tags') || '[]').map((tag: string) => tag.toLowerCase()),
-                season: travelCard.getAttribute('data-season')?.toLowerCase() || '',
-                type: travelCard.getAttribute('data-type')?.toLowerCase() || '',
-                cities: JSON.parse(travelCard.getAttribute('data-cities') || '[]').map((city: string) => city.toLowerCase())
-              };
-              
-              const matchesSearch = !searchValue || 
-                cardData.title.includes(searchValue) || 
-                cardData.description.includes(searchValue) ||
-                cardData.tags.some((tag: string) => tag.includes(searchValue)) ||
-                cardData.cities.some((city: string) => city.includes(searchValue));
-    
-              const matchesSeasons = selectedSeasons.length === 0 || 
-                selectedSeasons.some(season => cardData.season.includes(season));
-    
-              const matchesTypes = selectedTypes.length === 0 || 
-                selectedTypes.some(type => cardData.type.includes(type));
-    
-              const matchesCities = selectedCities.length === 0 || 
-                selectedCities.some(city => cardData.cities.some((cardCity: string) => cardCity.includes(city)));
-    
-              const matchesTags = selectedTags.length === 0 || 
-                selectedTags.some(tag => cardData.tags.some((cardTag: string) => cardTag.includes(tag)));
-    
-              return matchesSearch && matchesSeasons && matchesTypes && matchesCities && matchesTags;
+            // 如果直接点击的是按钮或其内部的SVG/PATH元素
+            if (
+              target.tagName === "BUTTON" &&
+              target.classList.contains("filter-remove-btn")
+            ) {
+              actionButton = target;
+            } else if (target.closest(".filter-remove-btn")) {
+              actionButton = target.closest(".filter-remove-btn");
             }
-            return false;
-          });
-          
-          // 确保显示/隐藏状态正确
-          if (shouldShow) {
-            visibleCount++;
-            // 使用最强硬的方式确保显示
-            (container as HTMLElement).style.cssText = 'display: block !important;';
-          } else {
-            // 使用最强硬的方式确保隐藏
-            (container as HTMLElement).style.cssText = 'display: none !important;';
-          }
-        });
-        
-        // 更新匹配计数显示
-        const currentMatchCount = document.getElementById('current-match-count');
-        if (currentMatchCount) {
-          currentMatchCount.textContent = visibleCount.toString();
-        }
-        
-        // 检查是否需要显示无结果消息
-        if (visibleCount === 0) {
-          if (travelList) travelList.classList.add('hidden');
-          if (noResultsMessage) noResultsMessage.classList.remove('hidden');
-        } else {
-          if (travelList) travelList.classList.remove('hidden');
-          if (noResultsMessage) noResultsMessage.classList.add('hidden');
-        }
-      }, 100);
 
-      return matchCount;
-    }
-    
-    // 初始化筛选状态
-    if (searchInput && searchParamFromUrl) {
-      searchInput.value = searchParamFromUrl;
-      // 触发筛选
-      setTimeout(filterTravels, 100);
-    } else if (tagParam || seasonParam || typeParam || cityParam) {
-      // 如果URL中包含标签或其他筛选参数，也执行筛选
-      
-      // 如果有标签参数，选中对应的贴纸
-      if (tagParam) {
-        tagStickers.forEach((sticker: Element) => {
-          const stickerText = sticker.getAttribute('data-value')?.toLowerCase() || '';
-          if (stickerText === tagParam.toLowerCase()) {
-            sticker.classList.add('selected');
-          }
-        });
-      }
-      
-      // 如果有季节参数，选中对应的贴纸
-      if (seasonParam) {
-        seasonStickers.forEach((sticker: Element) => {
-          const stickerText = sticker.getAttribute('data-value')?.toLowerCase() || '';
-          if (stickerText.toLowerCase() === seasonParam.toLowerCase()) {
-            sticker.classList.add('selected');
-          }
-        });
-      }
-      
-      // 如果有类型参数，选中对应的贴纸
-      if (typeParam) {
-        typeStickers.forEach((sticker: Element) => {
-          const stickerText = sticker.getAttribute('data-value')?.toLowerCase() || '';
-          if (stickerText.toLowerCase() === typeParam.toLowerCase()) {
-            sticker.classList.add('selected');
-          }
-        });
-      }
-      
-      // 如果有城市参数，选中对应的贴纸
-      if (cityParam) {
-        cityStickers.forEach((sticker: Element) => {
-          const stickerText = sticker.getAttribute('data-value')?.toLowerCase() || '';
-          if (stickerText.toLowerCase() === cityParam.toLowerCase()) {
-            sticker.classList.add('selected');
-          }
-        });
-      }
-      
-      // 更新筛选计数
-      updateFilterCount();
-      
-      // 触发筛选
-      setTimeout(filterTravels, 100);
-    }
-    
-    // 绑定搜索按钮点击事件
-    if (searchButton) {
-      searchButton.addEventListener('click', () => {
-        const query = searchInput?.value.trim() || '';
-        
-        // 更新URL并应用筛选
-        updateUrlWithFilters();
-        
-        // 在客户端应用筛选效果
-        filterTravels();
-      });
-    }
-    
-    // 绑定搜索输入框回车事件
-    if (searchInput) {
-      searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          // 更新URL并应用筛选
-          updateUrlWithFilters();
-          
-          // 在客户端应用筛选效果
-          filterTravels();
-        }
-      });
-    }
-    
-    // 测试按钮事件
-    if (testNoResultsBtn) {
-      testNoResultsBtn.addEventListener('click', () => {
-        if (searchInput) {
-          searchInput.value = 'xyzabcdefghijklmn123456789'; // 使用一个几乎不可能匹配的查询词
-          filterTravels();
-        }
-      });
-    }
-    
-    // 监听窗口大小变化，处理响应式布局
-    window.addEventListener('resize', () => {
-      const isLargeScreen = window.innerWidth >= 1024; // lg断点
-      
-      if (isLargeScreen && mobileFilterPanel) {
-        // 大屏幕上确保筛选面板显示
-        mobileFilterPanel.classList.remove('hidden');
-        
-        // 重置筛选面板样式
-        mobileFilterPanel.style.position = '';
-        mobileFilterPanel.style.top = '';
-        mobileFilterPanel.style.left = '';
-        mobileFilterPanel.style.right = '';
-        mobileFilterPanel.style.bottom = '';
-        mobileFilterPanel.style.zIndex = '';
-        mobileFilterPanel.style.overflowY = '';
-        mobileFilterPanel.style.background = '';
-        mobileFilterPanel.style.padding = '';
-        
-        // 移除可能存在的遮罩层
-        const overlay = document.getElementById('filter-overlay');
-        if (overlay) {
-          overlay.remove();
-        }
-        document.body.style.overflow = '';
-      } else if (!isLargeScreen && mobileFilterPanel) {
-        // 小屏幕上默认隐藏筛选面板
-        mobileFilterPanel.classList.add('hidden');
-        
-        // 确保箭头图标状态正确
-        if (arrowDown && arrowUp) {
-          arrowDown.classList.remove('hidden');
-          arrowUp.classList.add('hidden');
-        }
+            if (actionButton) {
+              // 从按钮的data属性中获取筛选值
+              const filterValue =
+                actionButton.getAttribute("data-filter-value");
+
+              if (filterValue) {
+                // 找到对应的贴纸并取消选中
+                document.querySelectorAll(".filter-sticker").forEach((s) => {
+                  if (s.getAttribute("data-value") === filterValue) {
+                    s.classList.remove("selected");
+
+                    // 添加删除动画
+                    const indicator = actionButton?.closest("div");
+                    if (indicator) {
+                      indicator.classList.add("tag-removing");
+
+                      // 延迟更新以等待动画完成
+                      setTimeout(() => {
+                        updateFilterCount();
+                        // 更新URL以反映筛选条件
+                        updateUrlWithFilters();
+                        // 应用筛选
+                        filterTravels();
+                      }, 250);
+                    }
+                  }
+                });
+              }
+            }
+
+            // 检查是否点击了SVG或PATH元素
+            if (target.tagName === "svg" || target.tagName === "path") {
+              // 找到父级按钮
+              const button = target.closest(".filter-remove-btn");
+
+              if (button) {
+                // 触发按钮点击事件
+                button.click();
+              }
+            }
+          },
+          true,
+        ); // 使用捕获阶段
       }
     });
-
-    // 使用事件委托处理筛选指示器的关闭按钮点击
-    if (mobileFilterIndicators) {
-      mobileFilterIndicators.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
-        
-        // 寻找可能的关闭按钮
-        let actionButton = null;
-        
-        // 如果直接点击的是按钮或其内部的SVG/PATH元素
-        if (target.tagName === 'BUTTON' && target.classList.contains('filter-remove-btn')) {
-          actionButton = target;
-        } else if (target.closest('.filter-remove-btn')) {
-          actionButton = target.closest('.filter-remove-btn');
-        }
-        
-        if (actionButton) {
-          // 从按钮的data属性中获取筛选值
-          const filterValue = actionButton.getAttribute('data-filter-value');
-          
-          if (filterValue) {
-            // 找到对应的贴纸并取消选中
-            document.querySelectorAll('.filter-sticker').forEach(s => {
-              if (s.getAttribute('data-value') === filterValue) {
-                s.classList.remove('selected');
-                
-                // 添加删除动画
-                const indicator = actionButton?.closest('div');
-                if (indicator) {
-                  indicator.classList.add('tag-removing');
-                  
-                  // 延迟更新以等待动画完成
-                  setTimeout(() => {
-                    updateFilterCount();
-                    // 更新URL以反映筛选条件
-                    updateUrlWithFilters();
-                    // 应用筛选
-                    filterTravels();
-                  }, 250);
-                }
-              }
-            });
-          }
-        }
-        
-        // 检查是否点击了SVG或PATH元素
-        if (target.tagName === 'svg' || target.tagName === 'path') {
-          // 找到父级按钮
-          const button = target.closest('.filter-remove-btn');
-          
-          if (button) {
-            // 触发按钮点击事件
-            (button as HTMLButtonElement).click();
-          }
-        }
-      }, true); // 使用捕获阶段
-    }
-
-  });
-</script> 
+  </script>
+</MainLayout>

@@ -1,60 +1,25 @@
 ---
 import MainLayout from "../components/MainLayout.astro";
-import MorphingText from "../components/MorphingText.astro";
-
-// 导航数据
+import { MorphingText } from "../components/morphing-text";
 ---
 
 <MainLayout title="首页 - 河北游礼">
-  <!-- 主页文字特效区域 - 使用更简洁的背景设计 -->
-  <section class="hero-section relative w-full h-screen flex items-center justify-center overflow-hidden">
-    <!-- 单一背景层 - 合并多层背景效果 -->
-    <div class="absolute inset-0 bg-hero-gradient"></div>
-    
-    <!-- 文字特效容器 -->
-    <div class="relative z-10 text-center px-4 w-full max-w-7xl mx-auto">
-      <div class="text-size-boost">
-        <MorphingText 
-          phrases={["这么近", "那么美", "周末来河北"]} 
-          className="mb-8 text-primary-800 dark:text-primary-300 font-extrabold"
-          textSize="text-8xl sm:text-9xl md:text-[10rem] lg:text-[12rem]"
-        />
-      </div>
+  <!-- 主页文字特效区域 -->
+  <section
+    class="hero-section w-full h-screen flex items-center justify-center bg-gradient-to-br from-travel via-paper to-recipe dark:from-dark-travel dark:via-dark-paper dark:to-dark-recipe relative overflow-hidden"
+  >
+    <!-- 主要文字 -->
+    <div class="relative z-10">
+      <MorphingText
+        texts={["这么近", "那么美", "周末来河北"]}
+        client:load
+        className="text-5xl md:text-7xl lg:text-8xl font-bold text-center"
+      />
+      <p
+        class="mt-8 text-xl text-gray-700 dark:text-dark-text-secondary text-center max-w-xl mx-auto"
+      >
+        探索河北的美丽风景与丰富文化，体验独特的旅游体验
+      </p>
     </div>
   </section>
-  
 </MainLayout>
-
-<style>
-  /* 合并背景样式为单一更高效的背景 */
-  .bg-hero-gradient {
-    background: linear-gradient(to bottom right, var(--color-primary-50), white, var(--color-secondary-100));
-    position: relative;
-  }
-  
-  /* 增加网格图案作为背景装饰 */
-  .bg-hero-gradient::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: 
-      linear-gradient(to right, rgba(180, 83, 9, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(180, 83, 9, 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.8;
-  }
-  
-  /* 特殊样式来增强文字大小 */
-  .text-size-boost :global(.text-span-1),
-  .text-size-boost :global(.text-span-2) {
-    font-size: clamp(4rem, 15vw, 14rem) !important;
-    line-height: 1.1 !important;
-  }
-  
-  /* 深色模式适配 */
-  @media (prefers-color-scheme: dark) {
-    .bg-hero-gradient {
-      background: linear-gradient(to bottom right, var(--color-dark-primary-100), var(--color-dark-bg), var(--color-dark-primary-50));
-    }
-  }
-</style> 

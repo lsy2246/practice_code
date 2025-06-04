@@ -1,7 +1,6 @@
 ---
 import "../styles/global.css";
 import ThemeToggle from "../components/ThemeToggle.astro";
-import DarkModeTransition from "../components/DarkModeTransition.astro";
 import SmoothScroll from "../components/SmoothScroll.astro";
 
 interface Props {
@@ -9,165 +8,227 @@ interface Props {
   description?: string;
 }
 
-const { title, description = "河北游礼宣传网站 - 探索河北的文化与魅力" } = Astro.props;
-
-
+const { title, description = "河北游礼宣传网站 - 探索河北的文化与魅力" } =
+  Astro.props;
 ---
 
-<!DOCTYPE html>
-<html lang="zh-CN" class="no-js">
+<!doctype html>
+<html
+  lang="zh-CN"
+  class="no-js"
+>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <meta name="description" content={description} />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/favicon.svg"
+    />
+    <meta
+      name="generator"
+      content={Astro.generator}
+    />
+    <meta
+      name="description"
+      content={description}
+    />
     <title>{title}</title>
-    <DarkModeTransition />
-    <script>
-      document.documentElement.classList.remove('no-js');
+
+    <script is:inline>
+      // 确保DOM加载完成后执行脚本
+      document.addEventListener("DOMContentLoaded", () => {
+        // 移动端菜单切换
+        const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+        const mobileMenu = document.getElementById("mobileMenu");
+
+        mobileMenuToggle?.addEventListener("click", () => {
+          mobileMenu?.classList.toggle("hidden");
+        });
+
+        // 监听滚动事件，当页面滚动时给导航栏添加背景
+        const header = document.querySelector("header");
+        const headerBg = document.getElementById("headerBackground");
+        const navItems = document.querySelectorAll(".nav-item");
+
+        const checkScroll = () => {
+          if (window.scrollY > 10) {
+            // 添加滚动状态
+            header?.classList.add("scrolled");
+            headerBg?.classList.remove("opacity-0");
+            headerBg?.classList.add("opacity-100");
+
+            // 滚动时移除文字阴影
+            navItems.forEach((item) => {
+              if (item instanceof HTMLElement) {
+                item.classList.remove("text-shadow-sm", "dark:text-shadow-md");
+                item.classList.add("text-shadow-none");
+              }
+            });
+          } else {
+            // 移除滚动状态
+            header?.classList.remove("scrolled");
+            headerBg?.classList.remove("opacity-100");
+            headerBg?.classList.add("opacity-0");
+
+            // 恢复文字阴影
+            navItems.forEach((item) => {
+              if (item instanceof HTMLElement) {
+                item.classList.remove("text-shadow-none");
+                item.classList.add("text-shadow-sm", "dark:text-shadow-md");
+              }
+            });
+          }
+        };
+
+        // 初始检查
+        checkScroll();
+
+        // 滚动时检查
+        window.addEventListener("scroll", checkScroll);
+      });
     </script>
   </head>
   <body>
     <SmoothScroll />
-    
+
     <!-- 导航栏 - 完全脱离文档流 -->
-    <header class="fixed top-0 left-0 right-0 z-50 pointer-events-none">
+    <header
+      class="fixed top-0 left-0 right-0 z-50 pointer-events-none transition-all duration-300 ease-in-out"
+    >
+      <!-- 背景元素 - 使用Tailwind控制透明度过渡 -->
+      <div
+        id="headerBackground"
+        class="absolute inset-0 bg-paper/90 dark:bg-dark-nav/95 backdrop-blur-md shadow-sm z-[-1] opacity-0 transition-opacity duration-300"
+      >
+      </div>
+
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <!-- 网站Logo和名称 -->
           <div class="flex items-center pointer-events-auto">
-            <a href="/" class="flex items-center">
-              <span class="text-xl font-bold text-color-primary-600 dark:text-color-primary-400 text-shadow-sm">河北游礼</span>
+            <a
+              href="/"
+              class="flex items-center"
+            >
+              <span
+                class="nav-item text-xl font-bold text-primary-700 dark:text-primary-500 text-shadow-sm dark:text-shadow-md"
+                >河北游礼</span
+              >
             </a>
           </div>
-          
+
           <!-- 导航菜单 -->
           <nav class="hidden md:flex space-x-8 pointer-events-auto">
-            <a href="/" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">首页</a>
-            <a href="/attractions" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">景点</a>
-            <a href="/culture" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">文化</a>
-            <a href="/cuisine" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">美食</a>
-            <a href="/travel" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">旅游攻略</a>
-            <a href="/map" class="text-gray-800 hover:text-color-primary-600 dark:text-gray-200 dark:hover:text-color-primary-400 text-shadow-sm">地图导航</a>
+            <a
+              href="/"
+              class="nav-item text-gray-800 hover:text-primary-600 dark:text-dark-text dark:hover:text-primary-500 text-shadow-sm dark:text-shadow-md transition-colors duration-200"
+              >首页</a
+            >
+            <a
+              href="/attractions"
+              class="nav-item text-gray-800 hover:text-primary-600 dark:text-dark-text dark:hover:text-primary-500 text-shadow-sm dark:text-shadow-md transition-colors duration-200"
+              >景点</a
+            >
+            <a
+              href="/culture"
+              class="nav-item text-gray-800 hover:text-primary-600 dark:text-dark-text dark:hover:text-primary-500 text-shadow-sm dark:text-shadow-md transition-colors duration-200"
+              >文化</a
+            >
+            <a
+              href="/cuisine"
+              class="nav-item text-gray-800 hover:text-primary-600 dark:text-dark-text dark:hover:text-primary-500 text-shadow-sm dark:text-shadow-md transition-colors duration-200"
+              >美食</a
+            >
+            <a
+              href="/travel"
+              class="nav-item text-gray-800 hover:text-primary-600 dark:text-dark-text dark:hover:text-primary-500 text-shadow-sm dark:text-shadow-md transition-colors duration-200"
+              >旅游攻略</a
+            >
+            <a
+              href="/map"
+              class="nav-item text-gray-800 hover:text-primary-600 dark:text-dark-text dark:hover:text-primary-500 text-shadow-sm dark:text-shadow-md transition-colors duration-200"
+              >地图导航</a
+            >
           </nav>
-          
+
           <!-- 主题切换按钮和移动端菜单 -->
           <div class="flex items-center pointer-events-auto">
             <ThemeToggle />
-            
+
             <!-- 移动端菜单按钮 -->
-            <button id="mobileMenuToggle" aria-label="打开菜单" class="md:hidden ml-2 p-2 rounded-full hover:bg-white/20 dark:hover:bg-black/20">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <button
+              id="mobileMenuToggle"
+              aria-label="打开菜单"
+              class="md:hidden ml-2 p-2 rounded-full hover:bg-primary-100/50 dark:hover:bg-dark-nav-hover"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6 text-gray-800 dark:text-dark-text"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                ></path>
               </svg>
             </button>
           </div>
         </div>
-        
+
         <!-- 移动端菜单 -->
-        <div id="mobileMenu" class="md:hidden hidden pb-3 bg-white/90 dark:bg-black/90 backdrop-blur-md mt-1 rounded-lg shadow-lg pointer-events-auto">
+        <div
+          id="mobileMenu"
+          class="md:hidden hidden pb-3 bg-paper/95 dark:bg-dark-nav/95 backdrop-blur-md mt-1 rounded-lg shadow-lg pointer-events-auto"
+        >
           <div class="flex flex-col space-y-2">
-            <a href="/" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">首页</a>
-            <a href="/attractions" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">景点</a>
-            <a href="/culture" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">文化</a>
-            <a href="/cuisine" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">美食</a>
-            <a href="/travel" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">旅游攻略</a>
-            <a href="/map" class="px-3 py-2 rounded-md text-gray-700 hover:bg-white/20 dark:text-gray-300 dark:hover:bg-white/10">地图导航</a>
+            <a
+              href="/"
+              class="px-3 py-2 rounded-md text-gray-800 hover:bg-primary-100/50 dark:text-dark-text dark:hover:bg-dark-nav-hover"
+              >首页</a
+            >
+            <a
+              href="/attractions"
+              class="px-3 py-2 rounded-md text-gray-800 hover:bg-primary-100/50 dark:text-dark-text dark:hover:bg-dark-nav-hover"
+              >景点</a
+            >
+            <a
+              href="/culture"
+              class="px-3 py-2 rounded-md text-gray-800 hover:bg-primary-100/50 dark:text-dark-text dark:hover:bg-dark-nav-hover"
+              >文化</a
+            >
+            <a
+              href="/cuisine"
+              class="px-3 py-2 rounded-md text-gray-800 hover:bg-primary-100/50 dark:text-dark-text dark:hover:bg-dark-nav-hover"
+              >美食</a
+            >
+            <a
+              href="/travel"
+              class="px-3 py-2 rounded-md text-gray-800 hover:bg-primary-100/50 dark:text-dark-text dark:hover:bg-dark-nav-hover"
+              >旅游攻略</a
+            >
+            <a
+              href="/map"
+              class="px-3 py-2 rounded-md text-gray-800 hover:bg-primary-100/50 dark:text-dark-text dark:hover:bg-dark-nav-hover"
+              >地图导航</a
+            >
           </div>
         </div>
       </div>
     </header>
-    
+
     <!-- 页面主体内容 - 完全不受导航栏影响 -->
     <div class="min-h-screen flex flex-col">
       <main class="flex-grow">
         <slot />
       </main>
     </div>
-
-    <script>
-      // 移动端菜单切换
-      document.addEventListener('DOMContentLoaded', () => {
-        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-        const mobileMenu = document.getElementById('mobileMenu');
-
-        mobileMenuToggle?.addEventListener('click', () => {
-          mobileMenu?.classList.toggle('hidden');
-        });
-      });
-    </script>
   </body>
 </html>
-
-<style>
-  .social-icon {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    transition: color 0.3s ease;
-  }
-  
-  .social-icon:hover {
-    color: var(--theme-primary);
-  }
-  
-  /* 文字阴影样式 */
-  .text-shadow-sm {
-    text-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.1);
-  }
-  
-  :global(.dark) .text-shadow-sm {
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2);
-  }
-  
-  /* 导航栏样式 */
-  header {
-    transition: all 0.3s ease;
-  }
-  
-  /* 滚动时的背景效果 */
-  header.scrolled nav a,
-  header.scrolled .text-shadow-sm {
-    text-shadow: none;
-  }
-  
-  header.scrolled::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 100%;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: -1;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-  
-  :global([data-theme='dark']) header.scrolled::before {
-  background-color: var(--color-dark-card);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-</style>
-
-<script>
-  // 监听滚动事件，当页面滚动时给导航栏添加背景
-  document.addEventListener('DOMContentLoaded', () => {
-    const header = document.querySelector('header');
-    
-    const checkScroll = () => {
-      if (window.scrollY > 10) {
-        header?.classList.add('scrolled');
-      } else {
-        header?.classList.remove('scrolled');
-      }
-    };
-    
-    // 初始检查
-    checkScroll();
-    
-    // 滚动时检查
-    window.addEventListener('scroll', checkScroll);
-  });
-</script> 

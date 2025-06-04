@@ -35,7 +35,7 @@ if (categoryParam.length > 0) {
 if (cityParam.length > 0) {
   filteredCultures = filteredCultures.filter(culture => 
     culture.data.city && cityParam.some(city => 
-      culture.data.city?.some(c => c.toLowerCase() === city.toLowerCase())
+      culture.data.city?.some((c: string) => c.toLowerCase() === city.toLowerCase())
     )
   );
 }
@@ -44,7 +44,7 @@ if (cityParam.length > 0) {
 if (tagParam.length > 0) {
   filteredCultures = filteredCultures.filter(culture => 
     culture.data.tags && tagParam.some(tag => 
-      culture.data.tags?.some(t => t.toLowerCase() === tag.toLowerCase())
+      culture.data.tags?.some((t: string) => t.toLowerCase() === tag.toLowerCase())
     )
   );
 }
@@ -55,7 +55,7 @@ if (searchParam) {
   filteredCultures = filteredCultures.filter(culture => 
     (culture.data.title && culture.data.title.toLowerCase().includes(searchLower)) ||
     (culture.data.description && culture.data.description.toLowerCase().includes(searchLower)) ||
-    (culture.data.tags && culture.data.tags.some(tag => tag.toLowerCase().includes(searchLower)))
+    (culture.data.tags && culture.data.tags.some((tag: string) => tag.toLowerCase().includes(searchLower)))
   );
 }
 
@@ -99,7 +99,7 @@ const cities: {name: string, count: number}[] = [];
 cultures.forEach((culture: CollectionEntry<"culture">) => {
   if (culture.data.city && culture.data.city.length > 0) {
     // 遍历每个城市数组
-    culture.data.city.forEach(cityName => {
+    culture.data.city.forEach((cityName: string) => {
       const existingCity = cities.find(c => c.name === cityName);
       if (existingCity) {
         existingCity.count++;
@@ -177,630 +177,659 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
 ---
 
 <MainLayout title="河北文化典藏 - 河北游礼">
-  <!-- 古籍书卷风格的头部 -->
-  <div class="relative overflow-hidden bg-scroll-bg dark:bg-ancient-paper-dark min-h-[500px] flex items-center">
-    <!-- 简洁的背景 -->
-    <div class="absolute inset-0 bg-opacity-20 bg-amber-100 dark:bg-opacity-20 dark:bg-amber-900"></div>
+  <!-- 统一的背景容器 -->
+  <div class="unified-bg dark-mode-bg">
+    <!-- 古籍书卷风格的头部 - 添加深色模式边框 -->
+    <div class="relative overflow-hidden min-h-[500px] flex items-center border-b border-amber-700/20 dark:border-amber-700/30">
+      <!-- 古籍书卷式标题区域 -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-4xl mx-auto text-center">
+          <!-- 书卷式内容区 -->
+          <div class="relative py-12">
+            <!-- 典籍风格标题 -->
+            <div class="py-10 px-8">
+              <div class="official-title">
+                <h2 class="text-sm font-ancient tracking-[0.2em] text-red-800 dark:text-red-400 mb-4">河北文化典藏</h2>
+                <h1 class="text-5xl md:text-6xl font-ancient text-gray-900 dark:text-dark-text mb-4 leading-snug">文化瑰宝</h1>
+                <div class="w-40 h-0.5 mx-auto my-6 bg-amber-700"></div>
+              </div>
 
-    <!-- 古籍书卷式标题区域 -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <div class="max-w-4xl mx-auto text-center">
-        <!-- 书卷式内容区 -->
-        <div class="relative py-12">
-          <!-- 典籍风格标题 -->
-          <div class="py-10 px-8">
-            <div class="official-title">
-              <h2 class="text-sm font-ancient tracking-[0.2em] text-ancient-red dark:text-ancient-red-dark mb-4">河北文化典藏</h2>
-              <h1 class="text-5xl md:text-6xl font-ancient text-ancient-black dark:text-ancient-white mb-4 leading-snug">文化瑰宝</h1>
-              <div class="w-40 h-0.5 mx-auto my-6 bg-ancient-accent dark:bg-ancient-accent-dark"></div>
+              <p class="font-ancient-body text-lg text-gray-900 dark:text-dark-text max-w-2xl mx-auto leading-relaxed">
+                典藏千年冀州文明，承载河北厚重历史文化积淀，
+                <br>以字画诗词、戏曲非遗，述说河北文化的绵长与精彩
+              </p>
             </div>
-
-            <p class="font-ancient-body text-lg text-ancient-black dark:text-ancient-white max-w-2xl mx-auto leading-relaxed">
-              典藏千年冀州文明，承载河北厚重历史文化积淀，
-              <br>以字画诗词、戏曲非遗，述说河北文化的绵长与精彩
-            </p>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-
-  <!-- 主内容区域 - 古籍风格 -->
-  <div class="bg-ancient-paper dark:bg-ancient-paper-dark py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- 文化介绍语 - 书卷风格 -->
-      <div class="mb-16 max-w-4xl mx-auto">
-        <div class="px-8 py-10 text-center border-l-2 border-r-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 bg-ancient-paper-light/50 dark:bg-ancient-paper-dark/50 relative">
-          <p class="text-xl text-ancient-black dark:text-ancient-white font-ancient-body leading-relaxed">
-            河北，古称"冀州"，是中华文明的发祥地之一。这片土地上流传着众多的文化瑰宝，从京剧、评剧等传统戏曲，到皮影、剪纸等民间艺术，从千年古刹到悠久历史的传统习俗，共同构成了河北独特而丰富的文化景观。
-          </p>
-        </div>
-      </div>
-
-      <!-- 筛选状态显示 -->
-      {(categoryParam.length > 0 || cityParam.length > 0 || tagParam.length > 0 || searchParam) && (
-        <div class="mb-8 max-w-4xl mx-auto">
-          <div class="p-4 border-l-4 border-ancient-accent dark:border-ancient-accent-dark bg-ancient-paper-light/80 dark:bg-ancient-paper-dark-light/80 flex justify-between items-center">
-            <div class="flex flex-wrap gap-2 items-center">
-              <span class="text-ancient-black/80 dark:text-ancient-white/80 font-ancient-small">当前筛选:</span>
-              
-              {categoryParam.length > 0 && (
-                <div class="px-3 py-1 bg-ancient-paper/90 dark:bg-ancient-paper-dark/90 border border-ancient-accent/40 dark:border-ancient-accent-dark/40 text-sm font-ancient-small text-ancient-black dark:text-ancient-white rounded flex items-center">
-                  <span class="mr-1">分类:</span>
-                  <span class="font-medium">{categoryParam.join(', ')}</span>
-                </div>
-              )}
-              
-              {cityParam.length > 0 && (
-                <div class="px-3 py-1 bg-amber-100/50 dark:bg-amber-900/30 border border-amber-200/70 dark:border-amber-700/40 text-sm font-ancient-small text-ancient-black dark:text-ancient-white rounded flex items-center">
-                  <span class="mr-1">城市:</span>
-                  <span class="font-medium">{cityParam.join(', ')}</span>
-                </div>
-              )}
-              
-              {tagParam.length > 0 && (
-                <div class="px-3 py-1 bg-ancient-paper/90 dark:bg-ancient-paper-dark/90 border border-ancient-accent/40 dark:border-ancient-accent-dark/40 text-sm font-ancient-small text-ancient-black dark:text-ancient-white rounded flex items-center">
-                  <span class="mr-1">标签:</span>
-                  <span class="font-medium">{tagParam.join(', ')}</span>
-                </div>
-              )}
-              
-              {searchParam && (
-                <div class="px-3 py-1 bg-ancient-paper/90 dark:bg-ancient-paper-dark/90 border border-ancient-accent/40 dark:border-ancient-accent-dark/40 text-sm font-ancient-small text-ancient-black dark:text-ancient-white rounded flex items-center">
-                  <span class="mr-1">搜索:</span>
-                  <span class="font-medium">"{searchParam}"</span>
-                </div>
-              )}
-            </div>
-            
-            <a 
-              href="/culture" 
-              class="text-ancient-accent dark:text-ancient-accent-dark hover:text-ancient-red dark:hover:text-ancient-red-dark text-sm font-ancient-small flex items-center"
-            >
-              <span>清除筛选</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </a>
-          </div>
-        </div>
-      )}
-
-      <!-- 无筛选结果提示 -->
-      {sortedCultures.length === 0 && (
-        <div class="my-12 max-w-xl mx-auto text-center">
-          <div class="p-8 border-2 border-dashed border-ancient-accent/30 dark:border-ancient-accent-dark/30 bg-ancient-paper-light/50 dark:bg-ancient-paper-dark/50">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-ancient-accent/50 dark:text-ancient-accent-dark/50 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3 class="text-xl font-ancient text-ancient-black dark:text-ancient-white mb-2">未找到相关文化内容</h3>
-            <p class="text-ancient-black/80 dark:text-ancient-white/80 font-ancient-body mb-4">
-              {categoryParam.length > 0 && `没有找到分类为"${categoryParam.join(', ')}"的内容。`}
-              {cityParam.length > 0 && `没有找到位于"${cityParam.join(', ')}"的内容。`}
-              {tagParam.length > 0 && `没有找到标签为"${tagParam.join(', ')}"的内容。`}
-              {searchParam && `没有找到包含"${searchParam}"的内容。`}
-              {!categoryParam.length && !cityParam.length && !tagParam.length && !searchParam && '没有找到符合条件的内容。'}
+    <!-- 主内容区域 - 古籍风格 - 移除了背景 -->
+    <div class="py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 文化介绍语 - 书卷风格 -->
+        <div class="mb-16 max-w-4xl mx-auto">
+          <div class="px-8 py-10 text-center border-l-2 border-r-2 border-amber-700/30 bg-amber-50/50 dark:bg-dark-surface/30 dark:border-amber-700/40 relative dark-mode-panel">
+            <p class="text-xl text-gray-900 dark:text-dark-text font-ancient-body leading-relaxed">
+              河北，古称"冀州"，是中华文明的发祥地之一。这片土地上流传着众多的文化瑰宝，从京剧、评剧等传统戏曲，到皮影、剪纸等民间艺术，从千年古刹到悠久历史的传统习俗，共同构成了河北独特而丰富的文化景观。
             </p>
-            <a href="/culture" class="inline-block mt-2 px-4 py-2 bg-ancient-accent dark:bg-ancient-accent-dark text-white rounded-md font-ancient-small">查看全部文化内容</a>
           </div>
         </div>
-      )}
 
-      <!-- 移动端筛选按钮和搜索框 -->
-      <div class="lg:hidden mb-6 flex justify-between items-center">
-        <button id="mobile-filter-toggle" class="bg-ancient-accent dark:bg-ancient-accent-dark text-ancient-white px-4 py-2 rounded-md inline-flex items-center shadow-md">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          <span class="inline-block">筛选</span>
-        </button>
+        <!-- 筛选状态显示 -->
+        {(categoryParam.length > 0 || cityParam.length > 0 || tagParam.length > 0 || searchParam) && (
+          <div class="mb-8 max-w-4xl mx-auto">
+            <div class="p-4 border-l-4 border-amber-700 bg-amber-50/80 dark:bg-dark-surface/40 dark:border-amber-700/60 flex justify-between items-center dark-mode-panel">
+              <div class="flex flex-wrap gap-2 items-center">
+                <span class="text-gray-800/80 dark:text-dark-text-secondary font-ancient-small">当前筛选:</span>
+                
+                {categoryParam.length > 0 && (
+                  <div class="px-3 py-1 bg-amber-50/90 border border-amber-700/30 text-sm font-ancient-small text-gray-900 dark:text-dark-text rounded flex items-center">
+                    <span class="mr-1">分类:</span>
+                    <span class="font-medium">{categoryParam.join(', ')}</span>
+                  </div>
+                )}
+                
+                {cityParam.length > 0 && (
+                  <div class="px-3 py-1 bg-amber-50/50 border border-amber-700/70 text-sm font-ancient-small text-gray-900 dark:text-dark-text rounded flex items-center">
+                    <span class="mr-1">城市:</span>
+                    <span class="font-medium">{cityParam.join(', ')}</span>
+                  </div>
+                )}
+                
+                {tagParam.length > 0 && (
+                  <div class="px-3 py-1 bg-amber-50/90 border border-amber-700/30 text-sm font-ancient-small text-gray-900 dark:text-dark-text rounded flex items-center">
+                    <span class="mr-1">标签:</span>
+                    <span class="font-medium">{tagParam.join(', ')}</span>
+                  </div>
+                )}
+                
+                {searchParam && (
+                  <div class="px-3 py-1 bg-amber-50/90 border border-amber-700/30 text-sm font-ancient-small text-gray-900 dark:text-dark-text rounded flex items-center">
+                    <span class="mr-1">搜索:</span>
+                    <span class="font-medium">"{searchParam}"</span>
+                  </div>
+                )}
+              </div>
+              
+              <a 
+                href="/culture" 
+                class="text-amber-700 hover:text-red-800 dark:text-amber-500 dark:hover:text-amber-400 text-sm font-ancient-small flex items-center"
+              >
+                <span>清除筛选</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 text-amber-700 dark:text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        )}
 
-        <!-- 移动端搜索框 -->
-        <form id="search-form-mobile" class="relative flex-grow mx-3" method="get" action="/culture">
-          <input
-            type="text"
-            name="search"
-            placeholder="搜索文化内容..."
-            value={searchParam || ''}
-            class="w-full text-ancient-black dark:text-ancient-white bg-ancient-paper-light/90 dark:bg-ancient-paper-dark/50 border border-ancient-accent/30 dark:border-ancient-accent-dark/30 rounded-full py-2 pl-3 pr-10 focus:outline-none focus:border-ancient-accent/70 dark:focus:border-ancient-accent-dark/70 font-ancient-body"
-          />
-          <!-- 保留现有参数 -->
-          {categoryParam.length > 0 && <input type="hidden" name="category" value={categoryParam.join(',')} />}
-          {cityParam.length > 0 && <input type="hidden" name="city" value={cityParam.join(',')} />}
-          {tagParam.length > 0 && <input type="hidden" name="tag" value={tagParam.join(',')} />}
-          
-          <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-ancient-accent dark:text-ancient-accent-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <!-- 无筛选结果提示 -->
+        {sortedCultures.length === 0 && (
+          <div class="my-12 max-w-xl mx-auto text-center">
+            <div class="p-8 border-2 border-dashed border-amber-700/30 bg-amber-50/50 dark:bg-dark-surface/30 dark:border-amber-700/40 dark-mode-panel">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-amber-700/50 dark:text-amber-500/60 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h3 class="text-xl font-ancient text-gray-900 dark:text-dark-text mb-2">未找到相关文化内容</h3>
+              <p class="text-gray-900/80 dark:text-dark-text-secondary font-ancient-body mb-4">
+                {categoryParam.length > 0 && `没有找到分类为"${categoryParam.join(', ')}"的内容。`}
+                {cityParam.length > 0 && `没有找到位于"${cityParam.join(', ')}"的内容。`}
+                {tagParam.length > 0 && `没有找到标签为"${tagParam.join(', ')}"的内容。`}
+                {searchParam && `没有找到包含"${searchParam}"的内容。`}
+                {!categoryParam.length && !cityParam.length && !tagParam.length && !searchParam && '没有找到符合条件的内容。'}
+              </p>
+              <a href="/culture" class="inline-block mt-2 px-4 py-2 bg-amber-700 hover:bg-amber-800 dark:bg-amber-700/80 dark:hover:bg-amber-700 text-white rounded-md font-ancient-small">查看全部文化内容</a>
+            </div>
+          </div>
+        )}
+
+        <!-- 移动端筛选按钮和搜索框 -->
+        <div class="lg:hidden mb-6 flex justify-between items-center">
+          <button id="mobile-filter-toggle" class="bg-amber-700 hover:bg-amber-800 dark:bg-amber-700/80 dark:hover:bg-amber-700 text-white px-4 py-2 rounded-md inline-flex items-center shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
+            <span class="inline-block">筛选</span>
           </button>
-        </form>
-      </div>
 
-      <!-- 移动端筛选抽屉 - 默认隐藏 -->
-      <div id="mobile-filter-drawer" class="lg:hidden fixed inset-0 z-50 transform translate-x-full ">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="mobile-filter-backdrop"></div>
-        <div class="absolute right-0 top-0 bottom-0 w-4/5 max-w-sm bg-ancient-paper-light dark:bg-ancient-paper-dark shadow-xl overflow-y-auto">
-          <div class="p-4 border-b border-ancient-accent/20 dark:border-ancient-accent-dark/20 flex justify-between items-center">
-            <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white">筛选</h3>
-            <button id="mobile-filter-close" class="rounded-full p-2 text-ancient-black/70 dark:text-ancient-white/70 hover:bg-ancient-accent/10 dark:hover:bg-ancient-accent-dark/10">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <!-- 移动端搜索框 -->
+          <form id="search-form-mobile" class="relative flex-grow mx-3" method="get" action="/culture">
+            <input
+              type="text"
+              name="search"
+              placeholder="搜索文化内容..."
+              value={searchParam || ''}
+              class="w-full px-4 py-2 border-2 border-amber-700/30 bg-amber-50/70 dark:bg-dark-surface/70 placeholder-gray-900/50 dark:placeholder-dark-text-secondary/50 text-gray-900 dark:text-dark-text font-ancient-body focus:outline-none focus:border-amber-700"
+            />
+            <!-- 保留现有参数 -->
+            {categoryParam.length > 0 && <input type="hidden" name="category" value={categoryParam.join(',')} />}
+            {cityParam.length > 0 && <input type="hidden" name="city" value={cityParam.join(',')} />}
+            {tagParam.length > 0 && <input type="hidden" name="tag" value={tagParam.join(',')} />}
+            
+            <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-700 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
-          </div>
+          </form>
+        </div>
 
-          <div class="p-4 space-y-6">
-            <!-- 文化分类 - 移动端 -->
-            <div>
-              <h3 class="text-base font-ancient-heading text-ancient-black dark:text-ancient-white mb-3 flex items-center">
-                <svg class="w-4 h-4 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+        <!-- 移动端筛选抽屉 - 默认隐藏 -->
+        <div id="mobile-filter-drawer" class="lg:hidden fixed inset-0 z-50 transform translate-x-full ">
+          <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="mobile-filter-backdrop"></div>
+          <div class="absolute right-0 top-0 bottom-0 w-4/5 max-w-sm bg-amber-50 dark:bg-dark-surface shadow-xl overflow-y-auto">
+            <div class="p-4 border-b border-amber-700/20 dark:border-amber-700/30 flex justify-between items-center">
+              <h3 class="text-lg font-ancient-heading text-gray-900 dark:text-dark-text">筛选</h3>
+              <button id="mobile-filter-close" class="rounded-full p-2 text-gray-900/70 dark:text-dark-text-secondary hover:bg-amber-700/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-900 dark:text-dark-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                文化分类
-              </h3>
-              <div class="flex flex-wrap gap-2">
-                {categories.slice(0, 6).map((category) => (
-                  <a 
-                    href={buildUrl({ 
-                      category: activeCategories.includes(category.name) 
-                        ? activeCategories.filter(c => c !== category.name) 
-                        : [...activeCategories, category.name]
-                    })}
-                    class:list={[
-                      "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-800/20 p-1.5 rounded",
-                      { "bg-amber-100/80 dark:bg-amber-800/30": activeCategories.includes(category.name) }
-                    ]}
-                  >
-                    <div class={`w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30 relative`}>
-                      {activeCategories.includes(category.name) && (
-                        <div class="absolute inset-0 flex items-center justify-center">
-                          <div class="w-2 h-3 border-r-2 border-b-2 border-amber-400 dark:border-amber-600 transform rotate-45 -translate-y-1/4"></div>
-                        </div>
-                      )}
-                    </div>
-                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-amber-700 dark:group-hover:text-amber-300">
-                      <span>{category.name}</span>
-                      <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({category.count})</span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <!-- 地域分布 - 移动端 -->
-            <div>
-              <h3 class="text-base font-ancient-heading text-ancient-black dark:text-ancient-white mb-3 flex items-center">
-                <svg class="w-4 h-4 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                地域分布
-              </h3>
-              <div class="flex flex-wrap gap-2">
-                {cities.slice(0, 6).map((city) => (
-                  <a 
-                    href={buildUrl({ 
-                      city: activeCities.includes(city.name) 
-                        ? activeCities.filter(c => c !== city.name) 
-                        : [...activeCities, city.name]
-                    })}
-                    class:list={[
-                      "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-800/20 p-1.5 rounded",
-                      { "bg-amber-100/80 dark:bg-amber-800/30": activeCities.includes(city.name) }
-                    ]}
-                  >
-                    <div class={`w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30 relative`}>
-                      {activeCities.includes(city.name) && (
-                        <div class="absolute inset-0 flex items-center justify-center">
-                          <div class="w-2 h-3 border-r-2 border-b-2 border-amber-400 dark:border-amber-600 transform rotate-45 -translate-y-1/4"></div>
-                        </div>
-                      )}
-                    </div>
-                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-amber-700 dark:group-hover:text-amber-300">
-                      <span>{city.name}</span>
-                      <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({city.count})</span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <!-- 标签筛选 - 移动端 -->
-            <div>
-              <h3 class="text-base font-ancient-heading text-ancient-black dark:text-ancient-white mb-3 flex items-center">
-                <svg class="w-4 h-4 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-                特色标签
-              </h3>
-              <div class="flex flex-wrap gap-2">
-                {allTags.slice(0, 6).map((tag) => (
-                  <a 
-                    href={buildUrl({ 
-                      tag: activeTags.includes(tag.name) 
-                        ? activeTags.filter(t => t !== tag.name) 
-                        : [...activeTags, tag.name]
-                    })}
-                    class:list={[
-                      "px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-sm font-ancient-small border rounded-md flex items-center",
-                      activeTags.includes(tag.name)
-                        ? "border-ancient-accent dark:border-ancient-accent-dark text-ancient-accent dark:text-ancient-accent-dark font-medium bg-ancient-accent/20 dark:bg-ancient-accent-dark/20"
-                        : "border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50"
-                    ]}
-                  >
-                    <span>{tag.name}</span>
-                    <span class="ml-1 text-xs text-ancient-black/60 dark:text-ancient-white/60">({tag.count})</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <!-- 底部应用按钮 -->
-            <div class="border-t border-ancient-accent/20 dark:border-ancient-accent-dark/20 pt-3 flex justify-end">
-              <button id="mobile-filter-close" class="bg-ancient-accent dark:bg-ancient-accent-dark text-ancient-white px-6 py-2 rounded-md shadow-md inline-flex items-center">
-                <span class="inline-block">关闭筛选</span>
               </button>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-x-10 gap-y-6">
-        <!-- 左侧筛选栏 - 古籍风格 - 只在桌面显示 -->
-        <div class="hidden lg:block lg:col-span-1">
-          <div class="sticky top-24 space-y-8 pt-0">
-            <!-- 搜索框 - 书法风 -->
-            <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
-              <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                典籍检索
-              </h3>
-
-              <form id="search-form" class="relative" method="get" action="/culture">
-                <input
-                  type="text"
-                  name="search"
-                  placeholder="输入关键词..."
-                  value={searchParam || ''}
-                  class="w-full px-4 py-2 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 placeholder-ancient-black/50 dark:placeholder-ancient-white/50 text-ancient-black dark:text-ancient-white font-ancient-body focus:outline-none focus:border-ancient-accent dark:focus:border-ancient-accent-dark"
-                />
-                <!-- 保留现有参数 -->
-                {categoryParam.length > 0 && <input type="hidden" name="category" value={categoryParam.join(',')} />}
-                {cityParam.length > 0 && <input type="hidden" name="city" value={cityParam.join(',')} />}
-                {tagParam.length > 0 && <input type="hidden" name="tag" value={tagParam.join(',')} />}
-                
-                <button type="submit" class="absolute right-3 top-2 text-ancient-accent/70 dark:text-ancient-accent-dark/70">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <div class="p-4 space-y-6">
+              <!-- 文化分类 - 移动端 -->
+              <div>
+                <h3 class="text-base font-ancient-heading text-gray-900 dark:text-dark-text mb-3 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-amber-700 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
-                </button>
-              </form>
-            </div>
-
-            <!-- 分类筛选 - 卷轴风格 -->
-            <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
-              <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-                文化分类
-              </h3>
-
-              <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 pr-2">
-                {categories.map((category) => (
-                  <a 
-                    href={buildUrl({ 
-                      category: activeCategories.includes(category.name) 
-                        ? activeCategories.filter(c => c !== category.name) 
-                        : [...activeCategories, category.name]
-                    })}
-                    class:list={[
-                      "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-800/20 p-1.5 rounded",
-                      { "bg-amber-100/80 dark:bg-amber-800/30": activeCategories.includes(category.name) }
-                    ]}
-                  >
-                    <div class={`w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30 relative`}>
-                      {activeCategories.includes(category.name) && (
-                        <div class="absolute inset-0 flex items-center justify-center">
-                          <div class="w-2 h-3 border-r-2 border-b-2 border-amber-400 dark:border-amber-600 transform rotate-45 -translate-y-1/4"></div>
-                        </div>
-                      )}
-                    </div>
-                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-amber-700 dark:group-hover:text-amber-300">
-                      <span>{category.name}</span>
-                      <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({category.count})</span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <!-- 城市筛选 - 新增部分 -->
-            <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
-              <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                地域分布
-              </h3>
-
-              <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 pr-2">
-                {cities.map((city) => (
-                  <a 
-                    href={buildUrl({ 
-                      city: activeCities.includes(city.name) 
-                        ? activeCities.filter(c => c !== city.name) 
-                        : [...activeCities, city.name]
-                    })}
-                    class:list={[
-                      "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-amber-800/20 p-1.5 rounded",
-                      { "bg-amber-100/80 dark:bg-amber-800/30": activeCities.includes(city.name) }
-                    ]}
-                  >
-                    <div class={`w-4 h-4 border border-amber-300/50 dark:border-amber-700/50 mr-2 flex-shrink-0 group-hover:bg-amber-200/40 dark:group-hover:bg-amber-700/30 relative`}>
-                      {activeCities.includes(city.name) && (
-                        <div class="absolute inset-0 flex items-center justify-center">
-                          <div class="w-2 h-3 border-r-2 border-b-2 border-amber-400 dark:border-amber-600 transform rotate-45 -translate-y-1/4"></div>
-                        </div>
-                      )}
-                    </div>
-                    <div class="text-ancient-black dark:text-ancient-white group-hover:text-amber-700 dark:group-hover:text-amber-300">
-                      <span>{city.name}</span>
-                      <span class="text-ancient-black/60 dark:text-ancient-white/60 text-sm">({city.count})</span>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <!-- 标签筛选 - 古籍风格 -->
-            <div class="bg-ancient-paper-light dark:bg-ancient-paper-dark-light p-6 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 shadow-md">
-              <h3 class="text-lg font-ancient-heading text-ancient-black dark:text-ancient-white mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-ancient-accent dark:text-ancient-accent-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-                特色标签
-              </h3>
-
-              <div class="flex flex-wrap gap-2">
-                {allTags.slice(0, 6).map((tag) => (
-                  <a 
-                    href={buildUrl({ 
-                      tag: activeTags.includes(tag.name) 
-                        ? activeTags.filter(t => t !== tag.name) 
-                        : [...activeTags, tag.name]
-                    })}
-                    class:list={[
-                      "px-3 py-1.5 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-sm font-ancient-small border rounded-md flex items-center",
-                      activeTags.includes(tag.name)
-                        ? "border-ancient-accent dark:border-ancient-accent-dark text-ancient-accent dark:text-ancient-accent-dark font-medium bg-ancient-accent/20 dark:bg-ancient-accent-dark/20"
-                        : "border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50"
-                    ]}
-                  >
-                    <span>{tag.name}</span>
-                    <span class="ml-1 text-xs text-ancient-black/60 dark:text-ancient-white/60">({tag.count})</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 右侧内容区域 - 古籍风格 -->
-        <div class="lg:col-span-3 lg:mt-0">
-          <!-- 内容分类标签 - 古卷风格 -->
-          <div class="flex flex-wrap gap-3 mb-8 lg:hidden">
-            {/* 内容分类标签部分 */}
-          </div>
-
-          <!-- 文化内容列表 - 卷轴风格网格 -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr">
-            {currentPageCultures.map((culture, index) => (
-              <a href={`/culture/${culture.slug}`} class="block group h-full">
-                <div class="ancient-card relative h-full bg-ancient-paper dark:bg-ancient-paper-dark flex flex-col shadow-lg group-hover:shadow-xl overflow-hidden" 
-                     data-tags={JSON.stringify(culture.data.tags.map((tag: string) => tag.toLowerCase()))}
-                     data-category={culture.data.category?.toLowerCase() || ''}
-                     data-cities={JSON.stringify(culture.data.city?.map((city: string) => city.toLowerCase()) || [])}
-                >
-                  <div class="relative h-48 overflow-hidden border-b-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30">
-                    <!-- 装饰元素 -->
-                    <div class="absolute top-2 left-2 w-8 h-8 bg-ink-decoration opacity-10 dark:opacity-15"></div>
-                    <div class="absolute bottom-2 right-2 w-8 h-8 bg-ink-decoration opacity-10 dark:opacity-15 rotate-180"></div>
-
-                    <!-- 内容显示 -->
-                    <div class="absolute inset-0 flex items-center justify-center">
-                      {culture.data.image ? (
-                        <img 
-                          src={culture.data.image} 
-                          alt={culture.data.title}
-                          class="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span class="text-ancient-black/40 dark:text-amber-100/60 font-ancient">{culture.data.title}</span>
-                      )}
-                    </div>
-
-                    <!-- 印章效果 -->
-                    {index % 4 === 0 && (
-                      <div class="absolute top-4 right-4 w-16 h-16 bg-seal-mark opacity-40 rotate-12"></div>
-                    )}
-
-                    {/* 文化类别标签 */}
-                    {culture.data.category && (
-                      <div class="absolute top-3 right-3 px-2 py-1 bg-ancient-paper/90 dark:bg-dark-surface text-ancient-black dark:text-amber-100 text-xs font-ancient-small border border-ancient-accent/30 dark:border-amber-700/50 category-tag" data-category-value={culture.data.category.toLowerCase()}>
-                        {culture.data.category}
-                      </div>
-                    )}
-                  </div>
-
-                  <div class="p-5 flex flex-col flex-grow dark:bg-dark-card">
-                    <div class="mb-3">
-                      <h3 class="text-xl font-ancient text-ancient-black dark:text-amber-100 group-hover:text-ancient-red dark:group-hover:text-amber-300 ">
-                        {culture.data.title}
-                      </h3>
-                      {(culture.data as any).period && (
-                        <div class="text-sm text-ancient-black/70 dark:text-amber-200/80 mt-1 font-ancient-small period-tag" data-period-value={(culture.data as any).period.toLowerCase()}>
-                          {(culture.data as any).period} 时期
-                        </div>
-                      )}
-                    </div>
-
-                    <p class="text-ancient-black/80 dark:text-amber-100/90 text-sm line-clamp-2 mb-4 font-ancient-body">
-                      {culture.data.description}
-                    </p>
-
-                    <div class="flex overflow-x-auto gap-1.5 mb-4 min-h-[2rem] scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 scrollbar-track-ancient-paper/20 dark:scrollbar-track-ancient-paper-dark/20 pb-2">
-                      {culture.data.tags.map((tag: string) => (
-                        <span class="flex-shrink-0 px-2 py-1 bg-ancient-paper-light/50 dark:bg-dark-surface text-ancient-black/70 dark:text-amber-100/90 text-xs font-ancient-small border border-ancient-accent/20 dark:border-amber-700/40" data-tag-value={tag.toLowerCase()}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* 在卡片中添加城市信息显示 */}
-                    <div class="min-h-[1.5rem]">
-                      {culture.data.city && culture.data.city.length > 0 && (
-                        <div class="flex overflow-x-auto gap-1.5 mt-1 mb-2 scrollbar-thin scrollbar-thumb-ancient-accent/30 dark:scrollbar-thumb-ancient-accent-dark/30 scrollbar-track-ancient-paper/20 dark:scrollbar-track-ancient-paper-dark/20 pb-2">
-                          {culture.data.city.map((cityName: string) => (
-                            <span class="flex-shrink-0 px-2 py-1 bg-amber-100/50 dark:bg-amber-900/50 text-ancient-black/70 dark:text-amber-100 text-xs font-ancient-small border border-amber-200/50 dark:border-amber-600/50 city-tag" data-city-value={cityName.toLowerCase()}>
-                              {cityName}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div class="flex items-center text-ancient-black/80 dark:text-amber-200 text-sm group-hover:translate-x-1 font-ancient-small group-hover:text-ancient-red dark:group-hover:text-amber-300 mt-auto">
-                      查阅详情
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-
-          <!-- 无搜索结果提示 - 在客户端控制显示 -->
-          <div id="no-results-message" class="hidden py-16">
-            <div class="max-w-md mx-auto bg-ancient-paper-light dark:bg-ancient-paper-dark-light rounded-lg shadow-md p-8 border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-ancient-accent/50 dark:text-ancient-accent-dark/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <h3 class="mt-4 text-xl font-ancient-heading text-ancient-black dark:text-ancient-white">未找到匹配结果</h3>
-              <p id="search-term-message" class="mt-2 text-ancient-black/80 dark:text-ancient-white/80 font-ancient-body">
-                抱歉，未找到相关文化内容。请尝试其他关键词或浏览所有内容。
-              </p>
-              <div class="mt-6 flex flex-col space-y-3">
-                <a href="/culture" class="text-ancient-red hover:text-ancient-red/70 dark:text-ancient-red-dark dark:hover:text-ancient-red-dark/70 font-ancient-small">
-                  查看所有文化内容 &rarr;
-                </a>
-                <button id="reset-filters-btn" class="mx-auto px-4 py-2 bg-ancient-paper/70 dark:bg-ancient-paper-dark/70 text-ancient-black dark:text-ancient-white text-sm font-ancient-small border border-ancient-accent/30 dark:border-ancient-accent-dark/30 hover:border-ancient-accent/50 dark:hover:border-ancient-accent-dark/50 hover:text-ancient-accent dark:hover:text-ancient-accent-dark">
-                  重置所有筛选条件
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 分页控件 - 古籍风格 -->
-          {totalPages > 1 && (
-            <div class="mt-16 flex justify-center">
-              <div class="inline-flex bg-ancient-paper-light dark:bg-ancient-paper-dark-light border-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 rounded-md overflow-hidden">
-                <!-- 上一页 -->
-                <a
-                  href={page > 1 ? buildUrl({ page: (page - 1).toString() }) : undefined}
-                  class:list={[
-                    "px-4 py-2 border-r-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 flex items-center space-x-1 font-ancient-small",
-                    page > 1
-                      ? "text-ancient-accent dark:text-ancient-accent-dark hover:bg-ancient-paper/70 dark:hover:bg-ancient-paper-dark/70" 
-                      : "text-ancient-black/30 dark:text-ancient-white/30 cursor-not-allowed"
-                  ]}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                  </svg>
-                  <span>上一页</span>
-                </a>
-
-                <!-- 页码 -->
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <a
-                      href={buildUrl({ page: pageNum.toString() })}
+                  文化分类
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  {categories.slice(0, 6).map((category) => (
+                    <a 
+                      href={buildUrl({ 
+                        category: activeCategories.includes(category.name) 
+                          ? activeCategories.filter(c => c !== category.name) 
+                          : [...activeCategories, category.name]
+                      })}
                       class:list={[
-                        "w-10 flex items-center justify-center border-r-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 font-ancient-small",
-                        pageNum === page
-                          ? "bg-ancient-accent/20 dark:bg-ancient-accent-dark/20 text-ancient-accent dark:text-ancient-accent-dark font-medium" 
-                          : "text-ancient-black dark:text-ancient-white hover:bg-ancient-paper/70 dark:hover:bg-ancient-paper-dark/70"
+                        "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-dark-card/50 p-1.5 rounded",
+                        { "bg-amber-50/80 dark:bg-dark-card/70": activeCategories.includes(category.name) }
                       ]}
                     >
-                      {pageNum}
+                      <div class={`checkbox-container mr-2 flex-shrink-0 group-hover:bg-amber-200/40 relative ${activeCategories.includes(category.name) ? 'checkbox-selected' : ''}`}>
+                        {activeCategories.includes(category.name) && (
+                          <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="checkmark"></div>
+                          </div>
+                        )}
+                      </div>
+                      <div class="text-gray-900 dark:text-dark-text group-hover:text-amber-700 dark:group-hover:text-amber-400">
+                        <span>{category.name}</span>
+                        <span class="text-gray-900/60 dark:text-dark-text-secondary text-sm">({category.count})</span>
+                      </div>
                     </a>
-                  );
-                })}
+                  ))}
+                </div>
+              </div>
 
-                <!-- 更多页 -->
-                {totalPages > 5 && (
-                  <span class="w-10 flex items-center justify-center border-r-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black/50 dark:text-ancient-white/50 font-ancient-small">
-                    ...
-                  </span>
-                )}
-
-                <!-- 末页 -->
-                {totalPages > 5 && (
-                  <a
-                    href={buildUrl({ page: totalPages.toString() })}
-                    class="w-10 flex items-center justify-center border-r-2 border-ancient-accent/30 dark:border-ancient-accent-dark/30 text-ancient-black dark:text-ancient-white hover:bg-ancient-paper/70 dark:hover:bg-ancient-paper-dark/70 font-ancient-small"
-                  >
-                    {totalPages}
-                  </a>
-                )}
-
-                <!-- 下一页 -->
-                <a
-                  href={page < totalPages ? buildUrl({ page: (page + 1).toString() }) : undefined}
-                  class:list={[
-                    "px-4 py-2 flex items-center space-x-1 font-ancient-small",
-                    page < totalPages
-                      ? "text-ancient-accent dark:text-ancient-accent-dark hover:bg-ancient-paper/70 dark:hover:bg-ancient-paper-dark/70" 
-                      : "text-ancient-black/30 dark:text-ancient-white/30 cursor-not-allowed"
-                  ]}
-                >
-                  <span>下一页</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              <!-- 地域分布 - 移动端 -->
+              <div>
+                <h3 class="text-base font-ancient-heading text-gray-900 dark:text-dark-text mb-3 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-amber-700 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                </a>
+                  地域分布
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  {cities.slice(0, 6).map((city) => (
+                    <a 
+                      href={buildUrl({ 
+                        city: activeCities.includes(city.name) 
+                          ? activeCities.filter(c => c !== city.name) 
+                          : [...activeCities, city.name]
+                      })}
+                      class:list={[
+                        "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-dark-card/50 p-1.5 rounded",
+                        { "bg-amber-50/80 dark:bg-dark-card/70": activeCities.includes(city.name) }
+                      ]}
+                    >
+                      <div class={`checkbox-container mr-2 flex-shrink-0 group-hover:bg-amber-200/40 relative ${activeCities.includes(city.name) ? 'checkbox-selected' : ''}`}>
+                        {activeCities.includes(city.name) && (
+                          <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="checkmark"></div>
+                          </div>
+                        )}
+                      </div>
+                      <div class="text-gray-900 dark:text-dark-text group-hover:text-amber-700 dark:group-hover:text-amber-400">
+                        <span>{city.name}</span>
+                        <span class="text-gray-900/60 dark:text-dark-text-secondary text-sm">({city.count})</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              <!-- 标签筛选 - 移动端 -->
+              <div>
+                <h3 class="text-base font-ancient-heading text-gray-900 dark:text-dark-text mb-3 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-amber-700 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  特色标签
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  {allTags.slice(0, 6).map((tag) => (
+                    <a 
+                      href={buildUrl({ 
+                        tag: activeTags.includes(tag.name) 
+                          ? activeTags.filter(t => t !== tag.name) 
+                          : [...activeTags, tag.name]
+                      })}
+                      class:list={[
+                        "px-3 py-1.5 bg-amber-50/70 dark:bg-dark-card/50 text-sm font-ancient-small border rounded-md flex items-center tag-item",
+                        activeTags.includes(tag.name)
+                          ? "border-amber-700 tag-selected"
+                          : "border-amber-700/30 text-gray-900 dark:text-dark-text"
+                      ]}
+                    >
+                      <span>{tag.name}</span>
+                      <span class="ml-1 text-xs text-gray-900/60 dark:text-dark-text-secondary">({tag.count})</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              <!-- 底部应用按钮 -->
+              <div class="border-t border-amber-700/20 dark:border-amber-700/30 pt-3 flex justify-end">
+                <button id="mobile-filter-close" class="bg-amber-700 hover:bg-amber-800 dark:bg-amber-700/80 dark:hover:bg-amber-700 text-white px-6 py-2 rounded-md shadow-md inline-flex items-center">
+                  <span class="inline-block">关闭筛选</span>
+                </button>
               </div>
             </div>
-          )}
+          </div>
+        </div>
 
-          <!-- 底部引言 - 古籍风格 -->
-          <div class="mt-20 mb-10 text-center relative">
-            <!-- 装饰元素 -->
-            <div class="absolute left-1/4 top-0 w-16 h-1 bg-ancient-accent/30 dark:bg-ancient-accent-dark/30"></div>
-            <div class="absolute right-1/4 bottom-0 w-16 h-1 bg-ancient-accent/30 dark:bg-ancient-accent-dark/30"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-x-10 gap-y-6">
+          <!-- 左侧筛选栏 - 古籍风格 - 只在桌面显示 -->
+          <div class="hidden lg:block lg:col-span-1">
+            <div class="sticky top-24 space-y-8 pt-0">
+              <!-- 搜索框 - 书法风 -->
+              <div class="bg-amber-50 p-6 border-2 border-amber-700/30 dark:bg-dark-surface/50 dark:border-amber-700/40 shadow-md dark-mode-panel">
+                <h3 class="text-lg font-ancient-heading text-gray-900 dark:text-dark-text mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-amber-700 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  典籍检索
+                </h3>
 
-            <blockquote class="text-xl text-ancient-black dark:text-ancient-white font-ancient italic">
-              "文化是一个国家、一个民族的灵魂"
-            </blockquote>
-            <div class="mt-3 text-sm text-ancient-black/60 dark:text-ancient-white/60 font-ancient-small">— 河北历史文化研究院</div>
+                <form id="search-form" class="relative" method="get" action="/culture">
+                  <input
+                    type="text"
+                    name="search"
+                    placeholder="输入关键词..."
+                    value={searchParam || ''}
+                    class="w-full px-4 py-2 border-2 border-amber-700/30 bg-amber-50/70 dark:bg-dark-surface/70 placeholder-gray-900/50 dark:placeholder-dark-text-secondary/50 text-gray-900 dark:text-dark-text font-ancient-body focus:outline-none focus:border-amber-700"
+                  />
+                  <!-- 保留现有参数 -->
+                  {categoryParam.length > 0 && <input type="hidden" name="category" value={categoryParam.join(',')} />}
+                  {cityParam.length > 0 && <input type="hidden" name="city" value={cityParam.join(',')} />}
+                  {tagParam.length > 0 && <input type="hidden" name="tag" value={tagParam.join(',')} />}
+                  
+                  <button type="submit" class="absolute right-3 top-2 text-amber-700/70 dark:text-amber-400/70">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
+                </form>
+              </div>
+
+              <!-- 分类筛选 - 卷轴风格 -->
+              <div class="bg-amber-50 p-6 border-2 border-amber-700/30 dark:bg-dark-surface/50 dark:border-amber-700/40 shadow-md dark-mode-panel">
+                <h3 class="text-lg font-ancient-heading text-gray-900 dark:text-dark-text mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-amber-700 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  文化分类
+                </h3>
+
+                <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto pr-2">
+                  {categories.map((category) => (
+                    <a 
+                      href={buildUrl({ 
+                        category: activeCategories.includes(category.name) 
+                          ? activeCategories.filter(c => c !== category.name) 
+                          : [...activeCategories, category.name]
+                      })}
+                      class:list={[
+                        "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-dark-card/50 p-1.5 rounded",
+                        { "bg-amber-50/80 dark:bg-dark-card/70": activeCategories.includes(category.name) }
+                      ]}
+                    >
+                      <div class={`checkbox-container mr-2 flex-shrink-0 group-hover:bg-amber-200/40 relative ${activeCategories.includes(category.name) ? 'checkbox-selected' : ''}`}>
+                        {activeCategories.includes(category.name) && (
+                          <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="checkmark"></div>
+                          </div>
+                        )}
+                      </div>
+                      <div class="text-gray-900 dark:text-dark-text group-hover:text-amber-700 dark:group-hover:text-amber-400">
+                        <span>{category.name}</span>
+                        <span class="text-gray-900/60 dark:text-dark-text-secondary text-sm">({category.count})</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              <!-- 城市筛选 - 新增部分 -->
+              <div class="bg-amber-50 p-6 border-2 border-amber-700/30 dark:bg-dark-surface/50 dark:border-amber-700/40 shadow-md dark-mode-panel">
+                <h3 class="text-lg font-ancient-heading text-gray-900 dark:text-dark-text mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-amber-700 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  地域分布
+                </h3>
+
+                <div class="space-y-2 font-ancient-body max-h-48 overflow-y-auto pr-2">
+                  {cities.map((city) => (
+                    <a 
+                      href={buildUrl({ 
+                        city: activeCities.includes(city.name) 
+                          ? activeCities.filter(c => c !== city.name) 
+                          : [...activeCities, city.name]
+                      })}
+                      class:list={[
+                        "flex items-center group cursor-pointer hover:bg-amber-100/50 dark:hover:bg-dark-card/50 p-1.5 rounded",
+                        { "bg-amber-50/80 dark:bg-dark-card/70": activeCities.includes(city.name) }
+                      ]}
+                    >
+                      <div class={`checkbox-container mr-2 flex-shrink-0 group-hover:bg-amber-200/40 relative ${activeCities.includes(city.name) ? 'checkbox-selected' : ''}`}>
+                        {activeCities.includes(city.name) && (
+                          <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="checkmark"></div>
+                          </div>
+                        )}
+                      </div>
+                      <div class="text-gray-900 dark:text-dark-text group-hover:text-amber-700 dark:group-hover:text-amber-400">
+                        <span>{city.name}</span>
+                        <span class="text-gray-900/60 dark:text-dark-text-secondary text-sm">({city.count})</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              <!-- 标签筛选 - 古籍风格 -->
+              <div class="bg-amber-50 p-6 border-2 border-amber-700/30 dark:bg-dark-surface/50 dark:border-amber-700/40 shadow-md dark-mode-panel">
+                <h3 class="text-lg font-ancient-heading text-gray-900 dark:text-dark-text mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-amber-700 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  特色标签
+                </h3>
+
+                <div class="flex flex-wrap gap-2">
+                  {allTags.slice(0, 6).map((tag) => (
+                    <a 
+                      href={buildUrl({ 
+                        tag: activeTags.includes(tag.name) 
+                          ? activeTags.filter(t => t !== tag.name) 
+                          : [...activeTags, tag.name]
+                      })}
+                      class:list={[
+                        "px-3 py-1.5 bg-amber-50/70 dark:bg-dark-card/50 text-sm font-ancient-small border rounded-md flex items-center tag-item",
+                        activeTags.includes(tag.name)
+                          ? "border-amber-700 tag-selected"
+                          : "border-amber-700/30 text-gray-900 dark:text-dark-text"
+                      ]}
+                    >
+                      <span>{tag.name}</span>
+                      <span class="ml-1 text-xs text-gray-900/60 dark:text-dark-text-secondary">({tag.count})</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右侧内容区域 - 古籍风格 -->
+          <div class="lg:col-span-3 lg:mt-0">
+            <!-- 内容分类标签 - 古卷风格 -->
+            <div class="flex flex-wrap gap-3 mb-8 lg:hidden">
+              {/* 内容分类标签部分 */}
+            </div>
+
+            <!-- 文化内容列表 - 卷轴风格网格 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr">
+              {currentPageCultures.map((culture, index) => (
+                <a href={`/culture/${culture.slug}`} class="block group h-full">
+                  <div class="culture-card relative h-full bg-amber-50 flex flex-col shadow-lg group-hover:shadow-xl overflow-hidden dark-mode-card" 
+                       data-tags={JSON.stringify(culture.data.tags.map((tag: string) => tag.toLowerCase()))}
+                       data-category={culture.data.category?.toLowerCase() || ''}
+                       data-cities={JSON.stringify(culture.data.city?.map((city: string) => city.toLowerCase()) || [])}
+                  >
+                    <div class="relative h-48 overflow-hidden border-b-2 border-amber-700/30 dark:border-amber-700/40">
+                      <!-- 装饰元素 -->
+                      <div class="absolute top-2 left-2 w-8 h-8 ink-decoration opacity-10 dark:opacity-15"></div>
+                      <div class="absolute bottom-2 right-2 w-8 h-8 ink-decoration opacity-10 dark:opacity-15 rotate-180"></div>
+
+                      <!-- 内容显示 -->
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        {culture.data.image ? (
+                          <img 
+                            src={culture.data.image} 
+                            alt={culture.data.title}
+                            class="w-full h-full object-cover card-image"
+                          />
+                        ) : (
+                          <span class="text-gray-900/40 dark:text-dark-text/40">{culture.data.title}</span>
+                        )}
+                      </div>
+
+                      <!-- 印章效果 -->
+                      {index % 4 === 0 && (
+                        <div class="absolute top-4 right-4 w-16 h-16 seal-mark opacity-40 dark:opacity-50 rotate-12"></div>
+                      )}
+
+                      {/* 文化类别标签 */}
+                      {culture.data.category && (
+                        <div class="absolute top-3 right-3 px-2 py-1 bg-amber-50/90 dark:bg-dark-card/70 text-gray-900 dark:text-dark-text text-xs font-ancient-small border border-amber-700/30 dark:border-amber-700/40 category-tag" data-category-value={culture.data.category.toLowerCase()}>
+                          {culture.data.category}
+                        </div>
+                      )}
+                    </div>
+
+                    <div class="p-5 flex flex-col flex-grow">
+                      <div class="mb-3">
+                        <h3 class="text-xl font-ancient text-gray-900 dark:text-dark-text group-hover:card-title-hover">
+                          {culture.data.title}
+                        </h3>
+                        {(culture.data as any).period && (
+                          <div class="text-sm text-gray-900/70 dark:text-dark-text-secondary mt-1 font-ancient-small period-tag" data-period-value={(culture.data as any).period.toLowerCase()}>
+                            {(culture.data as any).period} 时期
+                          </div>
+                        )}
+                      </div>
+
+                      <p class="text-gray-900/80 dark:text-dark-text-secondary text-sm line-clamp-2 mb-4 font-ancient-body">
+                        {culture.data.description}
+                      </p>
+
+                      <div class="flex overflow-x-auto gap-1.5 mb-4 min-h-[2rem] pb-2">
+                        {culture.data.tags.map((tag: string) => (
+                          <span class="flex-shrink-0 px-2 py-1 bg-amber-50/50 dark:bg-dark-card/50 text-gray-900/70 dark:text-dark-text-secondary text-xs font-ancient-small border border-amber-700/20 dark:border-amber-700/40" data-tag-value={tag.toLowerCase()}>
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* 在卡片中添加城市信息显示 */}
+                      <div class="min-h-[1.5rem]">
+                        {culture.data.city && culture.data.city.length > 0 && (
+                          <div class="flex overflow-x-auto gap-1.5 mt-1 mb-2 pb-2">
+                            {culture.data.city.map((cityName: string) => (
+                              <span class="flex-shrink-0 px-2 py-1 bg-amber-50/50 dark:bg-dark-card/50 text-gray-900/70 dark:text-dark-text-secondary text-xs font-ancient-small border border-amber-700/50 dark:border-amber-700/40 city-tag" data-city-value={cityName.toLowerCase()}>
+                                {cityName}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div class="flex items-center text-gray-900/80 dark:text-dark-text-secondary text-sm group-hover:translate-x-1 font-ancient-small group-hover:text-red-800 dark:group-hover:text-red-400 mt-auto">
+                        查阅详情
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+
+            <!-- 无搜索结果提示 - 在客户端控制显示 -->
+            <div id="no-results-message" class="hidden py-16">
+              <div class="max-w-md mx-auto bg-amber-50 dark:bg-dark-surface/50 rounded-lg shadow-md p-8 border-2 border-amber-700/30 dark:border-amber-700/40 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-amber-700/50 dark:text-amber-500/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <h3 class="mt-4 text-xl font-ancient-heading text-gray-900 dark:text-dark-text">未找到匹配结果</h3>
+                <p id="search-term-message" class="mt-2 text-gray-900/80 dark:text-dark-text-secondary font-ancient-body">
+                  抱歉，未找到相关文化内容。请尝试其他关键词或浏览所有内容。
+                </p>
+                <div class="mt-6 flex flex-col space-y-3">
+                  <a href="/culture" class="text-red-800 hover:text-red-800/70 font-ancient-small">
+                    查看所有文化内容 &rarr;
+                  </a>
+                  <button id="reset-filters-btn" class="mx-auto px-4 py-2 bg-amber-50/70 dark:bg-dark-card/50 text-gray-900 dark:text-dark-text text-sm font-ancient-small border border-amber-700/30 dark:border-amber-700/40 hover:border-amber-700/50 hover:text-amber-700 dark:hover:text-amber-400">
+                    重置所有筛选条件
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 分页控件 - 古籍风格 -->
+            {totalPages > 1 && (
+              <div class="mt-16 flex justify-center">
+                <div class="inline-flex bg-amber-50 dark:bg-dark-surface/50 border-2 border-amber-700/30 dark:border-amber-700/40 rounded-md overflow-hidden">
+                  <!-- 上一页 -->
+                  <a
+                    href={page > 1 ? buildUrl({ page: (page - 1).toString() }) : undefined}
+                    class:list={[
+                      "px-4 py-2 border-r-2 border-amber-700/30 dark:border-amber-700/40 flex items-center space-x-1 font-ancient-small",
+                      page > 1
+                        ? "text-amber-700 dark:text-amber-500 hover:bg-amber-50/70 dark:hover:bg-dark-card/50" 
+                        : "text-gray-900/30 dark:text-dark-text-secondary/30 cursor-not-allowed"
+                    ]}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span>上一页</span>
+                  </a>
+
+                  <!-- 页码 -->
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    const pageNum = i + 1;
+                    return (
+                      <a
+                        href={buildUrl({ page: pageNum.toString() })}
+                        class:list={[
+                          "w-10 flex items-center justify-center border-r-2 border-amber-700/30 dark:border-amber-700/40 font-ancient-small",
+                          pageNum === page
+                            ? "bg-amber-700/20 dark:bg-amber-700/30 text-amber-700 dark:text-amber-400 font-medium" 
+                            : "text-gray-900 dark:text-dark-text hover:bg-amber-50/70 dark:hover:bg-dark-card/50"
+                        ]}
+                      >
+                        {pageNum}
+                      </a>
+                    );
+                  })}
+
+                  <!-- 更多页 -->
+                  {totalPages > 5 && (
+                    <span class="w-10 flex items-center justify-center border-r-2 border-amber-700/30 dark:border-amber-700/40 text-gray-900/50 dark:text-dark-text-secondary/60 font-ancient-small">
+                      ...
+                    </span>
+                  )}
+
+                  <!-- 末页 -->
+                  {totalPages > 5 && (
+                    <a
+                      href={buildUrl({ page: totalPages.toString() })}
+                      class="w-10 flex items-center justify-center border-r-2 border-amber-700/30 dark:border-amber-700/40 text-gray-900 dark:text-dark-text hover:bg-amber-50/70 dark:hover:bg-dark-card/50 font-ancient-small"
+                    >
+                      {totalPages}
+                    </a>
+                  )}
+
+                  <!-- 下一页 -->
+                  <a
+                    href={page < totalPages ? buildUrl({ page: (page + 1).toString() }) : undefined}
+                    class:list={[
+                      "px-4 py-2 flex items-center space-x-1 font-ancient-small",
+                      page < totalPages
+                        ? "text-amber-700 dark:text-amber-500 hover:bg-amber-50/70 dark:hover:bg-dark-card/50" 
+                        : "text-gray-900/30 dark:text-dark-text-secondary/30 cursor-not-allowed"
+                    ]}
+                  >
+                    <span>下一页</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            )}
+
+            <!-- 底部引言 - 古籍风格 -->
+            <div class="mt-20 mb-10 text-center relative">
+              <!-- 装饰元素 -->
+              <div class="absolute left-1/4 top-0 w-16 h-1 bg-amber-700/30 dark:bg-amber-700/40"></div>
+              <div class="absolute right-1/4 bottom-0 w-16 h-1 bg-amber-700/30 dark:bg-amber-700/40"></div>
+
+              <blockquote class="text-xl text-gray-900 dark:text-dark-text font-ancient italic">
+                "文化是一个国家、一个民族的灵魂"
+              </blockquote>
+              <div class="mt-3 text-sm text-gray-900/60 dark:text-dark-text-secondary font-ancient-small">— 河北历史文化研究院</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</MainLayout>
 
-<script>
+<script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
+    // 确保深色模式正确应用到所有元素
+    function applyDarkModeStyles() {
+      const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+      const darkModeElements = document.querySelectorAll('.dark-mode-card, .dark-mode-panel, .dark-mode-bg');
+      
+      darkModeElements.forEach(element => {
+        if (isDarkMode) {
+          element.classList.add('dark-mode-active');
+        } else {
+          element.classList.remove('dark-mode-active');
+        }
+      });
+    }
+
+    // 初始应用
+    applyDarkModeStyles();
+    
+    // 监听主题变化
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-theme') {
+          applyDarkModeStyles();
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+    
     // 移动端筛选抽屉
     const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
     const mobileFilterDrawer = document.getElementById('mobile-filter-drawer');
@@ -842,7 +871,7 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
       const search = params.get('search');
       
       // 获取所有文化卡片
-      const cards = document.querySelectorAll('.ancient-card');
+      const cards = document.querySelectorAll('.culture-card');
       
       let visibleCount = 0;
       
@@ -914,7 +943,7 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
       // 处理无结果情况
       const noResultsMessage = document.getElementById('no-results-message');
       const searchTermMessage = document.getElementById('search-term-message');
-      const gridContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3') as HTMLElement;
+      const gridContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3');
       
       if (visibleCount === 0) {
         if (gridContainer) gridContainer.style.display = 'none';
@@ -956,7 +985,7 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
       
       tagLinks.forEach((link, index) => {
         try {
-          const url = new URL((link as HTMLAnchorElement).href);
+          const url = new URL(link.href);
           const linkTag = url.searchParams.getAll('tag');
           
           // 检查是否选中
@@ -964,11 +993,13 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
           
           // 更新标签样式
           if (isSelected) {
-            link.classList.add('border-ancient-accent', 'dark:border-ancient-accent-dark');
-            link.classList.remove('border-ancient-accent/30', 'dark:border-ancient-accent-dark/30');
+            link.classList.add('tag-selected');
+            link.classList.remove('border-amber-700/30');
+            link.classList.add('border-amber-700');
           } else {
-            link.classList.remove('border-ancient-accent', 'dark:border-ancient-accent-dark');
-            link.classList.add('border-ancient-accent/30', 'dark:border-ancient-accent-dark/30');
+            link.classList.remove('tag-selected');
+            link.classList.remove('border-amber-700');
+            link.classList.add('border-amber-700/30');
           }
         } catch (e) {
           // 处理错误
@@ -980,23 +1011,21 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
       
       categoryLinks.forEach((link, index) => {
         try {
-          const url = new URL((link as HTMLAnchorElement).href);
+          const url = new URL(link.href);
           const linkCategory = url.searchParams.getAll('category');
           
           // 检查是否选中
           const isSelected = currentCategory.some(cat => linkCategory.includes(cat));
           
           // 处理带复选框的分类项（桌面端左侧栏）
-          const checkbox = link.querySelector('div.w-4.h-4');
+          const checkbox = link.querySelector('.checkbox-container');
           if (checkbox) {
             if (isSelected) {
-              checkbox.className = 'w-4 h-4 border border-ancient-accent dark:border-ancient-accent-dark mr-2 flex-shrink-0 relative';
-              checkbox.innerHTML = '<div class="absolute inset-0 flex items-center justify-center"><div class="w-2 h-3 border-r-2 border-b-2 border-ancient-accent dark:border-ancient-accent-dark transform rotate-45 -translate-y-1/4"></div></div>';
-              link.classList.add('bg-ancient-accent/20', 'dark:bg-ancient-accent-dark/20');
+              checkbox.classList.add('checkbox-selected');
+              link.classList.add('bg-amber-50/80');
             } else {
-              checkbox.className = 'w-4 h-4 border border-ancient-accent/30 dark:border-ancient-accent-dark/30 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20';
-              checkbox.innerHTML = '';
-              link.classList.remove('bg-ancient-accent/20', 'dark:bg-ancient-accent-dark/20');
+              checkbox.classList.remove('checkbox-selected');
+              link.classList.remove('bg-amber-50/80');
             }
           } 
         } catch (e) {
@@ -1009,23 +1038,21 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
       
       cityLinks.forEach((link, index) => {
         try {
-          const url = new URL((link as HTMLAnchorElement).href);
+          const url = new URL(link.href);
           const linkCity = url.searchParams.getAll('city');
           
           // 检查是否选中
           const isSelected = currentCity.some(city => linkCity.includes(city));
           
           // 处理带复选框的城市项（桌面端左侧栏）
-          const checkbox = link.querySelector('div.w-4.h-4');
+          const checkbox = link.querySelector('.checkbox-container');
           if (checkbox) {
             if (isSelected) {
-              checkbox.className = 'w-4 h-4 border border-ancient-accent dark:border-ancient-accent-dark mr-2 flex-shrink-0 relative';
-              checkbox.innerHTML = '<div class="absolute inset-0 flex items-center justify-center"><div class="w-2 h-3 border-r-2 border-b-2 border-ancient-accent dark:border-ancient-accent-dark transform rotate-45 -translate-y-1/4"></div></div>';
-              link.classList.add('bg-ancient-accent/20', 'dark:bg-ancient-accent-dark/20');
+              checkbox.classList.add('checkbox-selected');
+              link.classList.add('bg-amber-50/80');
             } else {
-              checkbox.className = 'w-4 h-4 border border-ancient-accent/30 dark:border-ancient-accent-dark/30 mr-2 flex-shrink-0 group-hover:bg-ancient-accent/20 dark:group-hover:bg-ancient-accent-dark/20';
-              checkbox.innerHTML = '';
-              link.classList.remove('bg-ancient-accent/20', 'dark:bg-ancient-accent-dark/20');
+              checkbox.classList.remove('checkbox-selected');
+              link.classList.remove('bg-amber-50/80');
             }
           } 
         } catch (e) {
@@ -1042,7 +1069,7 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
       link.addEventListener('click', (e) => {
         e.preventDefault(); // 阻止默认行为
         
-        const href = (link as HTMLAnchorElement).href;
+        const href = link.href;
         const url = new URL(href);
         
         // 获取当前的筛选参数
@@ -1074,10 +1101,10 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
     const searchForm = document.getElementById('search-form');
     const searchFormMobile = document.getElementById('search-form-mobile');
 
-    function handleSearch(e: Event) {
+    function handleSearch(e) {
       e.preventDefault();
-      const form = e.target as HTMLFormElement;
-      const searchInput = form.querySelector('input[name="search"]') as HTMLInputElement;
+      const form = e.target;
+      const searchInput = form.querySelector('input[name="search"]');
       
       // 获取当前的筛选参数
       const params = new URLSearchParams(window.location.search);
@@ -1121,30 +1148,70 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
 </script>
 
 <style>
+  /* 统一背景样式 */
+  .unified-bg {
+    background-image: linear-gradient(to right, rgba(146, 64, 14, 0.05) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(146, 64, 14, 0.05) 1px, transparent 1px);
+    background-color: var(--color-paper, #f8f5e8);
+    background-size: 20px 20px;
+  }
 
-  /* 古籍卡片样式 */
-  .ancient-card {
+  /* 深色模式下的统一背景 */
+  [data-theme='dark'] .unified-bg,
+  [data-theme='dark'] .dark-mode-bg {
+    background-color: var(--color-dark-paper, #2d2822) !important;
+    background-image: linear-gradient(to right, rgba(146, 64, 14, 0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(146, 64, 14, 0.1) 1px, transparent 1px) !important;
+  }
+
+  /* 使用更可靠的自定义类选择器 */
+  [data-theme='dark'] .dark-mode-panel {
+    background-color: var(--color-dark-surface, #282420) !important;
+    border-color: rgba(184, 124, 80, 0.35) !important;
+  }
+
+  [data-theme='dark'] .dark-mode-card {
+    background: linear-gradient(145deg, rgba(32, 30, 34, 0.8), rgba(45, 40, 34, 0.95)) !important;
+    border-color: rgba(184, 124, 80, 0.35) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.03) !important;
+  }
+
+  /* 原有的卷轴背景类可以保留，但不再使用 */
+  .scroll-bg {
+    background-image: linear-gradient(to right, rgba(146, 64, 14, 0.05) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(146, 64, 14, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* 深色模式下的卷轴背景 */
+  [data-theme='dark'] .scroll-bg {
+    background-color: rgba(32, 30, 34, 0.95);
+    background-image: linear-gradient(to right, rgba(146, 64, 14, 0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(146, 64, 14, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* 保留其他原有样式 */
+  /* 定义古籍卡片样式 */
+  .culture-card {
     position: relative;
     border-radius: 4px;
     overflow: hidden;
-    background-color: rgba(248, 245, 232, 0.7);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(145deg, rgba(248, 245, 232, 0.8), rgba(248, 245, 232, 0.95));
+    border: 1px solid rgba(146, 64, 14, 0.1);
+    transition: var(--theme-transition);
   }
 
-  [data-theme='dark'] .ancient-card {
-    background: linear-gradient(145deg, rgba(32, 30, 34, 0.95), rgba(38, 36, 42, 0.95));
-    border-color: rgba(184, 124, 80, 0.35);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.03);
+  .culture-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: rgba(146, 64, 14, 0.2);
   }
 
-  [data-theme='dark'] .ancient-card:hover {
+  [data-theme='dark'] .culture-card:hover {
     background: linear-gradient(145deg, rgba(40, 38, 48, 0.95), rgba(46, 43, 53, 0.95));
     border-color: rgba(201, 145, 95, 0.45);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-  }
-
-  .ancient-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   /* 书卷装饰 */
@@ -1157,6 +1224,11 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
   /* 印章效果 */
   .seal-mark {
     position: relative;
+    background: radial-gradient(ellipse at center, rgba(139, 90, 43, 0.6) 0%, rgba(139, 90, 43, 0) 70%);
+  }
+
+  [data-theme='dark'] .seal-mark {
+    background: radial-gradient(ellipse at center, rgba(184, 124, 80, 0.7) 0%, rgba(184, 124, 80, 0) 70%);
   }
 
   .seal-mark::after {
@@ -1172,912 +1244,208 @@ const buildUrl = (params: Record<string, string[] | string | null>) => {
     transform: rotate(15deg);
   }
 
-  /* 卷轴打开动画 */
-  @keyframes unrollScroll {
-    0% {
-      opacity: 0;
-      transform: translateY(-100px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  [data-theme='dark'] .seal-mark::after {
+    opacity: 0.25;
   }
 
-  /* 印章浮现动画 */
-  @keyframes revealSeal {
-    0% {
-      opacity: 0;
-      transform: scale(0.5) rotate(0deg);
-    }
-    50% {
-      opacity: 0.5;
-      transform: scale(1.2) rotate(15deg);
-    }
-    100% {
-      opacity: 0.8;
-      transform: scale(1) rotate(15deg);
-    }
-  }
-
-  /* 水墨渐显动画 */
-  @keyframes inkReveal {
-    0% {
-      opacity: 0;
-      filter: blur(10px);
-    }
-    100% {
-      opacity: 0.1;
-      filter: blur(0);
-    }
-  }
-
-
-
-  /* 隐藏滚动条但保留功能 */
-  .hide-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari, Opera */
-  }
-
-  /* 标题毛笔效果 */
-  .official-title h1 {
-    position: relative;
-    display: inline-block;
-  }
-
-  .official-title h1::after {
-    content: '';
-    position: absolute;
-    bottom: -0.25rem;
-    left: 1rem;
-    right: 1rem;
-    height: 2px;
-    background-color: #8a2c12;
-    transform: rotate(-0.5deg);
-  }
-
-  [data-theme='dark'] .official-title h1::after {
-    background-color: #c34c2a;
-  }
-
-  /* 勾选框样式 */
-  .checkbox-container {
-    position: relative;
-    width: 1rem;
-    height: 1rem;
-    border-radius: 0.25rem;
-    border: 2px solid #8B5A2B;
-    overflow: hidden;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .checkbox-selected {
-    background-color: rgba(139, 90, 43, 0.2);
-    border-color: #8B5A2B;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transform: scale(1.05);
-  }
-
-  .checkbox-unselected {
-    background-color: transparent;
-    border-color: rgba(139, 90, 43, 0.5);
-  }
-
-  .checkmark {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    color: #8B5A2B;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .checkmark-visible {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-
-  /* 标签选中状态样式 */
-  .tag-selected {
-    background-color: rgba(139, 90, 43, 0.2) !important;
-    border-color: rgba(139, 90, 43, 0.9) !important;
-    color: rgba(139, 90, 43, 1) !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-
-  .dark .tag-selected {
-    background-color: rgba(139, 90, 43, 0.3) !important;
-    border-color: rgba(139, 90, 43, 0.7) !important;
-    color: rgba(215, 171, 101, 1) !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
-
-  /* 确保标签选中时有完整边框 */
-  .tag-selected {
-    border-width: 1px;
-    border-style: solid;
-  }
-
-  /* 删除选中标签后的彩色点 */
-  .tag-selected::after {
-    content: none;
-  }
-
-  /* 标签悬停效果 */
-  .tag-item:hover {
-    transform: scale(1.05);
-    box-shadow: 0 2px 4px rgba(139, 90, 43, 0.1);
-  }
-
-  /* 鼠标悬停在标签上的效果 */
-  .tag-item:hover {
-    border-color: rgba(156, 79, 46, 0.5) !important;
-    background-color: rgba(156, 79, 46, 0.1) !important;
-  }
-
-  /* 专门处理复选框的样式 */
-  .font-ancient-body.max-h-48 .flex.items-center.group.cursor-pointer .w-4.h-4 {
-    position: relative;
-    width: 1rem;
-    height: 1rem;
-    border-radius: 0.25rem;
-    border: 2px solid rgba(139, 90, 43, 0.5);
-    overflow: hidden;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: transparent;
-  }
-
-  .font-ancient-body.max-h-48 .flex.items-center.group.cursor-pointer .w-4.h-4.bg-ancient-accent\/20 {
-    background-color: rgba(139, 90, 43, 0.2) !important;
-    border-color: #8B5A2B !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transform: scale(1.05);
-  }
-
-  /* 添加特定的悬停效果到类别项 */
-  .flex.items-center.group.cursor-pointer:hover .w-4.h-4 {
-    background-color: rgba(139, 90, 43, 0.1);
-    border-color: #8B5A2B;
-  }
-
-  /* 黑暗模式下的背景和内容区优化 */
-  [data-theme='dark'] .bg-ancient-paper-dark {
-    background-color: #1e1a21;
-  }
-
-  [data-theme='dark'] .bg-ancient-paper-dark-light {
-    background-color: #28232a;
-  }
-
-  [data-theme='dark'] .bg-ancient-paper-dark\/70,
-  [data-theme='dark'] .bg-ancient-paper-dark\/50,
-  [data-theme='dark'] .bg-ancient-paper-dark\/90 {
-    background-color: rgba(30, 26, 33, 0.9) !important;
-  }
-
-  /* 黑暗模式下的文字颜色 */
-  [data-theme='dark'] .text-ancient-white {
-    color: #f4e8d8 !important;
-  }
-
-  [data-theme='dark'] .text-ancient-white\/70 {
-    color: rgba(244, 232, 216, 0.8) !important;
-  }
-
-  [data-theme='dark'] .text-ancient-white\/80 {
-    color: rgba(244, 232, 216, 0.9) !important;
-  }
-
-  [data-theme='dark'] .text-ancient-white\/40 {
-    color: rgba(244, 232, 216, 0.6) !important;
-  }
-
-  /* 修改深色模式下琥珀色背景 */
-  [data-theme='dark'] .dark\:bg-amber-800\/30 {
-    background-color: rgba(100, 50, 20, 0.4) !important;
-  }
-
-  [data-theme='dark'] .dark\:border-amber-700\/30 {
-    border-color: rgba(160, 80, 30, 0.5) !important;
-  }
-
-  /* 黑暗模式下的配色修正 */
-  [data-theme='dark'] .border-ancient-accent-dark {
-    border-color: rgba(215, 171, 101, 0.6);
-  }
-
-  [data-theme='dark'] .text-ancient-accent-dark {
-    color: #d7ab65;
-  }
-
-  [data-theme='dark'] .bg-ancient-accent-dark {
-    background-color: #9b763d;
-  }
-
-  [data-theme='dark'] .text-ancient-red-dark {
-    color: #e67e56;
-  }
-
-  /* 黑暗模式下的卡片内标签 */
-  [data-theme='dark'] .bg-ancient-paper-dark/50 {
-    background-color: rgba(52, 46, 38, 0.5);
-  }
-
-  [data-theme='dark'] .bg-ancient-paper-dark/70 {
-    background-color: rgba(52, 46, 38, 0.7);
-  }
-
-  [data-theme='dark'] .bg-ancient-paper-dark/90 {
-    background-color: rgba(52, 46, 38, 0.9);
-  }
-
-  /* 黑暗模式下的城市标签 */
-  [data-theme='dark'] .dark\:bg-amber-800\/30 {
-    background-color: rgba(146, 64, 14, 0.3);
-  }
-
-  [data-theme='dark'] .dark\:border-amber-700\/30 {
-    border-color: rgba(180, 83, 9, 0.4);
-  }
-
-  /* 黑暗模式下的勾选框 */
-  [data-theme='dark'] .checkbox-container,
-  [data-theme='dark'] .font-ancient-body.max-h-48 .flex.items-center.group.cursor-pointer .w-4.h-4 {
-    border-color: rgba(215, 171, 101, 0.6);
-  }
-
-  [data-theme='dark'] .checkbox-selected,
-  [data-theme='dark'] .font-ancient-body.max-h-48 .flex.items-center.group.cursor-pointer .w-4.h-4.bg-ancient-accent\/20 {
-    background-color: rgba(155, 118, 61, 0.3) !important;
-    border-color: rgba(215, 171, 101, 0.8) !important;
-  }
-
-  [data-theme='dark'] .checkmark {
-    color: #d7ab65;
-  }
-
-  /* 黑暗模式下标签的悬停效果 */
-  [data-theme='dark'] .tag-item:hover {
-    border-color: rgba(215, 171, 101, 0.7) !important;
-    background-color: rgba(155, 118, 61, 0.2) !important;
-    color: #f5efe2 !important;
-  }
-
-  /* 黑暗模式下标签的选中状态 */
-  [data-theme='dark'] .tag-selected {
-    background-color: rgba(155, 118, 61, 0.25) !important;
-    border-color: rgba(215, 171, 101, 0.7) !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
-    color: rgba(215, 171, 101, 0.9) !important;
-  }
-
-  /* 删除暗色模式下选中标签后的彩色点 */
-  [data-theme='dark'] .tag-selected::after {
-    content: none;
-  }
-
-  /* 黑暗模式下卡片标题的悬停效果 */
-  [data-theme='dark'] .group-hover\:text-ancient-red-dark {
-    color: #e67e56;
-  }
-
-  /* 高级悬停效果 */
-  [data-theme='dark'] .ancient-card:hover .text-ancient-black\/40 {
-    color: rgba(245, 239, 226, 0.6);
-  }
-
-  /* 增强卡片阴影渐变效果 */
-  [data-theme='dark'] .ancient-card {
-    backface-visibility: hidden;
-  }
-
-  /* 改善分页控件的黑暗模式样式 */
-  [data-theme='dark'] .dark\:bg-ancient-paper-dark\/70 {
-    background-color: rgba(52, 46, 38, 0.7);
-  }
-
-  [data-theme='dark'] .dark\:bg-ancient-red-dark\/10 {
-    background-color: rgba(230, 126, 86, 0.1);
-  }
-
-  [data-theme='dark'] .dark\:hover\:bg-ancient-paper-dark:hover {
-    background-color: rgba(52, 46, 38, 1);
-  }
-
-  /* 卷轴头部背景 */
-  .bg-scroll-bg {
-    background-color: var(--bg-scroll);
-    background-image: linear-gradient(to right, rgba(139, 90, 43, 0.05) 1px, transparent 1px),
-                      linear-gradient(to bottom, rgba(139, 90, 43, 0.05) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-
-  /* 深色模式下的卷轴背景 */
-  .bg-scroll-bg-dark {
-    background-color: var(--color-dark-scroll);
-    background-image: linear-gradient(to right, rgba(139, 90, 43, 0.1) 1px, transparent 1px),
-                      linear-gradient(to bottom, rgba(139, 90, 43, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-
-  /* 水墨效果 - 使用CSS渐变替代图片 */
-  .bg-ink-splash {
-    background: radial-gradient(ellipse at center, rgba(139, 90, 43, 0.6) 0%, rgba(139, 90, 43, 0) 70%);
-  }
-
-  .bg-ink-decoration {
-    background: radial-gradient(ellipse at center, rgba(139, 90, 43, 0.5) 0%, rgba(139, 90, 43, 0) 70%);
-  }
-
-  .bg-ink-flower {
-    background: radial-gradient(ellipse at center, rgba(139, 90, 43, 0.4) 0%, rgba(139, 90, 43, 0) 70%);
-  }
-
-  .bg-pattern {
-    background-image: linear-gradient(to right, rgba(139, 90, 43, 0.05) 1px, transparent 1px),
-                      linear-gradient(to bottom, rgba(139, 90, 43, 0.05) 1px, transparent 1px);
-    background-size: 10px 10px;
-  }
-
-  /* 自定义滚动条样式 */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: rgba(236, 227, 212, 0.2);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(193, 154, 107, 0.3);
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(193, 154, 107, 0.5);
-  }
-
-  /* 标签选中状态样式 */
-  .tag-selected::after {
-    content: none;
-  }
-
-  /* 勾选标记样式 */
-  .checkmark {
-    position: relative;
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-  }
-
-  .checkmark:before, .checkmark:after {
-    position: absolute;
-    content: '';
-    background-color: #d5a021;
-  }
-
-  .checkmark:before {
-    width: 2px;
-    height: 5px;
-    top: 1px;
-    left: 2px;
-    transform: rotate(-45deg);
-  }
-
-  .checkmark:after {
-    width: 2px;
-    height: 8px;
-    top: -1px;
-    left: 5px;
-    transform: rotate(45deg);
-  }
-
-  /* 移动端筛选项选中状态强化样式 */
-  .mobile-selected {
-    background-color: rgba(213, 160, 33, 0.2) !important;
-    border-color: rgba(213, 160, 33, 0.8) !important;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
-    position: relative;
-    padding-right: 1.5rem !important;
-  }
-
-  .mobile-selected::after {
-    content: '✓';
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #d5a021;
-    font-weight: bold;
-  }
-
-  .dark .mobile-selected {
-    background-color: rgba(213, 160, 33, 0.3) !important;
-    border-color: rgba(213, 160, 33, 0.6) !important;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
-  }
-
-  .dark .mobile-selected::after {
-    color: rgba(213, 171, 101, 0.9);
-  }
-
-  /* 特定类型的移动端筛选项选中状态 */
-  .mobile-category-item.mobile-selected,
-  .mobile-city-item.mobile-selected,
-  .mobile-period-item.mobile-selected,
-  .mobile-tag-item.mobile-selected {
-    background-color: rgba(180, 83, 9, 0.2) !important;
-    border-color: rgba(180, 83, 9, 0.6) !important;
-  }
-
-  .dark .mobile-category-item.mobile-selected,
-  .dark .mobile-city-item.mobile-selected,
-  .dark .mobile-period-item.mobile-selected,
-  .dark .mobile-tag-item.mobile-selected {
-    background-color: rgba(180, 83, 9, 0.3) !important;
-    border-color: rgba(180, 83, 9, 0.6) !important;
-  }
-
-  .dark .mobile-category-item.mobile-selected::after,
-  .dark .mobile-city-item.mobile-selected::after,
-  .dark .mobile-period-item.mobile-selected::after,
-  .dark .mobile-tag-item.mobile-selected::after {
-    color: rgba(213, 171, 101, 0.9);
-  }
-
-  /* 移除所有重复的样式定义 */
-
-  /* 卡片底部区域占据剩余空间 */
-  .ancient-card > div:nth-child(2) {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* 确保卡片内部元素高度一致 */
-  .ancient-card p.text-ancient-black\/80,
-  .ancient-card p.dark\:text-ancient-white\/80 {
-    min-height: 2.5rem; /* 约为两行文本的高度 */
-  }
-
-  /* 确保标签容器高度一致 */
-  .ancient-card .flex.flex-wrap.gap-1\.5.mb-4 {
-    min-height: 2rem; /* 足够容纳一行标签的高度 */
-  }
-
-  /* 查阅详情按钮放在底部 */
-  .ancient-card div.flex.items-center.text-ancient-black\/80,
-  .ancient-card div.dark\:text-ancient-white\/80 {
-    margin-top: auto;
-  }
-
-  /* Grid等高卡片设置 */
-  .grid.auto-rows-fr {
-    grid-auto-rows: 1fr;
-  }
-
-  /* 确保ScrollReveal容器也是等高的 */
-  .grid.auto-rows-fr > div {
-    height: 100%;
-    display: flex;
-  }
-
-  /* 确保卡片一致高度 */
-  .ancient-card {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    border-radius: 4px;
-    overflow: hidden;
-    background-color: rgba(248, 245, 232, 0.7);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  }
-
-  /* 卡片内容区域 */
-  .ancient-card > div:nth-child(2) {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* 卡片标题区域 */
-  .ancient-card .mb-3 {
-    flex-shrink: 0;
-  }
-
-  /* 固定图片区域高度 */
-  .ancient-card .aspect-\[5\/4\] {
-    flex-shrink: 0;
-  }
-
-  /* 描述区域固定高度 */
-  .ancient-card p.line-clamp-2 {
-    height: 2.5rem;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    flex-shrink: 0;
-    margin-bottom: 1rem;
-  }
-
-  /* 标签区固定高度 */
-  .ancient-card .flex.flex-wrap.gap-1\.5.mb-4 {
-    height: 2.5rem;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-
-  /* 城市信息区固定高度 */
-  .ancient-card .min-h-\[1\.5rem\] {
-    height: 2rem;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-
-  /* 查阅详情按钮固定在底部 */
-  .ancient-card div.flex.items-center.group-hover\:translate-x-1 {
-    margin-top: auto;
-    flex-shrink: 0;
-  }
-
-  /* 确保筛选栏和卡片顶部对齐 */
-  @media (min-width: 1024px) {
-    .lg\:grid-cols-4 {
-      align-items: start;
-    }
-
-    .lg\:grid-cols-4 > div:first-child,
-    .lg\:grid-cols-4 > div:last-child {
-      margin-top: 0;
-      padding-top: 0;
-    }
-
-    .lg\:grid-cols-4 > div:first-child > div {
-      margin-top: 0;
-    }
-  }
-
-  /* 图片区域暗色模式 */
-  [data-theme='dark'] .ancient-card .aspect-\[5\/4\] {
-    background-color: rgba(40, 38, 45, 0.8) !important;
-  }
-
-  /* 暗色模式下卡片内文字颜色 */
-  [data-theme='dark'] .ancient-card h3 {
-    color: rgba(235, 220, 200, 0.95);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  }
-
-  [data-theme='dark'] .ancient-card:hover h3 {
-    color: rgba(245, 230, 210, 0.98);
-  }
-
-  [data-theme='dark'] .ancient-card p {
-    color: rgba(220, 210, 195, 0.85);
-  }
-
-  /* 暗色模式下标签样式 */
-  [data-theme='dark'] .ancient-card .tag-item {
-    background-color: rgba(50, 45, 55, 0.75);
-    border-color: rgba(184, 134, 90, 0.4);
-    color: rgba(235, 220, 200, 0.9);
-  }
-
-  /* 暗色模式下城市标签样式 */
-  [data-theme='dark'] .ancient-card .city-tag {
-    background-color: rgba(120, 60, 25, 0.3);
-    border-color: rgba(150, 80, 30, 0.4);
-    color: rgba(240, 220, 190, 0.85);
-  }
-
-  /* 卡片详情查看按钮暗色模式 */
-  [data-theme='dark'] .ancient-card div.flex.items-center.text-ancient-black\/80 {
-    color: rgba(215, 190, 155, 0.85) !important;
-  }
-
-  [data-theme='dark'] .ancient-card:hover div.flex.items-center.text-ancient-black\/80 {
-    color: rgba(227, 161, 103, 0.95) !important;
-  }
-
-
-  /* 暗色模式下卡片内标题悬停样式 */
-  [data-theme='dark'] .ancient-card .group-hover\:text-ancient-red-dark {
-    color: rgba(227, 161, 103, 0.95) !important;
-  }
-
-  /* 暗色模式下卡片分类标签 */
-  [data-theme='dark'] .ancient-card .category-tag {
-    background-color: rgba(50, 45, 55, 0.85) !important;
-    border-color: rgba(184, 134, 90, 0.4) !important;
-  }
-
-  /* 暗色模式下卡片阴影和边框过渡效果 */
-  [data-theme='dark'] .ancient-card:hover {
-    transform: translateY(-2px);
-  }
-
-  /* 优化暗色模式下卡片装饰元素 */
-  [data-theme='dark'] .ancient-card .bg-ink-decoration {
-    opacity: 0.15 !important;
-  }
-
-  /* 优化暗色模式下卡片内默认标题显示 */
-  [data-theme='dark'] .ancient-card .text-ancient-white\/40 {
-    color: rgba(236, 215, 185, 0.25) !important;
-  }
-
-  /* 优化暗色模式下印章效果 */
-  [data-theme='dark'] .ancient-card .bg-seal-mark {
-    opacity: 0.3 !important;
-  }
-
-  [data-theme='dark'] .ancient-card .image-area {
-    background: linear-gradient(to bottom, rgba(28, 26, 32, 0.9), rgba(34, 31, 38, 0.95));
-    border-bottom: 1px solid rgba(184, 134, 90, 0.25);
-  }
-
-  /* 强制修改卡片在暗色模式下的样式 */
-  [data-theme='dark'] .ancient-card {
-    background-color: var(--color-dark-card) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
-    border-color: rgba(160, 100, 60, 0.35) !important;
-  }
-
-  [data-theme='dark'] .ancient-card:hover {
-    background-color: var(--color-dark-card) !important;
-    border-color: rgba(180, 125, 75, 0.45) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.08) !important;
-    transform: translateY(-2px);
-  }
-
-  /* 古纸纹理背景 - 添加纹理感的CSS定义 */
-  .bg-ancient-paper {
-    background-color: var(--bg-paper);
-  }
-
-  .bg-ancient-paper-dark {
-    background-color: var(--color-dark-paper);
-  }
-
-  .bg-ancient-paper-dark-light {
-    background-color: rgba(52, 46, 38, 0.5);
-  }
-
-  /* 卷轴头部背景 */
-  .bg-scroll-bg {
-    background-color: var(--bg-scroll);
-  }
-
-  /* 深色模式下的卷轴背景 */
-  .bg-scroll-bg-dark {
-    background-color: var(--color-dark-scroll);
-    background-image: linear-gradient(to right, rgba(139, 90, 43, 0.1) 1px, transparent 1px),
-                      linear-gradient(to bottom, rgba(139, 90, 43, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-
-  /* 地域分布样式 - 明亮模式 */
-  .font-ancient-body.max-h-48 a[href*="?city"]:hover {
-    background-color: rgba(251, 191, 36, 0.1);
-  }
-
-  .font-ancient-body.max-h-48 a[href*="?city"] .w-4.h-4 {
-    border-color: rgba(251, 191, 36, 0.5);
-  }
-
-  .font-ancient-body.max-h-48 a[href*="?city"]:hover .w-4.h-4 {
-    border-color: rgba(251, 191, 36, 0.8);
-    background-color: rgba(251, 191, 36, 0.1);
-  }
-
-  .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 {
-    background-color: rgba(251, 191, 36, 0.15);
-  }
-
-  .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 .w-4.h-4 {
-    border-color: rgba(251, 191, 36, 0.8);
-    background-color: rgba(251, 191, 36, 0.2);
-  }
-
-  /* 文化分类样式 - 明亮模式 */
-  .font-ancient-body.max-h-48 a[href*="?category"]:hover {
-    background-color: rgba(251, 191, 36, 0.1);
-  }
-
-  .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4 {
-    border-color: rgba(251, 191, 36, 0.5);
-  }
-
-  .font-ancient-body.max-h-48 a[href*="?category"]:hover .w-4.h-4 {
-    border-color: rgba(251, 191, 36, 0.8);
-    background-color: rgba(251, 191, 36, 0.1);
-  }
-
-  .font-ancient-body.max-h-48 a[href*="?category"].bg-amber-100\/80 {
-    background-color: rgba(251, 191, 36, 0.15);
-  }
-
-  .font-ancient-body.max-h-48 a[href*="?category"].bg-amber-100\/80 .w-4.h-4 {
-    border-color: rgba(251, 191, 36, 0.8);
-    background-color: rgba(251, 191, 36, 0.2);
-  }
-
-  /* 文化分类样式 - 暗黑模式 */
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"]:hover {
-    background-color: rgba(180, 83, 9, 0.2);
-  }
-
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4 {
-    border-color: rgba(180, 83, 9, 0.5);
-  }
-
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"]:hover .w-4.h-4 {
-    border-color: rgba(180, 83, 9, 0.8);
-    background-color: rgba(180, 83, 9, 0.2);
-  }
-
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-amber-100\/80 {
-    background-color: rgba(180, 83, 9, 0.25);
-  }
-
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?category"].bg-amber-100\/80 .w-4.h-4 {
-    border-color: rgba(180, 83, 9, 0.8);
-    background-color: rgba(180, 83, 9, 0.3);
-  }
-
-  /* 地域分布样式 - 暗黑模式 */
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"]:hover {
-    background-color: rgba(180, 83, 9, 0.2);
-  }
-
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"] .w-4.h-4 {
-    border-color: rgba(180, 83, 9, 0.5);
-  }
-
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"]:hover .w-4.h-4 {
-    border-color: rgba(180, 83, 9, 0.8);
-    background-color: rgba(180, 83, 9, 0.2);
-  }
-
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 {
-    background-color: rgba(180, 83, 9, 0.25);
-  }
-
-  [data-theme='dark'] .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 .w-4.h-4 {
-    border-color: rgba(180, 83, 9, 0.8);
-    background-color: rgba(180, 83, 9, 0.3);
-  }
-
-  /* 文化分类和地域分布的勾选框基础样式 */
-  .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4,
-  .font-ancient-body.max-h-48 a[href*="?city"] .w-4.h-4 {
-    position: relative;
-    width: 1rem;
-    height: 1rem;
-    border-radius: 0.25rem;
-    overflow: hidden;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* 勾选框选中状态 - 添加勾选图标 */
-  .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4 div,
-  .font-ancient-body.max-h-48 a[href*="?city"] .w-4.h-4 div {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-
-  .font-ancient-body.max-h-48 a[href*="?category"] .w-4.h-4 div::before,
-  .font-ancient-body.max-h-48 a[href*="?city"] .w-4.h-4 div::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 5px;
-    height: 8px;
-    border: solid currentColor;
-    border-width: 0 2px 2px 0;
-    transform: translate(-50%, -60%) rotate(45deg);
-    opacity: 1;
-  }
-
-  /* 文化分类选中状态 */
-
-
-
-  /* 地域分布选中状态 */
-  .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 {
-    background-color: rgba(251, 191, 36, 0.1);
-  }
-
-  .font-ancient-body.max-h-48 a[href*="?city"].bg-amber-100\/80 .w-4.h-4 {
-    border-color: rgba(251, 191, 36, 0.8);
-    color: rgba(251, 191, 36, 0.8);
-  }
-
-  /* 特色标签样式 */
-  .flex.flex-wrap.gap-2 a[href*="?tag"] {
-    position: relative;
-    overflow: hidden;
+  /* 添加卡片中的图片处理 */
+  .card-image {
+    object-fit: cover;
     transition: all 0.3s ease;
   }
 
-  .flex.flex-wrap.gap-2 a[href*="?tag"]:hover {
-    background-color: rgba(139, 90, 43, 0.1);
-    border-color: rgba(139, 90, 43, 0.5);
+  [data-theme='dark'] .card-image {
+    filter: brightness(0.9) contrast(1.1);
   }
 
-  .flex.flex-wrap.gap-2 a[href*="?tag"].border-ancient-accent {
-    background-color: rgba(139, 90, 43, 0.15);
-    border-color: rgba(139, 90, 43, 0.8);
-    color: rgba(139, 90, 43, 1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  .group:hover .card-image {
+    transform: scale(1.05);
   }
 
-  /* 暗黑模式样式 */
-  [data-theme='dark'] .flex.flex-wrap.gap-2 a[href*="?tag"]:hover {
-    background-color: rgba(215, 171, 101, 0.1);
-    border-color: rgba(215, 171, 101, 0.5);
+  /* 修复ink-decoration装饰元素 */
+  .ink-decoration {
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 70%);
   }
 
-  [data-theme='dark'] .flex.flex-wrap.gap-2 a[href*="?tag"].border-ancient-accent {
-    background-color: rgba(215, 171, 101, 0.15);
-    border-color: rgba(215, 171, 101, 0.8);
-    color: rgba(215, 171, 101, 1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  [data-theme='dark'] .ink-decoration {
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
   }
 
-  /* 自定义滚动条样式 */
-  .scrollbar-thin::-webkit-scrollbar {
-    height: 6px;
+  /* 添加卡片标题悬停效果的深色模式样式 */
+  .card-title-hover {
+    color: #8a2c12;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: rgba(248, 245, 232, 0.2);
-    border-radius: 3px;
+  [data-theme='dark'] .card-title-hover,
+  [data-theme='dark'] .group-hover\:card-title-hover {
+    color: #e67e56;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(139, 90, 43, 0.3);
-    border-radius: 3px;
+  /* 添加复选框样式的深色模式适配 */
+  .checkbox-container {
+    width: 18px;
+    height: 18px;
+    border: 1px solid rgba(146, 64, 14, 0.3);
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.7);
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(139, 90, 43, 0.4);
+  [data-theme='dark'] .checkbox-container {
+    background-color: rgba(40, 38, 48, 0.7);
+    border-color: rgba(146, 64, 14, 0.5);
   }
 
-  /* 暗色模式下的滚动条样式 */
-  [data-theme='dark'] .scrollbar-thin::-webkit-scrollbar-track {
-    background: rgba(30, 26, 33, 0.2);
+  .checkbox-selected {
+    background-color: rgba(217, 119, 6, 0.1);
+    border-color: rgba(146, 64, 14, 0.7);
   }
 
-  [data-theme='dark'] .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(215, 171, 101, 0.3);
+  [data-theme='dark'] .checkbox-selected {
+    background-color: rgba(217, 119, 6, 0.2);
+    border-color: rgba(184, 124, 80, 0.6);
   }
 
-  [data-theme='dark'] .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(215, 171, 101, 0.4);
+  .checkmark {
+    width: 10px;
+    height: 10px;
+    background-color: #8a2c12;
+    border-radius: 2px;
   }
 
-  /* 其他现有样式 */
+  [data-theme='dark'] .checkmark {
+    background-color: #d97706;
+  }
 
+  /* 修复标签样式 */
+  .tag-selected {
+    background-color: rgba(217, 119, 6, 0.1);
+  }
+
+  [data-theme='dark'] .tag-selected {
+    background-color: rgba(217, 119, 6, 0.2);
+  }
+
+  [data-theme='dark'] .tag-item {
+    background-color: rgba(40, 38, 48, 0.7);
+  }
+
+  /* 使用自定义类名来应用深色模式样式 */
+  [data-theme='dark'] .dark-mode-bg {
+    background-color: var(--color-dark-paper, #2d2822) !important;
+    background-image: linear-gradient(to right, rgba(146, 64, 14, 0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(146, 64, 14, 0.1) 1px, transparent 1px) !important;
+  }
+
+  [data-theme='dark'] .dark-mode-panel {
+    background-color: var(--color-dark-surface, #282420) !important;
+    border-color: rgba(184, 124, 80, 0.35) !important;
+  }
+
+  /* 为卡片添加自定义类名 */
+  .culture-card {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(145deg, rgba(248, 245, 232, 0.8), rgba(248, 245, 232, 0.95));
+    border: 1px solid rgba(146, 64, 14, 0.1);
+    transition: var(--theme-transition);
+  }
+
+  /* 深色模式激活状态 */
+  .dark-mode-active.dark-mode-card {
+    background: linear-gradient(145deg, rgba(32, 30, 34, 0.8), rgba(45, 40, 34, 0.95)) !important;
+    border-color: rgba(184, 124, 80, 0.35) !important;
+  }
+  
+  .dark-mode-active.dark-mode-panel {
+    background-color: var(--color-dark-surface, #282420) !important;
+  }
+  
+  .dark-mode-active.dark-mode-bg {
+    background-color: var(--color-dark-paper, #2d2822) !important;
+  }
+
+  /* 自定义横向滚动条样式 - 古籍风格 */
+  /* 整体滚动条 */
+  ::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+
+  /* 滚动条轨道 */
+  ::-webkit-scrollbar-track {
+    background: rgba(248, 245, 232, 0.8);
+    border-radius: 4px;
+    border: 1px solid rgba(146, 64, 14, 0.1);
+  }
+
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+    background: rgba(146, 64, 14, 0.3);
+    border-radius: 4px;
+    border: 1px solid rgba(146, 64, 14, 0.2);
+    background-image: linear-gradient(45deg, 
+                      rgba(146, 64, 14, 0.3) 25%, 
+                      rgba(146, 64, 14, 0.2) 25%, 
+                      rgba(146, 64, 14, 0.2) 50%, 
+                      rgba(146, 64, 14, 0.3) 50%, 
+                      rgba(146, 64, 14, 0.3) 75%, 
+                      rgba(146, 64, 14, 0.2) 75%);
+    background-size: 10px 10px;
+  }
+
+  /* 鼠标悬停在滑块上 */
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(146, 64, 14, 0.5);
+    background-image: linear-gradient(45deg, 
+                      rgba(146, 64, 14, 0.5) 25%, 
+                      rgba(146, 64, 14, 0.4) 25%, 
+                      rgba(146, 64, 14, 0.4) 50%, 
+                      rgba(146, 64, 14, 0.5) 50%, 
+                      rgba(146, 64, 14, 0.5) 75%, 
+                      rgba(146, 64, 14, 0.4) 75%);
+    background-size: 10px 10px;
+  }
+
+  /* 深色模式滚动条样式 */
+  [data-theme='dark'] ::-webkit-scrollbar-track {
+    background: rgba(40, 36, 32, 0.8);
+    border: 1px solid rgba(184, 124, 80, 0.2);
+  }
+
+  [data-theme='dark'] ::-webkit-scrollbar-thumb {
+    background: rgba(184, 124, 80, 0.3);
+    border: 1px solid rgba(184, 124, 80, 0.25);
+    background-image: linear-gradient(45deg, 
+                      rgba(184, 124, 80, 0.3) 25%, 
+                      rgba(184, 124, 80, 0.2) 25%, 
+                      rgba(184, 124, 80, 0.2) 50%, 
+                      rgba(184, 124, 80, 0.3) 50%, 
+                      rgba(184, 124, 80, 0.3) 75%, 
+                      rgba(184, 124, 80, 0.2) 75%);
+  }
+
+  [data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(184, 124, 80, 0.5);
+    background-image: linear-gradient(45deg, 
+                      rgba(184, 124, 80, 0.5) 25%, 
+                      rgba(184, 124, 80, 0.4) 25%, 
+                      rgba(184, 124, 80, 0.4) 50%, 
+                      rgba(184, 124, 80, 0.5) 50%, 
+                      rgba(184, 124, 80, 0.5) 75%, 
+                      rgba(184, 124, 80, 0.4) 75%);
+  }
+
+  /* 针对标签容器的特殊滚动条样式 */
+  .culture-card .flex.overflow-x-auto {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(146, 64, 14, 0.3) rgba(248, 245, 232, 0.8);
+    padding-bottom: 4px;
+  }
+
+  [data-theme='dark'] .culture-card .flex.overflow-x-auto {
+    scrollbar-color: rgba(184, 124, 80, 0.3) rgba(40, 36, 32, 0.8);
+  }
 </style>
+</MainLayout>

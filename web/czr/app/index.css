@@ -1,4 +1,4 @@
-@import "@radix-ui/themes/styles.css";
+/* Radix UI的样式应该在JavaScript/TypeScript文件中导入，而不是在CSS中 */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,7 +29,8 @@ body {
 
 /* 添加暗色模式支持 */
 .radix-themes-dark {
-  @apply dark;
+  /* 由于我们使用class作为暗色模式策略，不能直接@apply dark */
+  color-scheme: dark;
 }
 
 /* 隐藏不活跃的主题样式 */
@@ -42,76 +43,76 @@ body {
 }
 
 /* 导航栏基础样式 */
-.nav-container {
-  @apply fixed top-0 left-0 right-0 z-50;
-  @apply bg-white/80 dark:bg-gray-900/80;
-  @apply backdrop-blur-sm;
-  @apply border-b border-gray-200 dark:border-gray-700;
+@layer components {
+  .nav-container {
+    @apply fixed top-0 left-0 right-0 z-50;
+    @apply bg-white/80 dark:bg-gray-900/80;
+    @apply backdrop-blur-sm;
+    @apply border-b border-gray-200 dark:border-gray-700;
+  }
+
+  .nav-content {
+    @apply container mx-auto px-4;
+    @apply flex items-center justify-between;
+    @apply h-16;
+  }
+
+  .nav-logo {
+    @apply text-xl font-bold;
+    @apply text-gray-800 dark:text-white;
+    @apply hover:text-gray-600 dark:hover:text-gray-300;
+    @apply transition-colors duration-200;
+  }
+
+  .nav-links {
+    @apply hidden md:flex items-center space-x-8;
+  }
+
+  .nav-link {
+    @apply text-gray-600 dark:text-gray-300;
+    @apply hover:text-gray-900 dark:hover:text-white;
+    @apply transition-colors duration-200;
+    @apply font-medium;
+  }
+
+  /* 移动端菜单按钮 */
+  .mobile-menu-button {
+    @apply md:hidden;
+    @apply p-2 rounded-md;
+    @apply text-gray-600 dark:text-gray-300;
+    @apply hover:bg-gray-100 dark:hover:bg-gray-800;
+    @apply transition-colors duration-200;
+  }
+
+  /* 移动端导航菜单 */
+  .mobile-nav {
+    @apply md:hidden;
+    @apply fixed top-16 left-0 right-0;
+    @apply bg-white dark:bg-gray-900;
+    @apply border-b border-gray-200 dark:border-gray-700;
+    @apply shadow-lg;
+  }
+
+  .mobile-nav-links {
+    @apply flex flex-col space-y-4;
+    @apply p-4;
+  }
+
+  .mobile-nav-link {
+    @apply text-gray-600 dark:text-gray-300;
+    @apply hover:text-gray-900 dark:hover:text-white;
+    @apply transition-colors duration-200;
+    @apply font-medium;
+    @apply block;
+    @apply py-2;
+  }
+
+  /* 激活状态的导航链接 */
+  .nav-link.active,
+  .mobile-nav-link.active {
+    @apply text-blue-600 dark:text-blue-400;
+  }
 }
-
-.nav-content {
-  @apply container mx-auto px-4;
-  @apply flex items-center justify-between;
-  @apply h-16;
-}
-
-.nav-logo {
-  @apply text-xl font-bold;
-  @apply text-gray-800 dark:text-white;
-  @apply hover:text-gray-600 dark:hover:text-gray-300;
-  @apply transition-colors duration-200;
-}
-
-.nav-links {
-  @apply hidden md:flex items-center space-x-8;
-}
-
-.nav-link {
-  @apply text-gray-600 dark:text-gray-300;
-  @apply hover:text-gray-900 dark:hover:text-white;
-  @apply transition-colors duration-200;
-  @apply font-medium;
-}
-
-/* 移动端菜单按钮 */
-.mobile-menu-button {
-  @apply md:hidden;
-  @apply p-2 rounded-md;
-  @apply text-gray-600 dark:text-gray-300;
-  @apply hover:bg-gray-100 dark:hover:bg-gray-800;
-  @apply transition-colors duration-200;
-}
-
-/* 移动端导航菜单 */
-.mobile-nav {
-  @apply md:hidden;
-  @apply fixed top-16 left-0 right-0;
-  @apply bg-white dark:bg-gray-900;
-  @apply border-b border-gray-200 dark:border-gray-700;
-  @apply shadow-lg;
-}
-
-.mobile-nav-links {
-  @apply flex flex-col space-y-4;
-  @apply p-4;
-}
-
-.mobile-nav-link {
-  @apply text-gray-600 dark:text-gray-300;
-  @apply hover:text-gray-900 dark:hover:text-white;
-  @apply transition-colors duration-200;
-  @apply font-medium;
-  @apply block;
-  @apply py-2;
-}
-
-/* 激活状态的导航链接 */
-.nav-link.active,
-.mobile-nav-link.active {
-  @apply text-blue-600 dark:text-blue-400;
-}
-
-
 
 /* 注意：每个路径都需要在 SVG 中设置 --path-length 变量 */
 .animated-text {

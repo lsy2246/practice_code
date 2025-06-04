@@ -1,52 +1,69 @@
 ---
 import MainLayout from "../components/MainLayout.astro";
-import HebeiMap from '../components/HebeiMap';
-import { getCollection } from 'astro:content';
+import HebeiMap from "../components/HebeiMap";
+import { getCollection, type CollectionEntry } from "astro:content";
 
 // 获取所有集合的数据
-const attractions = await getCollection('attractions');
-const culture = await getCollection('culture');
-const cuisine = await getCollection('cuisine');
-const travel = await getCollection('travel');
+const attractions = await getCollection("attractions");
+const culture = await getCollection("culture");
+const cuisine = await getCollection("cuisine");
+const travel = await getCollection("travel");
 
 // 合并所有文章并提取需要的字段
 const allArticles = [
-  ...attractions.map(entry => ({
+  ...attractions.map((entry: CollectionEntry<"attractions">) => ({
     title: entry.data.title,
     description: entry.data.description,
     city: entry.data.city,
     slug: `/attractions/${entry.slug}`,
-    type: 'attractions'
+    type: "attractions",
   })),
-  ...culture.map(entry => ({
+  ...culture.map((entry: CollectionEntry<"culture">) => ({
     title: entry.data.title,
     description: entry.data.description,
     city: entry.data.city,
     slug: `/culture/${entry.slug}`,
-    type: 'culture'
+    type: "culture",
   })),
-  ...cuisine.map(entry => ({
+  ...cuisine.map((entry: CollectionEntry<"cuisine">) => ({
     title: entry.data.title,
     description: entry.data.description,
     city: entry.data.city,
     slug: `/cuisine/${entry.slug}`,
-    type: 'cuisine'
+    type: "cuisine",
   })),
-  ...travel.map(entry => ({
+  ...travel.map((entry: CollectionEntry<"travel">) => ({
     title: entry.data.title,
     description: entry.data.description,
     city: entry.data.city,
     slug: `/travel/${entry.slug}`,
-    type: 'travel'
-  }))
+    type: "travel",
+  })),
 ];
 ---
 
 <MainLayout title="河北地图 - 文章导航">
-  <main class="pt-16 md:pt-20 pb-4 md:pb-8">
-    <div class="container mx-auto px-2 md:px-4">
-      <p class="text-sm md:text-base text-gray-600 text-center mb-6">点击地图上的城市查看相关文章</p>
-      <HebeiMap client:load articles={allArticles} />
+  <section
+    class="min-h-screen bg-theme-primary-bg dark:bg-slate-900 flex flex-col"
+  >
+    <div class="container mx-auto px-2 md:px-4 pt-24 md:pt-28 flex-grow">
+      <div class="mb-8">
+        <h1
+          class="text-3xl md:text-4xl font-bold text-slate-800 dark:text-primary-200 text-center mb-3"
+        >
+          河北地图导航
+        </h1>
+        <p
+          class="text-sm md:text-base text-slate-600 dark:text-slate-300 text-center mb-6"
+        >
+          点击地图上的城市查看相关文章
+        </p>
+      </div>
+
+      <HebeiMap
+        client:load
+        articles={allArticles}
+      />
     </div>
-  </main>
-</MainLayout> 
+  </section>
+</MainLayout>
